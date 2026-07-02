@@ -687,9 +687,9 @@ Allows managers to assign or revoke individual permissions directly on a user wi
 * **Request Body:**
 ```json
 {
-  "tpa_name": "Star Health Insurance TPA",
-  "tpa_code": "STAR-TPA",
-  "contact_person": "Mr. Rajesh Kumar",
+  "provider_name": "Star Health Insurance TPA",
+  "short_name_code": "STAR-TPA",
+  "contact_name": "Mr. Rajesh Kumar",
   "contact_email": "tpa.star@starhealth.in",
   "contact_phone": "+919999888877",
   "status": "ACTIVE"
@@ -700,9 +700,9 @@ Allows managers to assign or revoke individual permissions directly on a user wi
 {
   "success": true,
   "data": {
-    "tpa_provider_id": "tpa-uuid-123456",
-    "tpa_name": "Star Health Insurance TPA",
-    "tpa_code": "STAR-TPA",
+    "id": "tpa-uuid-123456",
+    "provider_name": "Star Health Insurance TPA",
+    "short_name_code": "STAR-TPA",
     "status": "ACTIVE",
     "created_at": "2026-06-13T12:40:00Z"
   }
@@ -723,13 +723,13 @@ Allows managers to assign or revoke individual permissions directly on a user wi
 ```json
 {
   "item_code": "MED-PAR-650",
-  "name": "Paracetamol 650mg Tablets",
+  "item_name": "Paracetamol 650mg Tablets",
   "category": "TABLETS",
   "batch_number": "BATCH-2026-A",
   "expiry_date": "2028-05-31",
-  "quantity": 5000,
+  "opening_balance": 5000,
   "reorder_level": 500,
-  "unit_price": 2.50
+  "mrp": 2.50
 }
 ```
 * **Success Response (201 Created):**
@@ -737,10 +737,9 @@ Allows managers to assign or revoke individual permissions directly on a user wi
 {
   "success": true,
   "data": {
-    "item_id": "inv-uuid-123456",
+    "id": "inv-uuid-123456",
     "item_code": "MED-PAR-650",
-    "name": "Paracetamol 650mg Tablets",
-    "quantity": 5000,
+    "item_name": "Paracetamol 650mg Tablets",
     "status_level": "GOOD",
     "created_at": "2026-06-13T12:45:00Z"
   }
