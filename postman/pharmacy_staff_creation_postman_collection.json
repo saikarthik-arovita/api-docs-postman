@@ -1,0 +1,805 @@
+{
+  "info": {
+    "name": "HMS - Pharmacy Staff Account Creation & Onboarding Flow",
+    "description": "Complete flow to create a new Pharmacy Staff Account (Pharmacy Manager or Pharmacist), perform first-time login challenge, complete self-onboarding (schedule, payroll, bank, tax, license, ID proof, training completion), verify compliance documents, and activate the profile.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "auth_base_url",
+      "value": "https://your-api-gateway-url.amazonaws.com/prod",
+      "type": "string"
+    },
+    {
+      "key": "admin_access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staff_access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staff_user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staff_employee_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staff_temp_password",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staff_new_password",
+      "value": "PharmStaff@Arovita2026!",
+      "type": "string"
+    },
+    {
+      "key": "challenge_session",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pharmacy_license_doc_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_proof_doc_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "training_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Admin: Login & Create Pharmacy Staff",
+      "item": [
+        {
+          "name": "1. Admin Login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin@arovita.com\",\n  \"password\": \"AdminSecurePassword@2026\",\n  \"device_info\": \"Postman Admin\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "    pm.collectionVariables.set('admin_access_token', jsonData.data.tokens.access_token);",
+                  "    console.log('Admin login successful. Access Token captured.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Create Pharmacy Staff Account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Vikram Seth\",\n  \"email\": \"vikram.pharmacist@arovita.com\",\n  \"phone\": \"+919876543219\",\n  \"role\": \"PHARMACIST\",\n  \"qualification\": \"B.Pharm\",\n  \"gender\": \"MALE\",\n  \"date_of_birth\": \"1992-05-15\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/staff",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "staff"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data) {",
+                  "    pm.collectionVariables.set('staff_user_id', jsonData.data.id);",
+                  "    pm.collectionVariables.set('staff_employee_id', jsonData.data.employee_id);",
+                  "    pm.collectionVariables.set('staff_temp_password', jsonData.data.temp_password);",
+                  "    console.log('Pharmacy Staff Created: ID=' + jsonData.data.id + ', TempPass=' + jsonData.data.temp_password);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Staff: First-Time Login Challenge",
+      "item": [
+        {
+          "name": "1. Initiate Login (Temp Password)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{staff_employee_id}}\",\n  \"password\": \"{{staff_temp_password}}\",\n  \"device_info\": \"Postman Staff Client\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.session) {",
+                  "    pm.collectionVariables.set('challenge_session', jsonData.data.session);",
+                  "    console.log('Challenge session captured.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Complete Password Challenge",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{staff_employee_id}}\",\n  \"session\": \"{{challenge_session}}\",\n  \"new_password\": \"{{staff_new_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/new-password",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "new-password"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "    pm.collectionVariables.set('staff_access_token', jsonData.data.tokens.access_token);",
+                  "    console.log('Permanent password set. Staff Access Token captured.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Staff: Self-Onboarding Setup",
+      "item": [
+        {
+          "name": "1. Get Onboarding Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Configure Schedule",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"primary_shift_type\": \"MORNING\",\n  \"duty_start_time\": \"09:00\",\n  \"duty_end_time\": \"17:00\",\n  \"weekly_hours\": 40.0,\n  \"active_days\": [\"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\"],\n  \"is_rotating\": false,\n  \"rotation_cycle_days\": null,\n  \"notes\": \"Standard Pharmacy shift\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/schedule",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "schedule"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Configure Payroll",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_cycle\": \"MONTHLY\",\n  \"currency\": \"INR\",\n  \"annual_base_salary\": 900000.00,\n  \"annual_bonus\": 50000.00,\n  \"effective_from\": \"2026-07-01\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/payroll",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "payroll"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Register Bank Account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_holder_name\": \"Vikram Seth\",\n  \"bank_name\": \"State Bank of India\",\n  \"branch_name\": \"MG Road\",\n  \"account_number\": \"30981234567\",\n  \"ifsc_code\": \"SBIN0000456\",\n  \"is_primary\": true\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/bank-accounts",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "bank-accounts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Setup Tax Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pan_number\": \"ABCDE1234F\",\n  \"tax_regime\": \"NEW\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/tax-profile",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "tax-profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. Upload Pharmacy License (Mandatory Document 1)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_type\": \"PHARMACY_LICENSE\",\n  \"document_name\": \"State Pharmacy Council Registration\",\n  \"document_id_number\": \"PR-2026-998877\",\n  \"document_url\": \"https://arovita-docs.s3.amazonaws.com/pharmacy_license.pdf\",\n  \"expiry_date\": \"2028-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/documents",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "documents"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data) {",
+                  "    pm.collectionVariables.set('pharmacy_license_doc_id', jsonData.data.id);",
+                  "    console.log('Pharmacy License Uploaded. Doc ID captured.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Upload Government ID Proof (Mandatory Document 2)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_type\": \"ID_PROOF\",\n  \"document_name\": \"Government Passport / ID Proof\",\n  \"document_id_number\": \"ID-9988-7766\",\n  \"document_url\": \"https://arovita-docs.s3.amazonaws.com/id_proof.pdf\",\n  \"expiry_date\": \"2030-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/documents",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "documents"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data) {",
+                  "    pm.collectionVariables.set('id_proof_doc_id', jsonData.data.id);",
+                  "    console.log('Government ID Proof Uploaded. Doc ID captured.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. List Assigned Trainings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/training",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "training"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.items && jsonData.data.items.length > 0) {",
+                  "    pm.collectionVariables.set('training_id', jsonData.data.items[0].id);",
+                  "    console.log('Existing training ID captured: ' + jsonData.data.items[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "9. Complete HIPAA Training",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completion_percentage\": 100,\n  \"completion_status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/training/{{training_id}}/progress",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "training",
+                "{{training_id}}",
+                "progress"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Admin: Document Verification & Activation",
+      "item": [
+        {
+          "name": "1. Admin Verify Pharmacy License",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verification_notes\": \"Verified against State Pharmacy Council Portal\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/documents/{{pharmacy_license_doc_id}}/verify",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "documents",
+                "{{pharmacy_license_doc_id}}",
+                "verify"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Admin Verify Government ID Proof",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verification_notes\": \"Verified Government ID Proof\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/documents/{{id_proof_doc_id}}/verify",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "documents",
+                "{{id_proof_doc_id}}",
+                "verify"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Admin Assign HIPAA Training (If not pre-assigned)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"training_type\": \"COMPLIANCE\",\n  \"training_name\": \"HIPAA & Data Privacy Training\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/training",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "training"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data) {",
+                  "    pm.collectionVariables.set('training_id', jsonData.data.id);",
+                  "    console.log('HIPAA Training assigned. ID captured.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Admin Activate Pharmacy Staff",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activation_notes\": \"All compliance requirements verified. Account activated for pharmacy duty.\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{staff_user_id}}/activate",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{staff_user_id}}",
+                "activate"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

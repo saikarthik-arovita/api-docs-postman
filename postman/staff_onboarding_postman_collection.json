@@ -1,0 +1,2090 @@
+{
+  "info": {
+    "name": "HMS Staff Onboarding Service",
+    "description": "Complete HRMS Staff Onboarding & Activation Collection.\n\nFlow:\n  1. Admin creates staff → Staff gets temp_password\n  2. Staff does first-time login (NEW_PASSWORD_REQUIRED challenge)\n  3. Staff completes self-onboarding (schedule, payroll, bank, tax, docs, training)\n  4. Admin verifies documents\n  5. Admin activates staff\n\nBase URL: {{auth_base_url}}\nAll authenticated endpoints require Authorization: Bearer {{access_token}}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "hms-staff-onboarding-2026-v2"
+  },
+  "variable": [
+    {
+      "key": "auth_base_url",
+      "value": "https://your-api-gateway-url.amazonaws.com/prod",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "employee_user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doc_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "training_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_username",
+      "value": "admin@arovita.com",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "AdminSecurePassword@2026",
+      "type": "string"
+    },
+    {
+      "key": "head_nurse_user_id",
+      "value": "6a2e5e54-7e71-4549-be4a-0f38501c89a9",
+      "type": "string"
+    },
+    {
+      "key": "head_nurse_employee_id",
+      "value": "HNR-S0B9J0",
+      "type": "string"
+    },
+    {
+      "key": "head_nurse_email",
+      "value": "sarah.jenkins@arovita.com",
+      "type": "string"
+    },
+    {
+      "key": "head_nurse_temp_password",
+      "value": "30r24j@*TKp3",
+      "type": "string"
+    },
+    {
+      "key": "head_nurse_new_password",
+      "value": "HeadNurse@Arovita2026!",
+      "type": "string"
+    },
+    {
+      "key": "pharmacy_manager_user_id",
+      "value": "aa94981b-5acd-4503-b714-f3fdba4afc42",
+      "type": "string"
+    },
+    {
+      "key": "pharmacy_manager_employee_id",
+      "value": "PMG-ML7MB5",
+      "type": "string"
+    },
+    {
+      "key": "pharmacy_manager_email",
+      "value": "rajesh.kumar@arovita.com",
+      "type": "string"
+    },
+    {
+      "key": "pharmacy_manager_temp_password",
+      "value": "NYL%9Q!v#tlX",
+      "type": "string"
+    },
+    {
+      "key": "pharmacy_manager_new_password",
+      "value": "PharmMgr@Arovita2026!",
+      "type": "string"
+    },
+    {
+      "key": "lab_manager_user_id",
+      "value": "e35c4fff-e52b-4b2d-ac62-b567e7826e0c",
+      "type": "string"
+    },
+    {
+      "key": "lab_manager_employee_id",
+      "value": "LAB-XXXXXX",
+      "type": "string"
+    },
+    {
+      "key": "lab_manager_email",
+      "value": "amit.verma@arovita.com",
+      "type": "string"
+    },
+    {
+      "key": "lab_manager_temp_password",
+      "value": "LabAdmin@TempPass2026",
+      "type": "string"
+    },
+    {
+      "key": "lab_manager_new_password",
+      "value": "LabAdmin@Arovita2026!",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "00 - Admin: Create Staff",
+      "description": "Admin logs in and creates the three manager roles. Credentials (temp_password) are captured automatically.",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "        pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "        pm.collectionVariables.set('id_token', jsonData.data.tokens.id_token);",
+                  "        pm.collectionVariables.set('refresh_token', jsonData.data.tokens.refresh_token);",
+                  "        console.log('Admin access_token set.');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\",\n  \"device_info\": \"Postman Admin Client\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Head Nurse",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.collectionVariables.set('head_nurse_user_id', d.user_id);",
+                  "    pm.collectionVariables.set('head_nurse_temp_password', d.temp_password);",
+                  "    console.log('Head Nurse created. user_id=' + d.user_id + ' temp_password=' + d.temp_password);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Sarah Jenkins\",\n  \"email\": \"sarah.jenkins@arovita.com\",\n  \"phone\": \"9123456701\",\n  \"role\": \"HEAD_NURSE\",\n  \"registration_number\": \"NURSE/2026/00456\",\n  \"qualification\": \"B.Sc Nursing\",\n  \"experience_years\": 8,\n  \"joining_date\": \"2026-07-01\",\n  \"gender\": \"FEMALE\",\n  \"date_of_birth\": \"1988-11-23\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/staff",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "staff"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Pharmacy Manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.collectionVariables.set('pharmacy_manager_user_id', d.user_id);",
+                  "    pm.collectionVariables.set('pharmacy_manager_temp_password', d.temp_password);",
+                  "    console.log('Pharmacy Manager created. user_id=' + d.user_id + ' temp_password=' + d.temp_password);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Rajesh Kumar\",\n  \"email\": \"rajesh.kumar@arovita.com\",\n  \"phone\": \"9123456702\",\n  \"role\": \"PHARMACY_MANAGER\",\n  \"registration_number\": \"PHARM/2026/00789\",\n  \"qualification\": \"B.Pharm, M.Pharm\",\n  \"experience_years\": 10,\n  \"joining_date\": \"2026-07-01\",\n  \"gender\": \"MALE\",\n  \"date_of_birth\": \"1985-06-15\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/staff",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "staff"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Lab & Radiology Manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.collectionVariables.set('lab_manager_user_id', d.user_id);",
+                  "    pm.collectionVariables.set('lab_manager_temp_password', d.temp_password);",
+                  "    console.log('Lab Manager created. user_id=' + d.user_id + ' temp_password=' + d.temp_password);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Dr. Amit Verma\",\n  \"email\": \"amit.verma@arovita.com\",\n  \"phone\": \"9123456703\",\n  \"role\": \"LAB_ADMIN\",\n  \"registration_number\": \"LAB/2026/00321\",\n  \"qualification\": \"MD (Pathology)\",\n  \"experience_years\": 7,\n  \"joining_date\": \"2026-07-01\",\n  \"gender\": \"MALE\",\n  \"date_of_birth\": \"1989-09-12\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/staff",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "staff"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Head Nurse: First Login & Password Setup",
+      "description": "Head Nurse (Sarah Jenkins) completes the Cognito NEW_PASSWORD_REQUIRED challenge and sets a permanent password.",
+      "item": [
+        {
+          "name": "Step 1: Initiate Login (get challenge)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "// Challenge response — save session",
+                  "if (jsonData.data && jsonData.data.session) {",
+                  "    pm.collectionVariables.set('challenge_session', jsonData.data.session);",
+                  "    console.log('Challenge session captured. Proceed to Step 2.');",
+                  "}",
+                  "// Direct login success",
+                  "if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "    console.log('Logged in directly. access_token set.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{head_nurse_employee_id}}\",\n  \"password\": \"{{head_nurse_temp_password}}\",\n  \"device_info\": \"Postman Head Nurse Client\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Step 2: Complete Password Challenge (NEW_PASSWORD_REQUIRED)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "        pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "        pm.collectionVariables.set('id_token', jsonData.data.tokens.id_token);",
+                  "        pm.collectionVariables.set('refresh_token', jsonData.data.tokens.refresh_token);",
+                  "        console.log('Password challenge completed! access_token set for Head Nurse.');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{head_nurse_employee_id}}\",\n  \"session\": \"{{challenge_session}}\",\n  \"new_password\": \"{{head_nurse_new_password}}\",\n  \"challenge_name\": \"NEW_PASSWORD_REQUIRED\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/challenge",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "challenge"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Head Nurse: Self-Onboarding",
+      "description": "Head Nurse (Sarah Jenkins, HNR-S0B9J0) completes all onboarding steps.\nRun these in order after completing the password challenge in folder 01.",
+      "item": [
+        {
+          "name": "Check Onboarding Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Work Schedule",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"primary_shift_type\": \"MORNING\",\n  \"duty_start_time\": \"07:00\",\n  \"duty_end_time\": \"15:00\",\n  \"weekly_hours\": 45.0,\n  \"active_days\": [\"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"],\n  \"is_rotating\": false,\n  \"notes\": \"Head Nurse covers morning wards\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/schedule",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "schedule"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure On-Call Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"on_call_enabled\": true,\n  \"on_call_frequency\": \"ROTATIONAL\",\n  \"emergency_contact_number\": \"+919123456701\",\n  \"escalation_contact\": \"+919000000001\",\n  \"notes\": \"Available on rotational emergency duty\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/oncall",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "oncall"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Payroll Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_cycle\": \"MONTHLY\",\n  \"currency\": \"INR\",\n  \"annual_base_salary\": 1200000.00,\n  \"annual_bonus\": 100000.00,\n  \"effective_from\": \"2026-07-01\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/payroll",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "payroll"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Bank Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_holder_name\": \"Sarah Jenkins\",\n  \"bank_name\": \"State Bank of India\",\n  \"branch_name\": \"Koramangala Branch\",\n  \"account_number\": \"30012345678901\",\n  \"ifsc_code\": \"SBIN0001234\",\n  \"is_primary\": true\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/bank-accounts",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "bank-accounts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Tax Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pan_number\": \"ABCDE1234F\",\n  \"tax_regime\": \"NEW\",\n  \"pf_opted\": true\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/tax-profile",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "tax-profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Nursing License",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    if (d && d.id) {",
+                  "        pm.collectionVariables.set('doc_id', d.id);",
+                  "        console.log('doc_id set: ' + d.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_type\": \"NURSING_LICENSE\",\n  \"document_name\": \"State Nursing Council Registration\",\n  \"document_id_number\": \"NURSE/2026/00456\",\n  \"expiry_date\": \"2028-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/documents",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "documents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Nursing Certificate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_type\": \"QUALIFICATION_CERTIFICATE\",\n  \"document_name\": \"B.Sc Nursing Degree Certificate\",\n  \"document_id_number\": \"RGUHS/BSC-NURS/2014/45678\",\n  \"expiry_date\": null\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/documents",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "documents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register Mandatory Training",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    if (d && d.id) {",
+                  "        pm.collectionVariables.set('training_id', d.id);",
+                  "        console.log('training_id set: ' + d.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"training_type\": \"COMPLIANCE\",\n  \"training_name\": \"Infection Control & Hand Hygiene Protocol\",\n  \"expiry_date\": \"2027-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/training",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "training"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Training",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completion_percentage\": 100,\n  \"completion_status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/training/{{training_id}}/progress",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "training",
+                "{{training_id}}",
+                "progress"
+              ]
+            }
+          }
+        },
+        {
+          "name": "View Full Onboarding Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/full-onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "full-onboarding"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Pharmacy Manager: First Login & Password Setup",
+      "description": "Pharmacy Manager (Rajesh Kumar) completes the Cognito NEW_PASSWORD_REQUIRED challenge.",
+      "item": [
+        {
+          "name": "Step 1: Initiate Login (get challenge)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.session) {",
+                  "    pm.collectionVariables.set('challenge_session', jsonData.data.session);",
+                  "    console.log('Challenge session captured. Proceed to Step 2.');",
+                  "}",
+                  "if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "    console.log('Logged in directly.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{pharmacy_manager_employee_id}}\",\n  \"password\": \"{{pharmacy_manager_temp_password}}\",\n  \"device_info\": \"Postman Pharmacy Manager Client\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Step 2: Complete Password Challenge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "        pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "        pm.collectionVariables.set('id_token', jsonData.data.tokens.id_token);",
+                  "        pm.collectionVariables.set('refresh_token', jsonData.data.tokens.refresh_token);",
+                  "        console.log('Password challenge completed! access_token set for Pharmacy Manager.');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{pharmacy_manager_employee_id}}\",\n  \"session\": \"{{challenge_session}}\",\n  \"new_password\": \"{{pharmacy_manager_new_password}}\",\n  \"challenge_name\": \"NEW_PASSWORD_REQUIRED\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/challenge",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "challenge"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Pharmacy Manager: Self-Onboarding",
+      "description": "Pharmacy Manager (Rajesh Kumar, PMG-ML7MB5) completes all onboarding steps.",
+      "item": [
+        {
+          "name": "Check Onboarding Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Work Schedule",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"primary_shift_type\": \"MORNING\",\n  \"duty_start_time\": \"09:00\",\n  \"duty_end_time\": \"18:00\",\n  \"weekly_hours\": 45.0,\n  \"active_days\": [\"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"],\n  \"is_rotating\": false,\n  \"notes\": \"Pharmacy Manager standard hours\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/schedule",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "schedule"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure On-Call Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"on_call_enabled\": false,\n  \"on_call_frequency\": null,\n  \"emergency_contact_number\": \"+919123456702\",\n  \"escalation_contact\": null,\n  \"notes\": \"Pharmacy Manager - not on emergency call rotation\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/oncall",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "oncall"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Payroll Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_cycle\": \"MONTHLY\",\n  \"currency\": \"INR\",\n  \"annual_base_salary\": 1500000.00,\n  \"annual_bonus\": 150000.00,\n  \"effective_from\": \"2026-07-01\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/payroll",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "payroll"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Bank Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_holder_name\": \"Rajesh Kumar\",\n  \"bank_name\": \"HDFC Bank\",\n  \"branch_name\": \"MG Road Branch\",\n  \"account_number\": \"50100987654321\",\n  \"ifsc_code\": \"HDFC0001234\",\n  \"is_primary\": true\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/bank-accounts",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "bank-accounts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Tax Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pan_number\": \"BCDFE2345G\",\n  \"tax_regime\": \"OLD\",\n  \"pf_opted\": true\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/tax-profile",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "tax-profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Pharmacy License",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    if (d && d.id) {",
+                  "        pm.collectionVariables.set('doc_id', d.id);",
+                  "        console.log('doc_id set: ' + d.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_type\": \"PHARMACY_LICENSE\",\n  \"document_name\": \"Pharmacist Registration Certificate\",\n  \"document_id_number\": \"PHARM/2026/00789\",\n  \"expiry_date\": \"2028-06-30\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/documents",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "documents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Pharmacy Degree",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_type\": \"QUALIFICATION_CERTIFICATE\",\n  \"document_name\": \"M.Pharm Degree Certificate\",\n  \"document_id_number\": \"JSSH/MPHARM/2015/67890\",\n  \"expiry_date\": null\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/documents",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "documents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register Mandatory Training",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    if (d && d.id) {",
+                  "        pm.collectionVariables.set('training_id', d.id);",
+                  "        console.log('training_id set: ' + d.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"training_type\": \"COMPLIANCE\",\n  \"training_name\": \"Narcotics & Drug Dispensing Safety Protocol\",\n  \"expiry_date\": \"2027-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/training",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "training"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Training",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completion_percentage\": 100,\n  \"completion_status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/training/{{training_id}}/progress",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "training",
+                "{{training_id}}",
+                "progress"
+              ]
+            }
+          }
+        },
+        {
+          "name": "View Full Onboarding Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/full-onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "full-onboarding"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Lab Manager: First Login & Password Setup",
+      "description": "Lab & Radiology Manager (Dr. Amit Verma) completes the Cognito NEW_PASSWORD_REQUIRED challenge.",
+      "item": [
+        {
+          "name": "Step 1: Initiate Login (get challenge)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.session) {",
+                  "    pm.collectionVariables.set('challenge_session', jsonData.data.session);",
+                  "    console.log('Challenge session captured. Proceed to Step 2.');",
+                  "}",
+                  "if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "    console.log('Logged in directly.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{lab_manager_employee_id}}\",\n  \"password\": \"{{lab_manager_temp_password}}\",\n  \"device_info\": \"Postman Lab Manager Client\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Step 2: Complete Password Challenge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "        pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "        pm.collectionVariables.set('id_token', jsonData.data.tokens.id_token);",
+                  "        pm.collectionVariables.set('refresh_token', jsonData.data.tokens.refresh_token);",
+                  "        console.log('Password challenge completed! access_token set for Lab Manager.');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{lab_manager_employee_id}}\",\n  \"session\": \"{{challenge_session}}\",\n  \"new_password\": \"{{lab_manager_new_password}}\",\n  \"challenge_name\": \"NEW_PASSWORD_REQUIRED\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/challenge",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "challenge"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Lab Manager: Self-Onboarding",
+      "description": "Lab & Radiology Manager (Dr. Amit Verma) completes all onboarding steps.",
+      "item": [
+        {
+          "name": "Check Onboarding Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Work Schedule",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"primary_shift_type\": \"MORNING\",\n  \"duty_start_time\": \"08:00\",\n  \"duty_end_time\": \"17:00\",\n  \"weekly_hours\": 45.0,\n  \"active_days\": [\"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"],\n  \"is_rotating\": false,\n  \"notes\": \"Lab Manager standard hours\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/schedule",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "schedule"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure On-Call Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"on_call_enabled\": true,\n  \"on_call_frequency\": \"WEEKENDS_ONLY\",\n  \"emergency_contact_number\": \"+919123456703\",\n  \"escalation_contact\": \"+919000000002\",\n  \"notes\": \"Available for emergency lab queries on weekends\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/oncall",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "oncall"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Payroll Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_cycle\": \"MONTHLY\",\n  \"currency\": \"INR\",\n  \"annual_base_salary\": 2000000.00,\n  \"annual_bonus\": 200000.00,\n  \"effective_from\": \"2026-07-01\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/payroll",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "payroll"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Bank Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_holder_name\": \"Dr Amit Verma\",\n  \"bank_name\": \"ICICI Bank\",\n  \"branch_name\": \"Indiranagar Branch\",\n  \"account_number\": \"001001234567890\",\n  \"ifsc_code\": \"ICIC0000010\",\n  \"is_primary\": true\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/bank-accounts",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "bank-accounts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Configure Tax Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pan_number\": \"CDEFG3456H\",\n  \"tax_regime\": \"NEW\",\n  \"pf_opted\": false\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/tax-profile",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "tax-profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Medical License (Pathology)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    if (d && d.id) {",
+                  "        pm.collectionVariables.set('doc_id', d.id);",
+                  "        console.log('doc_id set: ' + d.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_type\": \"MEDICAL_LICENSE\",\n  \"document_name\": \"MCI Registration Certificate - Pathology\",\n  \"document_id_number\": \"LAB/2026/00321\",\n  \"expiry_date\": \"2028-09-30\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/documents",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "documents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload MD Degree",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_type\": \"QUALIFICATION_CERTIFICATE\",\n  \"document_name\": \"MD (Pathology) Degree Certificate\",\n  \"document_id_number\": \"AIIMS/MD-PATH/2016/12345\",\n  \"expiry_date\": null\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/documents",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "documents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register Mandatory Training",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var d = pm.response.json().data;",
+                  "    if (d && d.id) {",
+                  "        pm.collectionVariables.set('training_id', d.id);",
+                  "        console.log('training_id set: ' + d.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"training_type\": \"COMPLIANCE\",\n  \"training_name\": \"Biosafety & Lab Waste Management Protocol\",\n  \"expiry_date\": \"2027-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/training",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "training"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Training",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completion_percentage\": 100,\n  \"completion_status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/training/{{training_id}}/progress",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "training",
+                "{{training_id}}",
+                "progress"
+              ]
+            }
+          }
+        },
+        {
+          "name": "View Full Onboarding Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/full-onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "full-onboarding"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Admin: Verify Documents & Activate Staff",
+      "description": "Admin logs in, reviews pending document verifications, verifies or rejects them, then activates each staff member.\nRun AFTER all three staff members have completed self-onboarding.",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "        pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "        console.log('Admin access_token set.');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\",\n  \"device_info\": \"Postman Admin Client\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List All Staff",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/auth/staff?page=1&page_size=20",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "staff"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Pending Document Verifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/compliance/pending-verifications?page=1&page_size=50",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "compliance",
+                "pending-verifications"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Document (set doc_id first)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/documents/{{doc_id}}/verify",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "documents",
+                "{{doc_id}}",
+                "verify"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Document (set doc_id first)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejection_reason\": \"Registration number does not match records. Please re-upload with correct certificate number.\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/documents/{{doc_id}}/reject",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "documents",
+                "{{doc_id}}",
+                "reject"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Blocked Staff",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/blocked?page=1&page_size=20",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "blocked"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Pending Activation Queue",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/pending-activation?page=1&page_size=20",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "pending-activation"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Onboarding Readiness — Head Nurse",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Onboarding Readiness — Pharmacy Manager",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Onboarding Readiness — Lab Manager",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/onboarding",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate Head Nurse",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activation_notes\": \"All onboarding steps completed and documents verified for Head Nurse Sarah Jenkins.\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{head_nurse_user_id}}/activate",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{head_nurse_user_id}}",
+                "activate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate Pharmacy Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activation_notes\": \"All onboarding steps completed and documents verified for Pharmacy Manager Rajesh Kumar.\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/activate",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "activate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate Lab Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activation_notes\": \"All onboarding steps completed and documents verified for Lab & Radiology Manager Dr. Amit Verma.\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{lab_manager_user_id}}/activate",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{lab_manager_user_id}}",
+                "activate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Admin: Password Management",
+      "description": "Admin-initiated password reset for a staff member (bypasses challenge flow). Requires system:users:manage permission.",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+                  "        pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+                  "        console.log('Admin access_token set.');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\",\n  \"device_info\": \"Postman Admin Client\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reset Password — Head Nurse",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456701\",\n  \"new_password\": \"HeadNurse@Arovita2026!\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/reset-password",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reset Password — Pharmacy Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456702\",\n  \"new_password\": \"PharmMgr@Arovita2026!\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/reset-password",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reset Password — Lab Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456703\",\n  \"new_password\": \"LabAdmin@Arovita2026!\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/auth/reset-password",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

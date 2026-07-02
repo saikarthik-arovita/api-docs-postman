@@ -1,0 +1,487 @@
+{
+	"info": {
+		"_postman_id": "42fa1c94-ef82-4bf1-bf10-72bd58cf9a9d",
+		"name": "HMS KPI Dashboard Collection",
+		"description": "Postman Collection for querying and testing all Hospital Management System (HMS) KPI dashboard and analytics endpoints corresponding to the KPI cards screenshot document.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Bed & Ward Management",
+			"item": [
+				{
+					"name": "Bed Availability Summary (image1, image19)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/beds/availability",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"beds",
+								"availability"
+							]
+						},
+						"description": "Returns a summary of bed statuses (total, available, occupied, reserved, under-maintenance) and occupancy rate across the facility."
+					},
+					"response": []
+				},
+				{
+					"name": "Ward Occupancy Dashboard (image2)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/dashboard/wards",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"dashboard",
+								"wards"
+							]
+						},
+						"description": "Returns general ward-level capacity, occupancy rate, bed turnover metrics, and counts of critical cases."
+					},
+					"response": []
+				},
+				{
+					"name": "Live Patient & Floor Tracking (image20)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/dashboard/tracking",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"dashboard",
+								"tracking"
+							]
+						},
+						"description": "Returns live floor maps and spatial bed/patient tracking data, indicating unit availability (Reception, ER, Triage, etc.)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "OPD & IPD Dashboards",
+			"item": [
+				{
+					"name": "OPD Today Stats (image6)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/opd/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"opd",
+								"dashboard"
+							]
+						},
+						"description": "Returns outpatient volume stats including waiting count, completed consultations, avg waiting times, and revenue."
+					},
+					"response": []
+				},
+				{
+					"name": "IPD Admission Stats (image7)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"dashboard"
+							]
+						},
+						"description": "Returns inpatient statistics including today's admissions, transfers, discharges, and average length of stay."
+					},
+					"response": []
+				},
+				{
+					"name": "Emergency Dashboard (image8)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/opd/emergency",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"opd",
+								"emergency"
+							]
+						},
+						"description": "Returns real-time emergency department (ED) loads, triage queues, active cases, and severity categorizations."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Operations & Clinical Dashboards",
+			"item": [
+				{
+					"name": "OT & Procedures Load (image9, image11)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/ot",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"ot"
+							]
+						},
+						"description": "Returns operating theatre load statistics (scheduled, in-progress, completed, delayed) and equipment status reports."
+					},
+					"response": []
+				},
+				{
+					"name": "Laboratory Dashboard (image10)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"dashboard"
+							]
+						},
+						"description": "Returns lab stats: tests count, pending/completed, TAT efficiency, critical result counts, and machinery connectivity states."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pharmacy & Inventory",
+			"item": [
+				{
+					"name": "Pharmacy Summary (image12)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/pharmacy/dashboard/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"pharmacy",
+								"dashboard",
+								"summary"
+							]
+						},
+						"description": "Returns total prescriptions, returns rate, OPD to IPD conversion, fast-moving items, and dispensing speed KPIs."
+					},
+					"response": []
+				},
+				{
+					"name": "Medical Inventory Stock Levels (image13)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/inventory",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"inventory"
+							],
+							"query": [
+								{
+									"key": "item_type",
+									"value": "medical"
+								}
+							]
+						},
+						"description": "Returns total stock valuation, item master counts, low stock counts, and near-expiry medicine listings."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Financial & Revenue Dashboards",
+			"item": [
+				{
+					"name": "Overview & Finance Summary (image4, image5, image14, image16)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard"
+							]
+						},
+						"description": "Aggregated endpoint returning complete overview matrices: patients registration footfalls, today billing collection details, TPA claims, and PO procurement spending values."
+					},
+					"response": []
+				},
+				{
+					"name": "Revenue Trends Analysis (image17)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/revenue?granularity=monthly",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"revenue"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "monthly"
+								}
+							]
+						},
+						"description": "Returns historical and monthly revenue trends, highlighting highest earning departments and services."
+					},
+					"response": []
+				},
+				{
+					"name": "Analytics KPI Summary (image21)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/kpi",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"kpi"
+							]
+						},
+						"description": "Returns top-level management KPIs (total patients weekly variance, procedures, occupancy indicators, and outstanding balance index)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Administration & Staff",
+			"item": [
+				{
+					"name": "Roster & Directory Summary (image3, image18, image22)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"summary"
+							]
+						},
+						"description": "Returns staff headcounts, active departments, specialty configuration totals, and daily leave rates."
+					},
+					"response": []
+				},
+				{
+					"name": "Specialty Directory (image23)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/specializations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"specializations"
+							]
+						},
+						"description": "Returns total specialties registered, active statuses, consultant counts, and patient metrics per specialization."
+					},
+					"response": []
+				},
+				{
+					"name": "Roster & Staff List (image25)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/staff",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"staff"
+							]
+						},
+						"description": "Returns employee list directory along with their active duty shift assignments (Morning, Evening, Night) and roster coverage stats."
+					},
+					"response": []
+				},
+				{
+					"name": "Vendor/TPA Providers List (image15)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/tpa/providers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"tpa",
+								"providers"
+							]
+						},
+						"description": "Returns vendor database lists, active supplier approvals, contract statuses, and average delivery compliance scores."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

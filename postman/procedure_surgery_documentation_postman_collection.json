@@ -1,0 +1,898 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+		"name": "HMS Surgery & Procedure Documentation Flow",
+		"description": "API collection for testing and verifying Bedside/Minor Procedures, Surgery Requests, OT Sessions, and OT Consent Management.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Bedside & Minor Procedures",
+			"item": [
+				{
+					"name": "List Procedure Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/procedures?status=REQUESTED",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"procedures"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "REQUESTED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Procedure Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"procedure_request_id\", jsonData.data.id);",
+									"        console.log(\"Procedure Request created. procedure_request_id set to: \" + jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"admission_id\": \"{{admission_id}}\",\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"procedure_name\": \"Laser Sclerotherapy\",\n  \"notes\": \"Patient requires localized laser therapy for varicose vein management.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/procedures",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"procedures"
+							]
+						},
+						"description": "Creates a minor clinical procedure request under an active inpatient admission."
+					},
+					"response": []
+				},
+				{
+					"name": "Start Procedure Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/procedures/{{procedure_request_id}}/start",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"procedures",
+								"{{procedure_request_id}}",
+								"start"
+							]
+						},
+						"description": "Marks a bedside procedure request as IN_PROGRESS."
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Procedure Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"outcome\": \"SUCCESS\",\n  \"notes\": \"Laser session completed successfully. Localized swelling observed; ice pack applied.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/procedures/{{procedure_request_id}}/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"procedures",
+								"{{procedure_request_id}}",
+								"complete"
+							]
+						},
+						"description": "Marks a bedside procedure request as COMPLETED and records outcome."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Major Surgery Requests",
+			"item": [
+				{
+					"name": "Create Surgery Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"surgery_request_id\", jsonData.data.id);",
+									"        console.log(\"Surgery Request created. surgery_request_id set to: \" + jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"admission_id\": \"{{admission_id}}\",\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"procedure_id\": \"{{catalogue_surgery_id}}\",\n  \"urgency\": \"EMERGENCY\",\n  \"clinical_escalation_id\": \"{{clinical_escalation_id}}\",\n  \"notes\": \"OT room 2 assigned\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/surgeries",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"surgeries"
+							]
+						},
+						"description": "Create a new Surgery Request with urgency configuration."
+					},
+					"response": []
+				},
+				{
+					"name": "Schedule Surgery Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ot_room_id\": \"{{ot_room_id}}\",\n  \"scheduled_at\": \"2026-06-30T14:30:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/schedule",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"surgeries",
+								"{{surgery_request_id}}",
+								"schedule"
+							]
+						},
+						"description": "Binds a requested surgery to a specific OT room and time slot."
+					},
+					"response": []
+				},
+				{
+					"name": "Start Surgery Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/start",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"surgeries",
+								"{{surgery_request_id}}",
+								"start"
+							]
+						},
+						"description": "Updates surgery request status to IN_OT."
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Surgery Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Laparoscopic appendectomy completed successfully. Patient transferred to recovery.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"surgeries",
+								"{{surgery_request_id}}",
+								"complete"
+							]
+						},
+						"description": "Concludes a surgery request and sets status to COMPLETED."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. OT Sessions",
+			"item": [
+				{
+					"name": "Create OT Session",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"ot_session_id\", jsonData.data.id);",
+									"        console.log(\"OT Session created. ot_session_id set to: \" + jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"service_order_id\": \"{{service_order_id}}\",\n  \"admission_id\": \"{{admission_id}}\",\n  \"patient_id\": \"{{patient_id}}\",\n  \"surgeon_id\": \"{{doctor_id}}\",\n  \"anaesthetist_id\": \"c1f2e3d4-b9c1-4b1a-b36c-ffee00112233\",\n  \"scrub_nurse_id\": \"99ee88dd-1122-3344-5566-778899aabbcc\",\n  \"ot_number\": \"OT-ROOM-2\",\n  \"ot_room_id\": \"OT-ROOM-2\",\n  \"scheduled_start\": \"2026-06-30T14:30:00Z\",\n  \"scheduled_end\": \"2026-06-30T16:30:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-sessions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-sessions"
+							]
+						},
+						"description": "Schedules a live OT Session linked to clinical service orders."
+					},
+					"response": []
+				},
+				{
+					"name": "Clear OT PAC (Standard)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"PAC cleared. Patient fit for general anesthesia.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/pac",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-sessions",
+								"{{ot_session_id}}",
+								"pac"
+							]
+						},
+						"description": "Clears PAC (blocked if mandatory consents are not signed)."
+					},
+					"response": []
+				},
+				{
+					"name": "Clear OT PAC (Emergency Override)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Consents unavailable due to patient unconsciousness and no immediate kin. Critical emergency.\",\n  \"emergency_override\": true,\n  \"override_reason\": \"Acute intra-abdominal bleeding requiring emergency life-saving Laparotomy\",\n  \"primary_doctor_id\": \"{{doctor_id}}\",\n  \"second_doctor_id\": \"e4d2a1b9-38cd-47ef-a152-78ab9c0d12e4\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/pac",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-sessions",
+								"{{ot_session_id}}",
+								"pac"
+							]
+						},
+						"description": "Bypasses missing consents with a two-doctor emergency validation."
+					},
+					"response": []
+				},
+				{
+					"name": "Complete OT Pre-Op Checklist",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pre_op_checklist\": {\n    \"consent_form_verified\": true,\n    \"npo_status_verified\": true,\n    \"surgical_site_marked\": true,\n    \"prosthesis_removed\": true,\n    \"blood_units_reserved\": 2\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/pre-op",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-sessions",
+								"{{ot_session_id}}",
+								"pre-op"
+							]
+						},
+						"description": "Updates checklist attributes and shifts state to PRE_OP."
+					},
+					"response": []
+				},
+				{
+					"name": "Start OT Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/start",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-sessions",
+								"{{ot_session_id}}",
+								"start"
+							]
+						},
+						"description": "Starts the surgery (Time-in). Sets status to IN_PROGRESS."
+					},
+					"response": []
+				},
+				{
+					"name": "Complete OT Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"intra_op_notes\": \"Successful appendectomy. Normal anatomy restored. Fluid drainage: 20ml.\",\n  \"anaesthesia_type\": \"GENERAL\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-sessions",
+								"{{ot_session_id}}",
+								"complete"
+							]
+						},
+						"description": "Concludes surgery (Time-out). Sets status to POST_OP."
+					},
+					"response": []
+				},
+				{
+					"name": "Transfer Out OT Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"transferred_to_ward_id\": \"{{ward_id}}\",\n  \"transferred_to_bed_id\": \"{{bed_id}}\",\n  \"recovery_notes\": \"Patient conscious, oriented, vitals stable. Transferred back to bed.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/transfer-out",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-sessions",
+								"{{ot_session_id}}",
+								"transfer-out"
+							]
+						},
+						"description": "Completes the session. Handles recovery ward/bed reassignment and releases previous bed."
+					},
+					"response": []
+				},
+				{
+					"name": "Get OT Session Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-sessions",
+								"{{ot_session_id}}"
+							]
+						},
+						"description": "Fetches current status, metrics, notes, and allocation data of an OT Session."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. OT Consent Management",
+			"item": [
+				{
+					"name": "List OT Session Consents",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-cases/{{ot_session_id}}/consents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-cases",
+								"{{ot_session_id}}",
+								"consents"
+							]
+						},
+						"description": "Lists all consents generated or required for this OT Case."
+					},
+					"response": []
+				},
+				{
+					"name": "Create OT Session Consent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"consent_id\", jsonData.data.id);",
+									"        console.log(\"Consent created. consent_id set to: \" + jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"consent_type\": \"SURGICAL_CONSENT\",\n  \"language\": \"EN\",\n  \"mandatory\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/ot-cases/{{ot_session_id}}/consents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"ot-cases",
+								"{{ot_session_id}}",
+								"consents"
+							]
+						},
+						"description": "Generates a consent form for the given OT case."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Consent",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"custom_clauses\": [\"Patient has requested no post-op blood transfusions unless critical.\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/consents/{{consent_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"consents",
+								"{{consent_id}}"
+							]
+						},
+						"description": "Updates custom terms or clauses on a specific consent form."
+					},
+					"response": []
+				},
+				{
+					"name": "Sign Consent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"signer_relationship\": \"SELF\",\n  \"signer_name\": \"John Doe\",\n  \"witness_name\": \"Jane Doe\",\n  \"signature_metadata\": {\n    \"ip\": \"192.168.1.5\",\n    \"device\": \"Android Tablet / Chrome 124\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ipd/consents/{{consent_id}}/sign",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"consents",
+								"{{consent_id}}",
+								"sign"
+							]
+						},
+						"description": "Signs and finalizes a consent form."
+					},
+					"response": []
+				},
+				{
+					"name": "Download Consent Document",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/consents/{{consent_id}}/document",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"consents",
+								"{{consent_id}}",
+								"document"
+							]
+						},
+						"description": "Fetches raw consent PDF or document reference."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Consent Audit History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenant_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ipd/consents/{{consent_id}}/audit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ipd",
+								"consents",
+								"{{consent_id}}",
+								"audit"
+							]
+						},
+						"description": "Gets trace logs of all edits, approvals, and signatures for this consent."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "tenant_id",
+			"value": "add22d47-2bc7-4bd2-9221-75fb580289d0",
+			"type": "string"
+		},
+		{
+			"key": "admission_id",
+			"value": "8b52f36d-92a0-47bf-8f55-1f9e1e123456",
+			"type": "string"
+		},
+		{
+			"key": "patient_id",
+			"value": "f512723d-0d0d-491d-83d6-37f3bcde518d",
+			"type": "string"
+		},
+		{
+			"key": "doctor_id",
+			"value": "ffeee23d-9a29-454f-9f46-192f1aaab285",
+			"type": "string"
+		},
+		{
+			"key": "clinical_escalation_id",
+			"value": "e44d32a1-b8cd-47ef-a152-78ab9c0d12e4",
+			"type": "string"
+		},
+		{
+			"key": "service_order_id",
+			"value": "9bc2c1b9-38cd-47ef-a152-78ab9c0d12e4",
+			"type": "string"
+		},
+		{
+			"key": "ot_room_id",
+			"value": "d13543cc-89de-4b11-a83a-888bb1123456",
+			"type": "string"
+		},
+		{
+			"key": "ward_id",
+			"value": "c1a2f3f4-b223-4c91-9e22-83b38c29b111",
+			"type": "string"
+		},
+		{
+			"key": "bed_id",
+			"value": "78aa23e4-bb11-477e-a89a-0011bb22cc33",
+			"type": "string"
+		},
+		{
+			"key": "catalogue_surgery_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "procedure_request_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "surgery_request_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "ot_session_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "consent_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

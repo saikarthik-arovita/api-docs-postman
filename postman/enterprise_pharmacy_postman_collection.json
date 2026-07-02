@@ -1,0 +1,661 @@
+{
+  "info": {
+    "name": "Arovita HMS - Enterprise Pharmacy Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Dashboard Overview",
+      "item": [
+        {
+          "name": "Get Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/dashboard/summary",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "dashboard",
+                "summary"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Dashboard Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/dashboard/alerts",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "dashboard",
+                "alerts"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Inventory Access",
+      "item": [
+        {
+          "name": "Search & Audit Medicines",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/medicines?q=Paracetamol&category=TABLET",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "medicines"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Paracetamol"
+                },
+                {
+                  "key": "category",
+                  "value": "TABLET"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dispensing & Billing",
+      "item": [
+        {
+          "name": "Dispense OTC / Walk-in Customer Medications",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"walk_in_customer\": {\n    \"full_name\": \"John Doe\",\n    \"phone\": \"555-0199\",\n    \"email\": \"johndoe@example.com\"\n  },\n  \"items\": [\n    {\n      \"medicine_id\": \"00000000-0000-0000-0000-000000000100\",\n      \"quantity\": 5\n    }\n  ],\n  \"payment_mode\": \"CASH\",\n  \"notes\": \"OTC Walk-in Sale\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/dispense",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "dispense"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Dispense Hospital Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"a1737d0a-8091-701a-4fa7-1a9fef5825e9\",\n  \"items\": [\n    {\n      \"medicine_id\": \"00000000-0000-0000-0000-000000000100\",\n      \"quantity\": 2,\n      \"batch_id\": \"00000000-0000-0000-0000-000000000400\"\n    }\n  ],\n  \"payment_mode\": \"UPI\",\n  \"notes\": \"Prescription dispensing\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/prescriptions/{{prescription_id}}/dispense",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "prescriptions",
+                "{{prescription_id}}",
+                "dispense"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Returns & Exchanges",
+      "item": [
+        {
+          "name": "Request Return / Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"{{billing_record_id}}\",\n  \"items\": [\n    {\n      \"medicine_id\": \"00000000-0000-0000-0000-000000000100\",\n      \"quantity\": 2,\n      \"type\": \"RETURN\",\n      \"reason\": \"Excess\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/returns",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "returns"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Return Request (Manager Override)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_pin\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/returns/{{return_id}}/approve",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "returns",
+                "{{return_id}}",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Patient Assistance",
+      "item": [
+        {
+          "name": "Schedule Refill Reminder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reminder_date\": \"2026-07-25\",\n  \"frequency_days\": 30,\n  \"medicine_name\": \"Mock Paracetamol 500mg\",\n  \"message_template\": \"Refill Reminder: Your Paracetamol supply is running low. Please visit Arovita Pharmacy to collect your refill.\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/patients/{{patient_id}}/timeline/reminders",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "patients",
+                "{{patient_id}}",
+                "timeline",
+                "reminders"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Daily Operations",
+      "item": [
+        {
+          "name": "Submit Shift Handover",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shift_type\": \"MORNING\",\n  \"incoming_pharmacist_id\": \"00000000-0000-0000-0000-000000000001\",\n  \"cash_drawer_counted\": 56.00,\n  \"notes\": \"Keys and register cash reconciled. Paracetamol stock verified.\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/shifts/handover",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "shifts",
+                "handover"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Shift Handover History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/shifts/handover/history",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "shifts",
+                "handover",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Procurement & Goods Ingestion",
+      "item": [
+        {
+          "name": "Create Supplier / Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.success && response.data) {",
+                  "    pm.collectionVariables.set('vendor_id', response.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Arovita Pharma Wholesalers Ltd\",\n  \"contact_name\": \"Mr. Rajesh Shah\",\n  \"phone\": \"9876543220\",\n  \"email\": \"rajesh.shah@arovita-suppliers.com\",\n  \"address\": \"45 Industrial Sector, Sector 4, Gandhinagar, Gujarat\",\n  \"gstin\": \"24AAAAC1234A1Z1\",\n  \"payment_terms\": \"NET30\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/procurement/suppliers",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "procurement",
+                "suppliers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Purchase Requisition",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.success && response.data) {",
+                  "    pm.collectionVariables.set('requisition_id', response.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Requisition for low stock items\",\n  \"items\": [\n    {\n      \"item_id\": \"335126e1-b56e-4766-b2f9-a16b2c2c862f\",\n      \"quantity\": 500,\n      \"estimated_unit_price\": 25.00\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/procurement/requisitions",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "procurement",
+                "requisitions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Requisition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/procurement/requisitions/{{requisition_id}}/approve",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "procurement",
+                "requisitions",
+                "{{requisition_id}}",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Purchase Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.success && response.data) {",
+                  "    pm.collectionVariables.set('po_id', response.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requisition_id\": \"{{requisition_id}}\",\n  \"vendor_id\": \"{{vendor_id}}\",\n  \"notes\": \"PO for low stock items\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/procurement/orders",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "procurement",
+                "orders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Goods Received Note (GRN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.success && response.data) {",
+                  "    pm.collectionVariables.set('grn_id', response.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"po_id\": \"{{po_id}}\",\n  \"vendor_id\": \"{{vendor_id}}\",\n  \"notes\": \"GRN for batch BAT-2026-002\",\n  \"items\": [\n    {\n      \"item_id\": \"335126e1-b56e-4766-b2f9-a16b2c2c862f\",\n      \"batch_number\": \"BAT-2026-002\",\n      \"expiry_date\": \"2027-12-31\",\n      \"received_qty\": 500\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/procurement/grns",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "procurement",
+                "grns"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify GRN (Stock Ingestion)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/procurement/grns/{{grn_id}}/verify",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "procurement",
+                "grns",
+                "{{grn_id}}",
+                "verify"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "pharmacy_base_url",
+      "value": "https://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "prescription_id",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "billing_record_id",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "return_id",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "a1737d0a-8091-701a-4fa7-1a9fef5825e9",
+      "type": "string"
+    },
+    {
+      "key": "vendor_id",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "requisition_id",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "po_id",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "grn_id",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    }
+  ]
+}

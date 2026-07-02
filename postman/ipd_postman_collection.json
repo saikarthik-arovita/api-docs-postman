@@ -1,0 +1,2460 @@
+{
+  "info": {
+    "name": "HMS IPD Service",
+    "description": "Complete Postman collection for the HMS In-Patient Department (IPD) API.\nBase URL: {{base_url}} (e.g., https://api.yourdomain.com)\nAll requests require Authorization: Bearer {{access_token}}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "hms-ipd-v2-2026"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.hms.local",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ward_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bed_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "request_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admission_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "obs_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clinical_escalation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "procedure_request_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "surgery_request_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ot_session_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "consent_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "01 - Wards",
+      "item": [
+        {
+          "name": "List Wards",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/wards?ward_type=ICU&is_active=true&page=1&page_size=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "wards"
+              ],
+              "query": [
+                {
+                  "key": "ward_type",
+                  "value": "ICU"
+                },
+                {
+                  "key": "is_active",
+                  "value": "true"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Ward Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/wards/{{ward_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "wards",
+                "{{ward_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Beds",
+      "item": [
+        {
+          "name": "List Beds",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/beds?ward_id={{ward_id}}&status=AVAILABLE&page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "beds"
+              ],
+              "query": [
+                {
+                  "key": "ward_id",
+                  "value": "{{ward_id}}"
+                },
+                {
+                  "key": "status",
+                  "value": "AVAILABLE"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Bed Availability",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/beds/availability?ward_id={{ward_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "beds",
+                "availability"
+              ],
+              "query": [
+                {
+                  "key": "ward_id",
+                  "value": "{{ward_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Bed Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/beds/{{bed_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "beds",
+                "{{bed_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Bed Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CLEANING\",\n  \"reason\": \"Deep cleaning after discharge\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/beds/{{bed_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "beds",
+                "{{bed_id}}",
+                "status"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Admission Requests",
+      "item": [
+        {
+          "name": "Create Admission Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"source_type\": \"OPD\",\n  \"source_reference\": \"opd-visit-uuid\",\n  \"request_reason\": \"Requires inpatient monitoring for acute chest pain\",\n  \"admission_type\": \"EMERGENCY\",\n  \"priority\": \"URGENT\",\n  \"preferred_ward_id\": \"{{ward_id}}\",\n  \"preferred_bed_type\": \"ICU\",\n  \"notes\": \"Patient allergic to penicillin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admission-requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admission-requests"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Admission Requests",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admission-requests?status=REQUESTED&priority=URGENT&page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admission-requests"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "REQUESTED"
+                },
+                {
+                  "key": "priority",
+                  "value": "URGENT"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Admission Request",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admission-requests/{{request_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admission-requests",
+                "{{request_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Admission Request Status → READY",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"READY\",\n  \"reason\": \"Bed confirmed in General Ward\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admission-requests/{{request_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admission-requests",
+                "{{request_id}}",
+                "status"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Admissions",
+      "item": [
+        {
+          "name": "Create Admission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) pm.collectionVariables.set('admission_id', json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"admission_request_id\": \"{{request_id}}\",\n  \"ward_id\": \"{{ward_id}}\",\n  \"bed_id\": \"{{bed_id}}\",\n  \"attending_doctor_id\": \"doctor-uuid\",\n  \"admission_type\": \"ELECTIVE\",\n  \"admission_reason\": \"Post-operative monitoring required after appendectomy\",\n  \"expected_discharge\": \"2026-06-22\",\n  \"notes\": \"Patient has latex allergy\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Admissions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions?status=ADMITTED&ipd_status=UNDER_TREATMENT&page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ADMITTED"
+                },
+                {
+                  "key": "ipd_status",
+                  "value": "UNDER_TREATMENT"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Admission Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Advance IPD Status → UNDER_TREATMENT",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"UNDER_TREATMENT\",\n  \"notes\": \"Patient stabilised, treatment plan initiated\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Advance IPD Status → READY_FOR_DISCHARGE",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"READY_FOR_DISCHARGE\",\n  \"notes\": \"Patient recovered. Cleared for discharge.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Internal Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_ward_id\": \"icu-ward-uuid\",\n  \"new_bed_id\": \"icu-bed-uuid\",\n  \"transfer_reason\": \"Patient condition deteriorated, requires ICU monitoring\",\n  \"responsible_doctor_id\": \"doctor-uuid\",\n  \"notes\": \"Moved from General Ward to ICU\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/transfer",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "transfer"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Daily Notes",
+      "item": [
+        {
+          "name": "Add Daily Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note_type\": \"DOCTOR\",\n  \"note_text\": \"Patient responding well to IV antibiotics. Fever subsided. Plan to continue current regime for 48 hours.\",\n  \"is_confidential\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/notes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "notes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Daily Notes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/notes?note_type=DOCTOR",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "notes"
+              ],
+              "query": [
+                {
+                  "key": "note_type",
+                  "value": "DOCTOR"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Nursing",
+      "item": [
+        {
+          "name": "Assign Nurse",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nurse_id\": \"nurse-uuid\",\n  \"assignment_type\": \"SHIFT\",\n  \"shift\": \"MORNING\",\n  \"handover_notes\": \"Patient has fall risk. Bed rails must remain up.\",\n  \"effective_from\": \"2026-06-17T06:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/nursing/assign",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "nursing",
+                "assign"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Nursing Assignments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/nursing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "nursing"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Discharge",
+      "item": [
+        {
+          "name": "Initiate Discharge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discharge_summary\": \"Patient recovered from acute appendicitis. Vitals stable. Ready for home discharge.\",\n  \"follow_up_date\": \"2026-06-25\",\n  \"follow_up_instructions\": \"Return immediately if fever > 38°C or wound discharge observed.\",\n  \"notes\": \"Advised soft diet for 1 week\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/discharge/initiate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "discharge",
+                "initiate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Discharge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discharge_summary\": \"Patient recovered from acute appendicitis. Vitals stable.\",\n  \"follow_up_date\": \"2026-06-25\",\n  \"follow_up_instructions\": \"Return immediately if fever > 38°C.\",\n  \"medications_on_discharge\": \"Tab. Amoxicillin 500mg BD x 5 days\\nTab. Paracetamol 650mg SOS\",\n  \"diet_instructions\": \"Soft diet for 1 week. Avoid spicy food.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/discharge/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "discharge",
+                "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Clear Clearance Gate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gate_name\": \"DIAGNOSTIC\",\n  \"gate_status\": \"CLEARED\",\n  \"blocking_reason\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/discharge/clearance",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "discharge",
+                "clearance"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - DAMA",
+      "item": [
+        {
+          "name": "Get DAMA Record",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/dama",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "dama"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Initiate DAMA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Patient insisting on leaving due to personal reasons. Risks explained but patient refuses.\",\n  \"clinical_summary\": \"Patient is mid-treatment for pneumonia. BP stable, fever persisting.\",\n  \"requires_approval\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/dama/initiate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "dama",
+                "initiate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record DAMA Consent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consent_by\": \"Ramesh Kumar\",\n  \"consent_relation\": \"SPOUSE\",\n  \"risks_explained\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/dama/consent",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "dama",
+                "consent"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve DAMA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approval_notes\": \"Reviewed by Dr. HOD. Patient fully informed of risks.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/dama/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "dama",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete DAMA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discharge_notes\": \"Patient left with signed DAMA form.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/dama/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "dama",
+                "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel DAMA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellation_reason\": \"Patient agreed to continue treatment after counselling.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/dama/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "dama",
+                "cancel"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Closure Statuses",
+      "item": [
+        {
+          "name": "Record Absconded",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"noticed_at\": \"2026-06-17T03:00:00Z\",\n  \"last_seen_at\": \"2026-06-17T01:00:00Z\",\n  \"notes\": \"Patient found missing during night rounds.\",\n  \"police_informed\": true,\n  \"family_informed\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/absconded",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "absconded"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record Death",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"time_of_death\": \"2026-06-17T02:35:00Z\",\n  \"cause_of_death\": \"Septic shock secondary to pneumonia\",\n  \"death_summary\": \"Patient deteriorated rapidly despite ICU management.\",\n  \"witness_name\": \"Dr. Sunita Rao\",\n  \"police_informed\": false,\n  \"notes\": \"Family notified at 03:00 AM\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/death",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "death"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record Transfer Out",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destination_facility\": \"AIIMS Delhi\",\n  \"transfer_reason\": \"Requires advanced cardiac surgery not available here\",\n  \"transfer_summary\": \"Patient stable for transfer. All records handed over.\",\n  \"transported_by\": \"108 Ambulance\",\n  \"transfer_time\": \"2026-06-17T16:00:00Z\",\n  \"notes\": \"Referral letter sent with patient\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/transfer-out",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "transfer-out"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Close Case",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"billing_cleared\": true,\n  \"closure_notes\": \"All dues paid. Discharge summary handed to patient.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/close",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "close"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Case Closure",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/closure",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}",
+                "closure"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Patient",
+      "item": [
+        {
+          "name": "Patient Admission History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/patients/{{patient_id}}/admissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "patients",
+                "{{patient_id}}",
+                "admissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Patient Current Location",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/patients/{{patient_id}}/location",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "patients",
+                "{{patient_id}}",
+                "location"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Observations",
+      "item": [
+        {
+          "name": "Create Observation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) pm.collectionVariables.set('obs_id', json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"bed_id\": \"{{bed_id}}\",\n  \"ward_id\": \"{{ward_id}}\",\n  \"attending_doctor_id\": \"doctor-uuid\",\n  \"reason\": \"Chest pain. Monitoring for 6 hours before admission decision.\",\n  \"notes\": \"ECG done. Troponin pending.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/observations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "observations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Observations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/observations?status=MONITORING&page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "observations"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "MONITORING"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Observation Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/observations/{{obs_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "observations",
+                "{{obs_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Discharge from Observation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discharge_notes\": \"ECG normal, troponin negative. Patient discharged home.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/observations/{{obs_id}}/discharge",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "observations",
+                "{{obs_id}}",
+                "discharge"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Convert Observation to Admission",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ward_id\": \"{{ward_id}}\",\n  \"bed_id\": \"{{bed_id}}\",\n  \"attending_doctor_id\": \"doctor-uuid\",\n  \"admission_type\": \"EMERGENCY\",\n  \"admission_reason\": \"Troponin positive. Formal admission for cardiac monitoring.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/observations/{{obs_id}}/convert-to-admission",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "observations",
+                "{{obs_id}}",
+                "convert-to-admission"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Dashboard",
+      "item": [
+        {
+          "name": "Admission Stats Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ward Occupancy Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/dashboard/wards",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "dashboard",
+                "wards"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Patient Tracking Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/dashboard/tracking?ipd_status=UNDER_TREATMENT&page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "dashboard",
+                "tracking"
+              ],
+              "query": [
+                {
+                  "key": "ipd_status",
+                  "value": "UNDER_TREATMENT"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Pharmacy & Diagnostics",
+      "item": [
+        {
+          "name": "View Medicine Catalogue",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/pharmacy/medicines",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "medicines"
+              ]
+            }
+          }
+        },
+        {
+          "name": "View Lab Tests Catalogue",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/tests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "tests"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Context-Aware Prescription (IPD WARD_ROUND)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.globals.set(\"prescription_id\", jsonData.data.id);",
+                  "        console.log(\"Prescription created. prescription_id set to: \" + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\",\n  \"context_type\": \"IPD_ADMISSION\",\n  \"context_id\": \"{{admission_id}}\",\n  \"source_module\": \"IPD\",\n  \"encounter_type\": \"WARD_ROUND\",\n  \"items\": [\n    {\n      \"medicine_name\": \"Pantoprazole 40mg\",\n      \"generic_name\": \"Pantoprazole\",\n      \"route\": \"ORAL\",\n      \"dosage\": \"1 tablet\",\n      \"frequency\": \"Once daily\",\n      \"duration_days\": 5,\n      \"morning_dose\": true,\n      \"with_food\": false,\n      \"instructions\": \"Before breakfast\"\n    }\n  ],\n  \"allergy_checked\": true,\n  \"interaction_checked\": true,\n  \"generic_suggested\": true,\n  \"notes\": \"Prescribed during morning ward round.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pharmacy",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pharmacy"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Context-Aware Lab Order (IPD WARD_ROUND)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.globals.set(\"diagnostic_order_id\", jsonData.data.id);",
+                  "        console.log(\"Diagnostic Order created. diagnostic_order_id set to: \" + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\",\n  \"order_type\": \"LAB\",\n  \"priority\": \"ROUTINE\",\n  \"context_type\": \"IPD_ADMISSION\",\n  \"context_id\": \"{{admission_id}}\",\n  \"source_module\": \"IPD\",\n  \"encounter_type\": \"WARD_ROUND\",\n  \"lab_items\": [\n    {\n      \"test_id\": \"16a43dca-eb71-4b85-ab0a-3b984816cadf\",\n      \"notes\": \"Perform renal functions test\"\n    },\n    {\n      \"test_name\": \"Complete Blood Count (CBC)\",\n      \"notes\": \"Lookup by test_name is supported too\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit Context-Aware Prescription (IPD)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allergy_checked\": true,\n  \"interaction_checked\": true,\n  \"generic_suggested\": true,\n  \"notes\": \"Updated instructions to take medicine with warm water.\",\n  \"items\": [\n    {\n      \"medicine_name\": \"Pantoprazole 40mg\",\n      \"generic_name\": \"Pantoprazole\",\n      \"route\": \"ORAL\",\n      \"dosage\": \"1 tablet\",\n      \"frequency\": \"Once daily\",\n      \"duration_days\": 7,\n      \"morning_dose\": true,\n      \"with_food\": false,\n      \"instructions\": \"Before breakfast with warm water\"\n    }\n  ],\n  \"change_reason\": \"Extend duration by 2 days\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pharmacy/{{prescription_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "{{prescription_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit Context-Aware Lab Order (IPD)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priority\": \"URGENT\",\n  \"clinical_notes\": \"Urgent review required due to ward round vitals updates\",\n  \"lab_items\": [\n    {\n      \"test_id\": \"16a43dca-eb71-4b85-ab0a-3b984816cadf\",\n      \"notes\": \"Urgent renal functions test\"\n    },\n    {\n      \"test_name\": \"Complete Blood Count (CBC)\",\n      \"notes\": \"Updates support test_name as well\"\n    }\n  ],\n  \"change_reason\": \"Escalate priority to urgent\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/{{diagnostic_order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "{{diagnostic_order_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Context-Aware Prescription (IPD)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Patient discharged / treatment ended\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pharmacy/{{prescription_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "{{prescription_id}}",
+                "cancel"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Context-Aware Lab Order (IPD)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Incorrect test ordered\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/{{diagnostic_order_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "{{diagnostic_order_id}}",
+                "cancel"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Admission Detail with Nested Clinical Orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/admissions/{{admission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "admissions",
+                "{{admission_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Clinical Escalation & Workflows",
+      "item": [
+        {
+          "name": "Create Clinical Escalation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set(\"clinical_escalation_id\", jsonData.data.id);",
+                  "        console.log(\"Clinical Escalation created. clinical_escalation_id set to: \" + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"admission_id\": \"{{admission_id}}\",\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\",\n  \"escalation_type\": \"SURGERY\",\n  \"clinical_reason\": \"Emergency surgery for acute appendicitis escalation\",\n  \"notes\": \"OT prep started\",\n  \"source_type\": \"IPD\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/clinical-escalations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "clinical-escalations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Clinical Escalation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Approved by Lead Surgeon\",\n  \"approved_by\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/clinical-escalations/{{clinical_escalation_id}}/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "clinical-escalations",
+                "{{clinical_escalation_id}}",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Procedure Requests",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/procedures?status=REQUESTED",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "procedures"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "REQUESTED"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Procedure Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set(\"procedure_request_id\", jsonData.data.id);",
+                  "        console.log(\"Procedure Request created. procedure_request_id set to: \" + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admission_id\": \"{{admission_id}}\",\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\",\n  \"procedure_id\": \"{{catalogue_procedure_id}}\",\n  \"notes\": \"Foley catheter insertion notes\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/procedures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "procedures"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start Procedure Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/procedures/{{procedure_request_id}}/start",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "procedures",
+                "{{procedure_request_id}}",
+                "start"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Procedure Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"outcome\": \"Drainage successful\",\n  \"complications\": \"No complications\",\n  \"completed_by\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/procedures/{{procedure_request_id}}/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "procedures",
+                "{{procedure_request_id}}",
+                "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Surgery Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set(\"surgery_request_id\", jsonData.data.id);",
+                  "        console.log(\"Surgery Request created. surgery_request_id set to: \" + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clinical_escalation_id\": \"{{clinical_escalation_id}}\",\n  \"admission_id\": \"{{admission_id}}\",\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\",\n  \"procedure_id\": \"{{catalogue_surgery_id}}\",\n  \"urgency\": \"EMERGENCY\",\n  \"notes\": \"OT room 2 assigned\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/surgeries",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "surgeries"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Schedule Surgery Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ot_room_id\": \"84820843-9876-4321-9abc-1234567890ab\",\n  \"scheduled_at\": \"2026-06-20T18:00:00Z\",\n  \"scheduled_by\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/schedule",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "surgeries",
+                "{{surgery_request_id}}",
+                "schedule"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start Surgery Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/start",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "surgeries",
+                "{{surgery_request_id}}",
+                "start"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Surgery Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"surgery_notes\": \"Appendectomy complete\",\n  \"completed_by\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "surgeries",
+                "{{surgery_request_id}}",
+                "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Patient Clinical Timeline",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/patients/{{patient_id}}/timeline",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "patients",
+                "{{patient_id}}",
+                "timeline"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create OT Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set(\"ot_session_id\", jsonData.data.id);",
+                  "        console.log(\"OT Session created. ot_session_id set to: \" + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_order_id\": \"service-order-uuid\",\n  \"admission_id\": \"{{admission_id}}\",\n  \"patient_id\": \"{{patient_id}}\",\n  \"surgeon_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\",\n  \"ot_room_id\": \"OT-ROOM-1\",\n  \"ot_number\": \"OT-101\",\n  \"scheduled_start\": \"2026-06-20T17:00:00Z\",\n  \"scheduled_end\": \"2026-06-20T19:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Clear OT PAC (Standard)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"PAC cleared. Patient fit for general anesthesia.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/pac",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}",
+                "pac"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Clear OT PAC (Emergency Override)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Emergency override PAC clearance without all consents signed.\",\n  \"emergency_override\": true,\n  \"override_reason\": \"Life-threatening internal hemorrhage requiring immediate surgery\",\n  \"primary_doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\",\n  \"second_doctor_id\": \"e4d2a1b9-38cd-47ef-a152-78ab9c0d12e4\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/pac",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}",
+                "pac"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete OT Pre-Op Checklist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pre_op_checklist\": {\n    \"consent\": true,\n    \"fasting\": true,\n    \"site_marked\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/pre-op",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}",
+                "pre-op"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start OT Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/start",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}",
+                "start"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete OT Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"intra_op_notes\": \"Procedure completed without complications. Transferred to recovery.\",\n  \"anaesthesia_type\": \"GENERAL\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}",
+                "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Transfer Out OT Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transferred_to_ward_id\": \"{{ward_id}}\",\n  \"transferred_to_bed_id\": \"{{bed_id}}\",\n  \"recovery_notes\": \"Patient awake, alert, vitals stable.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/transfer-out",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}",
+                "transfer-out"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get OT Session Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - OT Consent Management",
+      "item": [
+        {
+          "name": "List OT Session Consents",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-cases/{{ot_session_id}}/consents",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-cases",
+                "{{ot_session_id}}",
+                "consents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create OT Session Consents",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set(\"consent_id\", jsonData.data[0].id);",
+                  "        console.log(\"Consent set. consent_id set to: \" + jsonData.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consent_codes\": [\"SURGICAL\", \"ANAESTHESIA\", \"BLOOD_TRANSFUSION\", \"PHYSICIAN_FITNESS\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-cases/{{ot_session_id}}/consents",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-cases",
+                "{{ot_session_id}}",
+                "consents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Consent Metadata",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language\": \"en\",\n  \"remarks\": \"Patient preferred English template\",\n  \"guardian_name\": \"Ravi Kumar\",\n  \"guardian_relation\": \"Brother\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/consents/{{consent_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "consents",
+                "{{consent_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Consent as Signed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"signature_type\": \"DIGITAL\",\n  \"signed_by\": \"user-uuid\",\n  \"doctor_id\": \"doctor-uuid\",\n  \"witness_id\": \"witness-uuid\",\n  \"remarks\": \"Signed in person\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/consents/{{consent_id}}/sign",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "consents",
+                "{{consent_id}}",
+                "sign"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Consent Document Metadata",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/consents/{{consent_id}}/document",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "consents",
+                "{{consent_id}}",
+                "document"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Consent Audit History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/ipd/consents/{{consent_id}}/audit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "consents",
+                "{{consent_id}}",
+                "audit"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Emergency Bed Management",
+      "description": "Assign, transfer, or release the bed for an emergency patient. All operations are transactional — bed state is atomically updated alongside the emergency visit record. Use these AFTER creating the emergency visit via the OPD service (POST /opd/emergency).",
+      "item": [
+        {
+          "name": "Assign Emergency Bed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var d = pm.response.json();",
+                  "    if (d.data && d.data.assigned_bed_id) {",
+                  "        pm.collectionVariables.set('emg_bed_id', d.data.assigned_bed_id);",
+                  "        console.log('Emergency bed assigned: ' + d.data.assigned_bed_id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bed_id\": \"{{emg_bed_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/emergency/{{emg_visit_id}}/bed",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "emergency",
+                "{{emg_visit_id}}",
+                "bed"
+              ]
+            },
+            "description": "Assign an AVAILABLE bed to an emergency visit. Old bed is automatically released. Returns 409 if the target bed is already OCCUPIED."
+          }
+        },
+        {
+          "name": "Transfer to Different Bed",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bed_id\": \"<new-available-bed-uuid>\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/emergency/{{emg_visit_id}}/bed",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "emergency",
+                "{{emg_visit_id}}",
+                "bed"
+              ]
+            },
+            "description": "Transfer an emergency patient to a different bed. The previous bed is automatically set to AVAILABLE and the new bed is set to OCCUPIED in a single transaction."
+          }
+        },
+        {
+          "name": "Release Bed (Discharge / Admit)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bed_id\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/emergency/{{emg_visit_id}}/bed",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "emergency",
+                "{{emg_visit_id}}",
+                "bed"
+              ]
+            },
+            "description": "Release the bed currently assigned to an emergency visit. Use when the patient is discharged or admitted to IPD. Sets the bed back to AVAILABLE and clears the assigned_bed_id on the visit."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.hms.local",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ward_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bed_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "request_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admission_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "obs_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clinical_escalation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "procedure_request_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "surgery_request_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ot_session_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "consent_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "emg_visit_id",
+      "value": "",
+      "type": "string",
+      "description": "Emergency visit ID from OPD service POST /opd/emergency"
+    },
+    {
+      "key": "emg_bed_id",
+      "value": "",
+      "type": "string",
+      "description": "AVAILABLE bed UUID to assign to the emergency visit"
+    }
+  ]
+}

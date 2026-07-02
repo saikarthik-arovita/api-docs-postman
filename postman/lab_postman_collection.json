@@ -1,0 +1,1173 @@
+{
+	"info": {
+		"_postman_id": "a9e2d3c4-9a1b-4c02-9988-bc1234567891",
+		"name": "HMS Lab Module",
+		"description": "Postman collection for testing the Hospital Management System (HMS) Lab Module API endpoints sequentially from ordering to validation.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List Lab Tests Catalog",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/tests?type=lab",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"tests"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "lab"
+						}
+					]
+				},
+				"description": "Fetch the catalog of all active laboratory tests. Lab tests are identified by having a non-null specimen type in the database."
+			},
+			"response": []
+		},
+		{
+			"name": "List Lab Tests Catalog with Category (Unified)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/tests?type=lab&category=Haematology",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"tests"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "lab"
+						},
+						{
+							"key": "category",
+							"value": "Haematology"
+						}
+					]
+				},
+				"description": "Fetch the catalog of active laboratory tests filtered by Haematology category."
+			},
+			"response": []
+		},
+		{
+			"name": "List Lab Tests Catalog (Dedicated)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/tests",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"tests"
+					]
+				},
+				"description": "Fetch only laboratory tests via the dedicated lab endpoint."
+			},
+			"response": []
+		},
+		{
+			"name": "List Lab Tests Catalog with Category (Dedicated)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/tests?category=Biochemistry",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"tests"
+					],
+					"query": [
+						{
+							"key": "category",
+							"value": "Biochemistry"
+						}
+					]
+				},
+				"description": "Fetch laboratory tests filtered by Biochemistry category via the dedicated lab endpoint."
+			},
+			"response": []
+		},
+		{
+			"name": "List Radiology Tests Catalog",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/tests?type=radiology",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"tests"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "radiology"
+						}
+					]
+				},
+				"description": "Fetch the catalog of all active radiology tests. Radiology tests are identified by having a null specimen type in the database."
+			},
+			"response": []
+		},
+		{
+			"name": "List Radiology Tests Catalog with Category (Unified)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/tests?type=radiology&category=Plain X-Ray",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"tests"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "radiology"
+						},
+						{
+							"key": "category",
+							"value": "Plain X-Ray"
+						}
+					]
+				},
+				"description": "Fetch the catalog of active radiology tests filtered by category."
+			},
+			"response": []
+		},
+		{
+			"name": "List Radiology Tests Catalog (Dedicated)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/radiology/tests",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"radiology",
+						"tests"
+					]
+				},
+				"description": "Fetch only radiology tests via the dedicated radiology endpoint."
+			},
+			"response": []
+		},
+		{
+			"name": "List Radiology Tests Catalog with Category (Dedicated)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/radiology/tests?category=Plain X-Ray",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"radiology",
+						"tests"
+					],
+					"query": [
+						{
+							"key": "category",
+							"value": "Plain X-Ray"
+						}
+					]
+				},
+				"description": "Fetch radiology tests filtered by category via the dedicated radiology endpoint."
+			},
+			"response": []
+		},
+		{
+			"name": "Step 1 - Create Lab Order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"patient_id\": \"{{patient_id}}\",\n    \"doctor_id\": \"{{doctor_id}}\",\n    \"order_type\": \"LAB\",\n    \"priority\": \"ROUTINE\",\n    \"clinical_notes\": \"Routine complete blood count check.\",\n    \"context_type\": \"OPD_VISIT\",\n    \"context_id\": \"99999999-9999-9999-9999-999999999999\",\n    \"source_module\": \"OPD\",\n    \"encounter_type\": \"CONSULTATION\",\n    \"lab_items\": [\n        {\n            \"test_id\": \"{{test_id}}\",\n            \"notes\": \"Check Hb levels\"\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders"
+					]
+				},
+				"description": "Create a new lab diagnostics order. The status of the order items will default to 'PENDING'. Ensure that patient_id, doctor_id, and test_id are replaced with valid database UUIDs."
+			},
+			"response": []
+		},
+		{
+			"name": "Step 1b - View Lab Order",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/{{order_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"{{order_id}}"
+					]
+				},
+				"description": "Retrieves a full lab order view including the order header (with patient name, MRN, doctor name), all lab items enriched with test details (test name, code, category, specimen type, price, sample collector name), and the latest lab result per item (with entered-by and validated-by names). Requires 'diagnostics:order:view' permission."
+			},
+			"response": []
+		},
+		{
+			"name": "Step 2 - Collect Sample",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"barcode\": \"BARCODE123456\",\n    \"notes\": \"Specimen drawn from left forearm\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/{{lab_item_id}}/collect-sample",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"{{lab_item_id}}",
+						"collect-sample"
+					]
+				},
+				"description": "Registers that a specimen/sample has been drawn from the patient and links it to a physical barcode. Transitions the lab order item status from 'PENDING' to 'SAMPLE_COLLECTED'."
+			},
+			"response": []
+		},
+		{
+			"name": "Step 3 - Specimen Processing",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/{{lab_item_id}}/process",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"{{lab_item_id}}",
+						"process"
+					]
+				},
+				"description": "Registers that the sample has been prepared and inserted into an analyzer/processing machine. Transitions the lab order item status from 'SAMPLE_COLLECTED' to 'IN_PROGRESS'."
+			},
+			"response": []
+		},
+		{
+			"name": "Step 4 - Result Input",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"result_value\": \"14.2\",\n    \"result_json\": {\n        \"hemoglobin\": 14.2,\n        \"hematocrit\": 42.5\n    },\n    \"report_url\": \"s3://hms-reports/cbc_lab_result.pdf\",\n    \"abnormal_flag\": false,\n    \"critical_flag\": false,\n    \"comments\": \"Hemoglobin normal.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/results/{{lab_item_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{lab_item_id}}"
+					]
+				},
+				"description": "Inputs the numeric/text results and structured measurements. Saves details in `lab_results`, transitions item status to 'COMPLETED', and auto-completes the parent order status if all items are complete."
+			},
+			"response": []
+		},
+		{
+			"name": "Step 4b - View Result",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/results/{{lab_item_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{lab_item_id}}"
+					]
+				},
+				"description": "Fetch the detail of the laboratory result for the specified lab order item."
+			},
+			"response": []
+		},
+		{
+			"name": "Step 5 - Pathology Validation (Sign-Off)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"comments\": \"Approved by chief pathologist. Released to patient.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/results/{{result_id}}/validate",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{result_id}}",
+						"validate"
+					]
+				},
+				"description": "Allows a pathologist or doctor to review entered values and sign off, stamping the result with validated_by (clinician ID) and validated_at."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Lab Item",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"reason\": \"Patient requested cancellation before sample collection.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/diagnostic-orders/lab/{{lab_item_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"{{lab_item_id}}",
+						"cancel"
+					]
+				},
+				"description": "Cancels a lab order item before it enters the completed or validated state. Set item status to 'CANCELLED' and updates the parent order's aggregate status."
+			},
+			"response": []
+		},
+		{
+			"name": "Inventory",
+			"item": [
+				{
+					"name": "List Lab Inventory",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/inventory?search=Hematology",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"inventory"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Hematology"
+								}
+							]
+						},
+						"description": "List inventory items allocated to the Laboratory department."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Lab Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"item_code\": \"LAB-RE-CBC-001\",\n    \"item_name\": \"Hematology Reagent Diluent\",\n    \"category\": \"REAGENT\",\n    \"assigned_section\": \"Haematology\",\n    \"reorder_level\": 10,\n    \"minimum_stock\": 5,\n    \"uom\": \"BOTTLE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/inventory",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"inventory"
+							]
+						},
+						"description": "Register a new laboratory inventory item catalog record."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Inventory Alerts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/inventory/alerts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"inventory",
+								"alerts"
+							]
+						},
+						"description": "Get stock health alerts for the Laboratory department."
+					},
+					"response": []
+				},
+				{
+					"name": "Consume Lab Items",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"consumption_type\": \"MANUAL\",\n    \"notes\": \"Manual check-out for training\",\n    \"items\": [\n        {\n            \"item_id\": \"{{lab_item_id_var}}\",\n            \"quantity\": 2\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/inventory/consume",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"inventory",
+								"consume"
+							]
+						},
+						"description": "Log manual/QC consumption of laboratory supplies."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Lab Test Mapping",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"item_id\": \"{{lab_item_id_var}}\",\n    \"test_id\": \"{{test_id}}\",\n    \"qty_per_test\": 1.5,\n    \"is_optional\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/inventory/mappings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"inventory",
+								"mappings"
+							]
+						},
+						"description": "Link a lab test to an inventory consumable for auto-deduction."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Lab QC Record",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"item_id\": \"{{lab_item_id_var}}\",\n    \"qc_level\": \"NORMAL\",\n    \"expected_value\": 5.0,\n    \"observed_value\": 4.9,\n    \"acceptable_range_min\": 4.5,\n    \"acceptable_range_max\": 5.5,\n    \"result\": \"PASS\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/qc-records",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"qc-records"
+							]
+						},
+						"description": "Log Quality Control run findings for lab equipment/reagents."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Procurement",
+			"item": [
+				{
+					"name": "Create Purchase Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"priority\": \"HIGH\",\n    \"lab_section\": \"Haematology\",\n    \"items\": [\n        {\n            \"item_id\": \"{{lab_item_id_var}}\",\n            \"item_name\": \"Hematology Reagent Diluent\",\n            \"final_qty\": 10,\n            \"unit_price\": 150.0,\n            \"gst_percent\": 18.0\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/po",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"po"
+							]
+						},
+						"description": "Create a new lab Purchase Order requisition."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Purchase Order",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/po/{{lab_po_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"po",
+								"{{lab_po_id}}"
+							]
+						},
+						"description": "Fetch details of a specific lab purchase order."
+					},
+					"response": []
+				},
+				{
+					"name": "List Purchase Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/po",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"po"
+							]
+						},
+						"description": "List all lab purchase orders."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Purchase Order",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"APPROVED\",\n    \"notes\": \"PO Approved for procurement\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/po/{{lab_po_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"po",
+								"{{lab_po_id}}"
+							]
+						},
+						"description": "Update PO status or approval state."
+					},
+					"response": []
+				},
+				{
+					"name": "Create GRN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"po_id\": \"{{lab_po_id}}\",\n    \"items\": [\n        {\n            \"item_id\": \"{{lab_item_id_var}}\",\n            \"item_name\": \"Hematology Reagent Diluent\",\n            \"received_qty\": 10,\n            \"batch_number\": \"BATCH-LAB-001\",\n            \"expiry_date\": \"2030-12-31\",\n            \"unit_price\": 150.0\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/grn",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"grn"
+							]
+						},
+						"description": "Record goods received and auto-increment stock batches."
+					},
+					"response": []
+				},
+				{
+					"name": "Get GRN",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/grn/{{lab_grn_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"grn",
+								"{{lab_grn_id}}"
+							]
+						},
+						"description": "Get details of a specific lab GRN."
+					},
+					"response": []
+				},
+				{
+					"name": "List GRNs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/grn",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"grn"
+							]
+						},
+						"description": "List all lab GRNs."
+					},
+					"response": []
+				},
+				{
+					"name": "Update GRN",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"ACCEPTED\",\n    \"notes\": \"QC Checked and Accepted\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/grn/{{lab_grn_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"grn",
+								"{{lab_grn_id}}"
+							]
+						},
+						"description": "Update GRN status or inspect results."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Vendor Invoice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"invoice_number\": \"INV-12345\",\n    \"po_id\": \"{{lab_po_id}}\",\n    \"grn_id\": \"{{lab_grn_id}}\",\n    \"invoice_amount\": 1500.0,\n    \"gst_amount\": 270.0,\n    \"total_amount\": 1770.0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/invoice",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"invoice"
+							]
+						},
+						"description": "Submit a vendor invoice linked to PO and GRN."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vendor Invoice",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/invoice/{{lab_invoice_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"invoice",
+								"{{lab_invoice_id}}"
+							]
+						},
+						"description": "Get invoice details."
+					},
+					"response": []
+				},
+				{
+					"name": "List Vendor Invoices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/invoice",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"invoice"
+							]
+						},
+						"description": "List all vendor invoices."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Vendor Invoice",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"match_status\": \"MATCHED\",\n    \"payment_status\": \"PAID\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/diagnostic-orders/lab/procurement/invoice/{{lab_invoice_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"diagnostic-orders",
+								"lab",
+								"procurement",
+								"invoice",
+								"{{lab_invoice_id}}"
+							]
+						},
+						"description": "Update invoice match or payment status."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://4t1eo222cl.execute-api.ap-south-1.amazonaws.com/dev",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "your_access_token_here",
+			"type": "string"
+		},
+		{
+			"key": "patient_id",
+			"value": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
+			"type": "string"
+		},
+		{
+			"key": "doctor_id",
+			"value": "cab7cc4e-3ec7-49d9-a393-bbdb93bf58c2",
+			"type": "string"
+		},
+		{
+			"key": "test_id",
+			"value": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
+			"type": "string"
+		},
+		{
+			"key": "lab_item_id",
+			"value": "dcebcfff-83e6-47d9-a117-6873f8341bf0",
+			"type": "string"
+		},
+		{
+			"key": "result_id",
+			"value": "b3fffb92-11c0-4338-b9cf-8455714b9fce",
+			"type": "string"
+		},
+		{
+			"key": "order_id",
+			"value": "your_diagnostic_order_id_here",
+			"type": "string"
+		},
+		{
+			"key": "lab_item_id_var",
+			"value": "your_lab_inventory_item_id_here",
+			"type": "string"
+		},
+		{
+			"key": "lab_po_id",
+			"value": "your_lab_po_id_here",
+			"type": "string"
+		},
+		{
+			"key": "lab_grn_id",
+			"value": "your_lab_grn_id_here",
+			"type": "string"
+		},
+		{
+			"key": "lab_invoice_id",
+			"value": "your_lab_invoice_id_here",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,1425 @@
+{
+	"info": {
+		"_postman_id": "82a8b99c-77df-4411-92be-9f88cda909b9",
+		"name": "HMS - Outpatient Department (OPD) Flow API Collection",
+		"description": "Comprehensive API collection to test the complete Outpatient Department (OPD) patient journey, spanning from lobby registration, vitals recording, doctor consultation, to final checkout.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Patient Registration",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.id) {",
+							"        pm.globals.set(\"patient_id\", jsonData.data.id);",
+							"        console.log(\"Patient registered successfully. patient_id set to: \" + jsonData.data.id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"full_name\": \"Jane Doe\",\n  \"phone\": \"+919999999999\",\n  \"age\": 29,\n  \"gender\": \"FEMALE\",\n  \"blood_group\": \"O+\",\n  \"address\": {\n    \"line1\": \"Flat 302, Sector 12\",\n    \"city\": \"Bengaluru\",\n    \"state\": \"Karnataka\",\n    \"pincode\": \"560001\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{patient_base_url}}/patients/register",
+					"host": [
+						"{{patient_base_url}}"
+					],
+					"path": [
+						"patients",
+						"register"
+					]
+				},
+				"description": "Stage 1: Register a new patient in the hospital system (Patient Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Create Appointment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.id) {",
+							"        pm.globals.set(\"appointment_id\", jsonData.data.id);",
+							"        console.log(\"Appointment created. appointment_id set to: \" + jsonData.data.id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"department_id\": \"{{department_id}}\",\n  \"appointment_time\": \"2026-06-16T10:30:00Z\",\n  \"appointment_type\": \"NEW\",\n  \"is_emergency\": false,\n  \"priority\": 1,\n  \"notes\": \"Requires surgical evaluation\"\n}"
+				},
+				"url": {
+					"raw": "{{opd_base_url}}/opd/appointments",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"opd",
+						"appointments"
+					]
+				},
+				"description": "Stage 2: Book a draft appointment for the patient (OPD Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Confirm Appointment & Check-In",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.opd_visit_id) {",
+							"        pm.globals.set(\"opd_visit_id\", jsonData.data.opd_visit_id);",
+							"        console.log(\"Appointment confirmed and checked-in. opd_visit_id set to: \" + jsonData.data.opd_visit_id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"payment_status\": \"PAID\",\n  \"payment_mode\": \"CASH\",\n  \"amount_paid\": 500.0,\n  \"payment_ref\": \"REF-783921\"\n}"
+				},
+				"url": {
+					"raw": "{{opd_base_url}}/opd/appointments/{{appointment_id}}/confirm",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"opd",
+						"appointments",
+						"{{appointment_id}}",
+						"confirm"
+					]
+				},
+				"description": "Stage 3: Confirm payment for the draft appointment, generate lobby queue token, and transition status to SCHEDULED (OPD Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Record Nurse Vitals",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    console.log(\"Vitals recorded successfully.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"recorded_at\": \"2026-06-23T11:15:00Z\",\n  \"bp_systolic\": 120,\n  \"bp_diastolic\": 80,\n  \"pulse\": 72,\n  \"weight\": 75.0,\n  \"temperature\": 37.0,\n  \"spo2\": 99\n}"
+				},
+				"url": {
+					"raw": "{{patient_base_url}}/patients/{{patient_id}}/vitals",
+					"host": [
+						"{{patient_base_url}}"
+					],
+					"path": [
+						"patients",
+						"{{patient_id}}",
+						"vitals"
+					]
+				},
+				"description": "Stage 4: Nurse vital signs entry stored in clinical.vitals database (Patient Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Start Consultation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.consultation_id) {",
+							"        pm.globals.set(\"consultation_id\", jsonData.data.consultation_id);",
+							"        console.log(\"Consultation started. consultation_id set to: \" + jsonData.data.consultation_id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"chief_complaint\": \"Severe upper abdominal discomfort after meals\"\n}"
+				},
+				"url": {
+					"raw": "{{opd_base_url}}/opd/visits/{{opd_visit_id}}/start",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"opd",
+						"visits",
+						"{{opd_visit_id}}",
+						"start"
+					]
+				},
+				"description": "Stage 5: Doctor triggers consultation initialization, moving OPD visit to IN_PROGRESS status (OPD Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Save Specialty Consultation Form",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    console.log(\"Specialty consultation form saved successfully.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"department_id\": \"{{department_id}}\",\n  \"form_data\": {\n    \"pain\": {\n      \"location\": \"Epigastric\",\n      \"nature\": \"Burning\",\n      \"severity\": 6,\n      \"trigger\": \"Spicy food\"\n    },\n    \"bowel_habits\": {\n      \"consistency\": \"Normal\",\n      \"frequency\": \"Once daily\"\n    }\n  }\n}"
+				},
+				"url": {
+					"raw": "{{clinical_base_url}}/clinical/consultations/{{consultation_id}}/forms/CURRENT_SYMPTOMS",
+					"host": [
+						"{{clinical_base_url}}"
+					],
+					"path": [
+						"clinical",
+						"consultations",
+						"{{consultation_id}}",
+						"forms",
+						"CURRENT_SYMPTOMS"
+					]
+				},
+				"description": "Stage 6: Save structured, specialty-specific consultation inputs (Clinical Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "6a. Save Specialty Consultation Form - Dental",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    console.log(\"Dental consultation form saved successfully.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"department_id\": \"fcf607e0-9426-4b57-a169-2f22b75a40a5\",\n  \"form_data\": {\n    \"sex\": \"M\",\n    \"consulting_dentist\": \"General\",\n    \"primary_chief_complaint\": [\"Tooth Pain\", \"Sensitivity\"],\n    \"duration_of_complaint\": 3,\n    \"duration_unit\": \"Days\",\n    \"pain_character\": [\"Sharp\", \"Throbbing\"],\n    \"aggravating_factors\": [\"Hot Fluids\", \"Cold Fluids\"],\n    \"current_blood_thinners\": \"No\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{clinical_base_url}}/clinical/consultations/{{consultation_id}}/forms/CURRENT_SYMPTOMS",
+					"host": [
+						"{{clinical_base_url}}"
+					],
+					"path": [
+						"clinical",
+						"consultations",
+						"{{consultation_id}}",
+						"forms",
+						"CURRENT_SYMPTOMS"
+					]
+				},
+				"description": "Stage 6a: Save structured, Dental specialty consultation inputs (Clinical Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "6b. Save Specialty Consultation Form - Gynecology",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    console.log(\"Gynecology consultation form saved successfully.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"department_id\": \"281e4472-a127-4ea0-864c-f83a0cf6189f\",\n  \"form_data\": {\n    \"sex\": \"Female\",\n    \"referred_by\": \"Self-Referral\",\n    \"primary_complaint\": [\"Pain Profile: Dysmenorrhoea\"],\n    \"lmp\": \"2026-06-01\",\n    \"menstrual_flow_amount\": \"Normal\",\n    \"obstetric_history_gtpal\": {\n      \"g\": 1,\n      \"p\": 0,\n      \"t\": 0,\n      \"a\": 0,\n      \"l\": 0\n    }\n  }\n}"
+				},
+				"url": {
+					"raw": "{{clinical_base_url}}/clinical/consultations/{{consultation_id}}/forms/CURRENT_SYMPTOMS",
+					"host": [
+						"{{clinical_base_url}}"
+					],
+					"path": [
+						"clinical",
+						"consultations",
+						"{{consultation_id}}",
+						"forms",
+						"CURRENT_SYMPTOMS"
+					]
+				},
+				"description": "Stage 6b: Save structured, Gynecology specialty consultation inputs (Clinical Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "6c. Save Specialty Consultation Form - Pediatrics",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    console.log(\"Pediatrics consultation form saved successfully.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"department_id\": \"a498d465-61de-4ff4-a362-55594714df42\",\n  \"form_data\": {\n    \"gender_sex\": \"Male\",\n    \"informant_identity\": \"Mother\",\n    \"developmental_milestones_status\": \"Normal / Appropriate for Age\",\n    \"immunization_status\": \"Complete / Fully Immunized for Age\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{clinical_base_url}}/clinical/consultations/{{consultation_id}}/forms/CURRENT_SYMPTOMS",
+					"host": [
+						"{{clinical_base_url}}"
+					],
+					"path": [
+						"clinical",
+						"consultations",
+						"{{consultation_id}}",
+						"forms",
+						"CURRENT_SYMPTOMS"
+					]
+				},
+				"description": "Stage 6c: Save structured, Pediatrics specialty consultation inputs (Clinical Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "6d. Save Specialty Consultation Form - General Medicine",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    console.log(\"General Medicine consultation form saved successfully.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"department_id\": \"df8b2c21-ef77-4b10-8b1b-2b4ad19e6eb1\",\n  \"form_data\": {\n    \"sex\": \"Male\",\n    \"breathlessness_grade\": \"Grade 1 — Only on Severe Exertion\",\n    \"known_hypertension\": \"Yes — On Treatment\",\n    \"known_diabetes\": \"Type 2 Diabetes Mellitus\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{clinical_base_url}}/clinical/consultations/{{consultation_id}}/forms/CURRENT_SYMPTOMS",
+					"host": [
+						"{{clinical_base_url}}"
+					],
+					"path": [
+						"clinical",
+						"consultations",
+						"{{consultation_id}}",
+						"forms",
+						"CURRENT_SYMPTOMS"
+					]
+				},
+				"description": "Stage 6d: Save structured, General Medicine specialty consultation inputs (Clinical Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Create EMR SOAP Note",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    console.log(\"EMR SOAP Note recorded successfully.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"note_type\": \"SOAP\",\n  \"priority\": \"ROUTINE\",\n  \"title\": \"Gastroenterology Assessment\",\n  \"consultation_id\": \"{{consultation_id}}\",\n  \"department_id\": \"{{department_id}}\",\n  \"soap_subjective\": {\n    \"text\": \"Patient complains of recurrent burning pain in the epigastric region.\",\n    \"items\": [\"Epigastric burning\", \"Nausea after heavy meals\"]\n  },\n  \"soap_objective\": {\n    \"text\": \"Abdomen soft, mild tenderness in epigastrium. Vitals stable.\"\n  },\n  \"soap_assessment\": {\n    \"text\": \"Suspected chronic gastritis. Differential diagnosis: GERD.\"\n  },\n  \"soap_plan\": {\n    \"text\": \"1. Advised light diet.\\n2. Prescribed Pantoprazole.\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{clinical_base_url}}/clinical/notes",
+					"host": [
+						"{{clinical_base_url}}"
+					],
+					"path": [
+						"clinical",
+						"notes"
+					]
+				},
+				"description": "Stage 7: Save EMR SOAP clinical documentation (Clinical Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "8a. View Medicine Catalogue",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{pharmacy_base_url}}/pharmacy/medicines",
+					"host": [
+						"{{pharmacy_base_url}}"
+					],
+					"path": [
+						"pharmacy",
+						"medicines"
+					]
+				},
+				"description": "Retrieve global medicines catalogue before prescribing."
+			},
+			"response": []
+		},
+		{
+			"name": "8b. View Lab Tests Catalogue",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{diagnostics_base_url}}/diagnostic-orders/tests",
+					"host": [
+						"{{diagnostics_base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"tests"
+					]
+				},
+				"description": "Retrieve global lab tests catalogue before ordering diagnostics."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Create Context-Aware Prescription",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.id) {",
+							"        pm.globals.set(\"prescription_id\", jsonData.data.id);",
+							"        console.log(\"Prescription created. prescription_id set to: \" + jsonData.data.id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"context_type\": \"OPD_VISIT\",\n  \"context_id\": \"{{opd_visit_id}}\",\n  \"source_module\": \"OPD\",\n  \"encounter_type\": \"CONSULTATION\",\n  \"items\": [\n    {\n      \"medicine_name\": \"Pantoprazole 40mg\",\n      \"generic_name\": \"Pantoprazole\",\n      \"route\": \"ORAL\",\n      \"dosage\": \"1 tablet\",\n      \"frequency\": \"Once daily before food\",\n      \"duration_days\": 7,\n      \"morning_dose\": true,\n      \"with_food\": false,\n      \"instructions\": \"Take 30 minutes before breakfast\"\n    }\n  ],\n  \"allergy_checked\": true,\n  \"interaction_checked\": true,\n  \"generic_suggested\": true,\n  \"notes\": \"Prescribed during OPD consultation.\"\n}"
+				},
+				"url": {
+					"raw": "{{pharmacy_base_url}}/pharmacy",
+					"host": [
+						"{{pharmacy_base_url}}"
+					],
+					"path": [
+						"pharmacy"
+					]
+				},
+				"description": "Stage 8: Saves patient context-aware prescription medicine details (Prescription Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "8c. Create Context-Aware Lab Order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201 || pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.id) {",
+							"        pm.globals.set(\"diagnostic_order_id\", jsonData.data.id);",
+							"        console.log(\"Diagnostic Order created. diagnostic_order_id set to: \" + jsonData.data.id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"order_type\": \"LAB\",\n  \"priority\": \"ROUTINE\",\n  \"context_type\": \"OPD_VISIT\",\n  \"context_id\": \"{{opd_visit_id}}\",\n  \"source_module\": \"OPD\",\n  \"encounter_type\": \"CONSULTATION\",\n  \"lab_items\": [\n    {\n      \"test_id\": \"16a43dca-eb71-4b85-ab0a-3b984816cadf\",\n      \"notes\": \"Fasting blood sugar check\"\n    },\n    {\n      \"test_name\": \"Complete Blood Count (CBC)\",\n      \"notes\": \"Lookup by test_name is supported too\"\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{diagnostics_base_url}}/diagnostic-orders",
+					"host": [
+						"{{diagnostics_base_url}}"
+					],
+					"path": [
+						"diagnostic-orders"
+					]
+				},
+				"description": "Saves patient context-aware diagnostic lab order details (Diagnostics Service). Supports specifying test_id from catalogue or free-text test_name."
+			},
+			"response": []
+		},
+		{
+			"name": "8d. Edit Context-Aware Prescription",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"allergy_checked\": true,\n  \"interaction_checked\": true,\n  \"generic_suggested\": true,\n  \"notes\": \"Updated instructions to take medicine with warm water.\",\n  \"items\": [\n    {\n      \"medicine_name\": \"Pantoprazole 40mg\",\n      \"generic_name\": \"Pantoprazole\",\n      \"route\": \"ORAL\",\n      \"dosage\": \"1 tablet\",\n      \"frequency\": \"Once daily before food\",\n      \"duration_days\": 10,\n      \"morning_dose\": true,\n      \"with_food\": false,\n      \"instructions\": \"Take with warm water 30 minutes before breakfast\"\n    }\n  ],\n  \"change_reason\": \"Extend duration and add notes\"\n}"
+				},
+				"url": {
+					"raw": "{{pharmacy_base_url}}/pharmacy/{{prescription_id}}",
+					"host": [
+						"{{pharmacy_base_url}}"
+					],
+					"path": [
+						"pharmacy",
+						"{{prescription_id}}"
+					]
+				},
+				"description": "Modify/edit the prescription header or list of items."
+			},
+			"response": []
+		},
+		{
+			"name": "8e. Edit Context-Aware Lab Order",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"priority\": \"URGENT\",\n  \"clinical_notes\": \"Urgent review required due to persistent symptoms\",\n  \"lab_items\": [\n    {\n      \"test_id\": \"16a43dca-eb71-4b85-ab0a-3b984816cadf\",\n      \"notes\": \"Urgent fasting blood sugar check\"\n    },\n    {\n      \"test_name\": \"Complete Blood Count (CBC)\",\n      \"notes\": \"Updates support test_name as well\"\n    }\n  ],\n  \"change_reason\": \"Change priority to urgent\"\n}"
+				},
+				"url": {
+					"raw": "{{diagnostics_base_url}}/diagnostic-orders/{{diagnostic_order_id}}",
+					"host": [
+						"{{diagnostics_base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"{{diagnostic_order_id}}"
+					]
+				},
+				"description": "Modify/edit the diagnostic order priority, notes, or items. Supports test_id or test_name."
+			},
+			"response": []
+		},
+		{
+			"name": "8f. Cancel Context-Aware Prescription",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"reason\": \"Alternative therapy initiated\"\n}"
+				},
+				"url": {
+					"raw": "{{pharmacy_base_url}}/pharmacy/{{prescription_id}}/cancel",
+					"host": [
+						"{{pharmacy_base_url}}"
+					],
+					"path": [
+						"pharmacy",
+						"{{prescription_id}}",
+						"cancel"
+					]
+				},
+				"description": "Soft delete / cancel a prescription."
+			},
+			"response": []
+		},
+		{
+			"name": "8g. Cancel Context-Aware Lab Order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"reason\": \"Duplicate order / patient refused test\"\n}"
+				},
+				"url": {
+					"raw": "{{diagnostics_base_url}}/diagnostic-orders/{{diagnostic_order_id}}/cancel",
+					"host": [
+						"{{diagnostics_base_url}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"{{diagnostic_order_id}}",
+						"cancel"
+					]
+				},
+				"description": "Cancel the diagnostic order (works directly if still PENDING/ORDERED status)."
+			},
+			"response": []
+		},
+		{
+			"name": "8h. Get Appointment (Verifying Nested Details)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/opd/appointments/{{appointment_id}}",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"opd",
+						"appointments",
+						"{{appointment_id}}"
+					]
+				},
+				"description": "Retrieve appointment to verify that prescriptions and diagnostic orders are returned nested."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Finalize Consultation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    console.log(\"Consultation finalized. OPD visit marked as COMPLETED.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"decision\": \"MEDICAL\",\n  \"follow_up_date\": \"2026-06-22\",\n  \"follow_up_notes\": \"Return if pain persists or worsens.\",\n  \"diagnosis\": \"Gastro-esophageal reflux disease / Chronic Gastritis\"\n}"
+				},
+				"url": {
+					"raw": "{{opd_base_url}}/opd/visits/{{opd_visit_id}}/complete",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"opd",
+						"visits",
+						"{{opd_visit_id}}",
+						"complete"
+					]
+				},
+				"description": "Stage 9: Closes the OPD visit, moves status to COMPLETED, and records final diagnosis and decision (OPD Service)."
+			},
+			"response": []
+		},
+		{
+			"name": "3a. Get Appointment",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/appointments/{{appointment_id}}",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"appointments",
+						"{{appointment_id}}"
+					]
+				},
+				"description": "Returns enriched appointment with patient name, doctor name, department, OPD visit ID."
+			},
+			"response": []
+		},
+		{
+			"name": "4. List Appointments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/appointments?date=2026-05-07&doctor_id={{doctor_id}}&status=SCHEDULED&page=1&page_size=20",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"appointments"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2026-05-07"
+						},
+						{
+							"key": "doctor_id",
+							"value": "{{doctor_id}}"
+						},
+						{
+							"key": "status",
+							"value": "SCHEDULED"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "page_size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "List appointments with optional query params. Ordered by emergency DESC → priority DESC → token ASC."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Today's Appointments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/appointments/today",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"appointments",
+						"today"
+					]
+				},
+				"description": "Shortcut for today's date filtered list."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Appointments by Date",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/appointments/date/2026-05-07",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"appointments",
+						"date",
+						"2026-05-07"
+					]
+				},
+				"description": "All appointments for a specific date."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Update Appointment Status",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"CANCELLED\",\n  \"cancellation_reason\": \"Patient request\"\n}"
+				},
+				"url": {
+					"raw": "{{opd_base_url}}/ops/appointments/{{appointment_id}}/status",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"appointments",
+						"{{appointment_id}}",
+						"status"
+					]
+				},
+				"description": "Valid statuses: IN_PROGRESS, COMPLETED, NO_SHOW, CANCELLED"
+			},
+			"response": []
+		},
+		{
+			"name": "8. Mark Appointment as Emergency",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"priority\": 10,\n  \"reason\": \"Chest pain, critical\"\n}"
+				},
+				"url": {
+					"raw": "{{opd_base_url}}/ops/appointments/{{appointment_id}}/emergency",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"appointments",
+						"{{appointment_id}}",
+						"emergency"
+					]
+				},
+				"description": "Escalates existing appointment to emergency. Fires EMERGENCY_ADDED alert."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Get Queue Status",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/queue/{{doctor_id}}?date=2026-05-07",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"queue",
+						"{{doctor_id}}"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2026-05-07"
+						}
+					]
+				},
+				"description": "Returns full queue with token positions, wait times, counts."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Get Patient Queue Position",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/appointments/{{appointment_id}}/position",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"appointments",
+						"{{appointment_id}}",
+						"position"
+					]
+				},
+				"description": "Returns patient's current position, patients ahead, estimated wait."
+			},
+			"response": []
+		},
+		{
+			"name": "11. Token Preview (Pre-Payment)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/queue/{{doctor_id}}/token-preview?date=2026-05-07",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"queue",
+						"{{doctor_id}}",
+						"token-preview"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2026-05-07"
+						}
+					]
+				},
+				"description": "Read-only — shows what token number would be assigned next. Use this to show 'T-043' on the payment screen."
+			},
+			"response": []
+		},
+		{
+			"name": "12. Reception Dashboard (Today)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/dashboard",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"dashboard"
+					]
+				},
+				"description": "Returns today's appointment stats, doctor availability, counts."
+			},
+			"response": []
+		},
+		{
+			"name": "13. Reception Dashboard (Specific Date)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/dashboard/date/2026-05-07",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"dashboard",
+						"date",
+						"2026-05-07"
+					]
+				},
+				"description": "Returns appointment stats, doctor availability, counts for specific date."
+			},
+			"response": []
+		},
+		{
+			"name": "19. Get Departments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/departments",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"departments"
+					]
+				},
+				"description": "Returns all active departments with doctor counts."
+			},
+			"response": []
+		},
+		{
+			"name": "20. Get Doctors by Department",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/departments/{{department_id}}/doctors",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"departments",
+						"{{department_id}}",
+						"doctors"
+					]
+				},
+				"description": "Returns doctors for a department with specialization and fees."
+			},
+			"response": []
+		},
+		{
+			"name": "21. Get All Doctors",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/doctors",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"doctors"
+					]
+				},
+				"description": "Full doctor list."
+			},
+			"response": []
+		},
+		{
+			"name": "22. Get Doctor Availability List",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{opd_base_url}}/ops/doctors/availability?department_id={{department_id}}&availability_status=AVAILABLE_NOW&time_slot=MORNING&page=1",
+					"host": [
+						"{{opd_base_url}}"
+					],
+					"path": [
+						"ops",
+						"doctors",
+						"availability"
+					],
+					"query": [
+						{
+							"key": "department_id",
+							"value": "{{department_id}}"
+						},
+						{
+							"key": "availability_status",
+							"value": "AVAILABLE_NOW"
+						},
+						{
+							"key": "time_slot",
+							"value": "MORNING"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						}
+					]
+				},
+				"description": "Query params all optional. availability_status: AVAILABLE_NOW, IN_CONSULTATION, AVAILABLE_LATER, ON_LEAVE, UNAVAILABLE. time_slot: MORNING, AFTERNOON, EVENING"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "pharmacy_base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "Base URL of Pharmacy service"
+		},
+		{
+			"key": "diagnostics_base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "Base URL of Diagnostics service"
+		},
+		{
+			"key": "patient_base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "Base URL of Patient service"
+		},
+		{
+			"key": "opd_base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "Base URL of OPD service"
+		},
+		{
+			"key": "doctor_base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "Base URL of Doctor service"
+		},
+		{
+			"key": "clinical_base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "Base URL of Clinical service"
+		},
+		{
+			"key": "access_token",
+			"value": "your_jwt_access_token_here",
+			"type": "string",
+			"description": "Bearer JWT token dynamically set or manually configured"
+		},
+		{
+			"key": "doctor_id",
+			"value": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
+			"type": "string",
+			"description": "Default doctor UUID (Arjun Mehta)"
+		},
+		{
+			"key": "department_id",
+			"value": "46d19155-09a1-462e-b256-ce2a5741b091",
+			"type": "string",
+			"description": "Default department UUID"
+		},
+		{
+			"key": "patient_id",
+			"value": "",
+			"type": "string",
+			"description": "Captured automatically from patient registration"
+		},
+		{
+			"key": "appointment_id",
+			"value": "",
+			"type": "string",
+			"description": "Captured automatically from create appointment response"
+		},
+		{
+			"key": "opd_visit_id",
+			"value": "",
+			"type": "string",
+			"description": "Captured automatically from confirm appointment check-in"
+		},
+		{
+			"key": "consultation_id",
+			"value": "",
+			"type": "string",
+			"description": "Captured automatically from starting consultation"
+		},
+		{
+			"key": "emg_patient_id",
+			"value": "",
+			"type": "string",
+			"description": "Captured from temporary patient registration"
+		},
+		{
+			"key": "emg_visit_id",
+			"value": "",
+			"type": "string",
+			"description": "Captured from create emergency visit response"
+		}
+	]
+}

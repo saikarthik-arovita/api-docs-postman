@@ -1,0 +1,2400 @@
+{
+	"info": {
+		"_postman_id": "90bcfc70-65df-4234-921a-abdfcc55ee1a",
+		"name": "HMS - Auth & Admin Services API Collection",
+		"description": "Comprehensive API collection to test Auth, HRMS Self-Onboarding, and Admin Service features. Contains pre-configured logins for different roles and automatic token propagation.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"description": "Core authentication endpoints, including standard login, challenge handling, token refresh, profile loading, and logout.",
+			"item": [
+				{
+					"name": "Standard Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"        console.log(\"Access and Refresh tokens set in globals.\");",
+									"    }",
+									"    if (jsonData.success && jsonData.data && jsonData.data.user) {",
+									"        pm.globals.set(\"user_id\", jsonData.data.user.user_id);",
+									"        console.log(\"Active user_id set to: \" + jsonData.data.user.user_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{login_username}}\",\n  \"password\": \"{{login_password}}\",\n  \"device_info\": \"Postman Runner\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Password Challenge",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"        console.log(\"Access and Refresh tokens set from challenge completion.\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{login_username}}\",\n  \"session\": \"{{challenge_session_token}}\",\n  \"new_password\": \"SecurePassword@2026\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/new-password",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"new-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Token Refresh",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"        console.log(\"Tokens refreshed and stored.\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/refresh",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Profile (auth/me)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/auth/me",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password (Self Service)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"old_password\": \"SecurePassword@2026\",\n  \"new_password\": \"AltSecurePassword@2026\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/change-password",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"change-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Reset Password (Force-Reset)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"+919123400010\",\n  \"new_password\": \"TempReset@123\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/reset-password",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"reset-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.globals.unset(\"access_token\");",
+									"pm.globals.unset(\"refresh_token\");",
+									"console.log(\"Cleaned up local tokens on logout.\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"access_token\": \"{{access_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/logout",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Login by Role",
+			"description": "Preconfigured login requests for multiple users per role (Doctors, Nurses, Receptionists, Admins) using database seed credentials.",
+			"item": [
+				{
+					"name": "Doctor 1 (Branch 1) - Dr. Arjun Mehta",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"    if (jsonData.success && jsonData.data && jsonData.data.user) {",
+									"        pm.globals.set(\"user_id\", jsonData.data.user.user_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"arjun.mehta.b1@hospital.com\",\n  \"password\": \"Temp@123\",\n  \"device_info\": \"Postman Doctor client\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor 2 (Branch 1) - Dr. Priya Sharma",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"    if (jsonData.success && jsonData.data && jsonData.data.user) {",
+									"        pm.globals.set(\"user_id\", jsonData.data.user.user_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"priya.sharma.b1@hospital.com\",\n  \"password\": \"Temp@123\",\n  \"device_info\": \"Postman Doctor client\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor 3 (Branch 2) - Dr. Arjun Mehta (Branch 2)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"    if (jsonData.success && jsonData.data && jsonData.data.user) {",
+									"        pm.globals.set(\"user_id\", jsonData.data.user.user_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"arjun.mehta.b2@hospital.com\",\n  \"password\": \"Temp@123\",\n  \"device_info\": \"Postman Doctor client\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nurse 1 (Branch 1) - Anita Rao",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"anita.rao.b1@hospital.com\",\n  \"password\": \"Temp@123\",\n  \"device_info\": \"Postman Nurse client\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nurse 2 (Branch 1) - Ramesh Kumar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"ramesh.kumar.b1@hospital.com\",\n  \"password\": \"Temp@123\",\n  \"device_info\": \"Postman Nurse client\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Receptionist 1 (Branch 1) - Sunitha Nair",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"sunitha.nair.b1@hospital.com\",\n  \"password\": \"Temp@123\",\n  \"device_info\": \"Postman Receptionist client\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Receptionist 2 (Branch 1) - Kiran Patil",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"kiran.patil.b1@hospital.com\",\n  \"password\": \"Temp@123\",\n  \"device_info\": \"Postman Receptionist client\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hospital Admin (Branch 1) - Meena Krishnan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"    if (jsonData.success && jsonData.data && jsonData.data.user) {",
+									"        pm.globals.set(\"user_id\", jsonData.data.user.user_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"meena.krishnan.b1@hospital.com\",\n  \"password\": \"Temp@123\",\n  \"device_info\": \"Postman Admin client\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "System Administrator MFA Step 1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"SYS-ADMIN01\",\n  \"password\": \"SystemPassword@2026\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "System Administrator MFA Step 2 (Verify)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+									"        pm.globals.set(\"access_token\", jsonData.data.tokens.access_token);",
+									"        pm.globals.set(\"refresh_token\", jsonData.data.tokens.refresh_token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"SYS-ADMIN01\",\n  \"otp\": \"123456\",\n  \"device_info\": \"Postman SysAdmin\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/login/mfa/verify",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"login",
+								"mfa",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. HRMS Onboarding Pipeline",
+			"description": "Onboarding process APIs sorted sequentially to test employee credential generation, profile settings, document uploads, and activation validation checks.",
+			"item": [
+				{
+					"name": "Step 1: Admin Creates Staff Record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// V004: Cognito user is provisioned at creation. Capture user_id and temp_password.",
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.globals.set(\"new_onboarding_user_id\", jsonData.data.user_id);",
+									"        pm.globals.set(\"new_onboarding_employee_id\", jsonData.data.employee_id);",
+									"        if (jsonData.data.temp_password) {",
+									"            pm.globals.set(\"new_staff_temp_password\", jsonData.data.temp_password);",
+									"            console.log(\"IMPORTANT — Temp password (transmit securely): \" + jsonData.data.temp_password);",
+									"        }",
+									"        console.log(\"New Onboarding User ID: \" + jsonData.data.user_id);",
+									"        console.log(\"Employee ID: \" + jsonData.data.employee_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"full_name\": \"Dr. Priya Nair\",\n  \"email\": \"priya.nair@arovita.com\",\n  \"phone\": \"9123456700\",\n  \"role\": \"DOCTOR\",\n  \"department_id\": null,\n  \"specialization_id\": null,\n  \"registration_number\": \"MCI/2026/00123\",\n  \"qualification\": \"MBBS, MD\",\n  \"experience_years\": 6,\n  \"joining_date\": \"2026-07-01\",\n  \"gender\": \"FEMALE\",\n  \"date_of_birth\": \"1992-04-18\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/staff",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"staff"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 1b: Admin Updates Staff Profile (V004 Fields)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"full_name\": \"Dr. Priya Nair\",\n  \"qualification\": \"MBBS, MD\",\n  \"experience_years\": 6,\n  \"gender\": \"FEMALE\",\n  \"date_of_birth\": \"1992-04-18\",\n  \"department_id\": null,\n  \"specialization_id\": null,\n  \"bio\": \"Experienced general practitioner with focus on internal medicine.\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/auth/staff/{{new_onboarding_user_id}}/profile",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"auth",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Set Schedule Details",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"primary_shift_type\": \"MORNING\",\n  \"duty_start_time\": \"08:00\",\n  \"duty_end_time\": \"16:00\",\n  \"weekly_hours\": 40.0,\n  \"active_days\": [\"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\"],\n  \"is_rotating\": false\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/schedule",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"schedule"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Set On-Call Schedule",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"on_call_enabled\": true,\n  \"on_call_frequency\": \"ROTATIONAL\",\n  \"emergency_contact_number\": \"+919876543210\",\n  \"escalation_contact\": \"+919123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/oncall",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"oncall"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 4: Configure Payroll Details",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"payment_cycle\": \"MONTHLY\",\n  \"currency\": \"INR\",\n  \"annual_base_salary\": 1500000.00,\n  \"annual_bonus\": 100000.00,\n  \"effective_from\": \"2026-07-01\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/payroll",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"payroll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 5: Add Bank Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"account_holder_name\": \"Priya Nair\",\n  \"bank_name\": \"ICICI Bank\",\n  \"branch_name\": \"Indiranagar\",\n  \"account_number\": \"0001234567890\",\n  \"ifsc_code\": \"ICIC0000001\",\n  \"is_primary\": true\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/bank-accounts",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"bank-accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 6: Configure Tax Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pan_number\": \"ABCDE1234F\",\n  \"tax_regime\": \"NEW\",\n  \"pf_opted\": true\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/tax-profile",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"tax-profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 7: Upload Compliance Document Meta",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.globals.set(\"compliance_doc_id\", jsonData.data.id);",
+									"        console.log(\"Compliance Document ID set: \" + jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_type\": \"MEDICAL_LICENSE\",\n  \"document_name\": \"MCI State License scan reference\",\n  \"document_id_number\": \"MCI/2026/00123\",\n  \"expiry_date\": \"2030-12-31\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/documents",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 7b: Get Staff Documents List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/documents",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 8: Fetch Compliance Verifications Queue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/compliance/pending-verifications",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"compliance",
+								"pending-verifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 9: Compliance Officer Verifies Document",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/documents/{{compliance_doc_id}}/verify",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"documents",
+								"{{compliance_doc_id}}",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 10: Compliance Officer Rejects Document",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rejection_reason\": \"Document scanning resolution too low. Re-upload scan.\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/documents/{{compliance_doc_id}}/reject",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"documents",
+								"{{compliance_doc_id}}",
+								"reject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 11: Get Onboarding Checklist Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/onboarding",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"onboarding"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 11b: Get Full Onboarding Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/full-onboarding",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"full-onboarding"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 12: Admin Activates Staff Member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// V004: temp_password was provisioned at Step 1 (creation), NOT here.",
+									"// This endpoint activates the account after all blocking checks pass.",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data) {",
+									"        console.log(\"Activation status: \" + jsonData.data.onboarding_status);",
+									"        console.log(\"Is active: \" + jsonData.data.is_active);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activation_notes\": \"All document checks and schedule configs validated successfully.\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/{{new_onboarding_user_id}}/activate",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"{{new_onboarding_user_id}}",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 13: View Blocked Staff Queue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/blocked",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"blocked"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 14: View Pending Activation Queue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/hrms/staff/pending-activation",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"hrms",
+								"staff",
+								"pending-activation"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Tenant Switching",
+			"description": "System admin branch management and active context switching.",
+			"item": [
+				{
+					"name": "List Branches / Tenants",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/organization/tenants",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"organization",
+								"tenants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Tenant Scope",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{auth_base_url}}/organization/active-tenant",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"organization",
+								"active-tenant"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Switch OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"target_branch_id\": \"22222222-2222-2222-2222-222222222222\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/organization/switch-tenant/send-otp",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"organization",
+								"switch-tenant",
+								"send-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Switch OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"target_branch_id\": \"22222222-2222-2222-2222-222222222222\",\n  \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_base_url}}/organization/switch-tenant/verify",
+							"host": [
+								"{{auth_base_url}}"
+							],
+							"path": [
+								"organization",
+								"switch-tenant",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Admin Dashboards & Analytics",
+			"description": "Dashboard metrics summaries and analytics trend statistics from the Admin Service.",
+			"item": [
+				{
+					"name": "Get Dashboard Summary (Short View)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/dashboard/summary",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"summary"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Full Dashboard Metrics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/dashboard",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get KPI Overview",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/analytics/kpi",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"kpi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient Inflow Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/analytics/patient-inflow?granularity=daily&periods=30",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"patient-inflow"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "daily"
+								},
+								{
+									"key": "periods",
+									"value": "30"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revenue Analytics Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/analytics/revenue?granularity=monthly&periods=12",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"revenue"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "monthly"
+								},
+								{
+									"key": "periods",
+									"value": "12"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor Consultation Performance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/analytics/doctor-performance?limit=10&from_date=2026-06-01&to_date=2026-06-13",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"doctor-performance"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "from_date",
+									"value": "2026-06-01"
+								},
+								{
+									"key": "to_date",
+									"value": "2026-06-13"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bed Occupancy Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/analytics/bed-occupancy?granularity=daily&periods=30",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"bed-occupancy"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "daily"
+								},
+								{
+									"key": "periods",
+									"value": "30"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Settings & System Alerts",
+			"description": "Manage central configuration settings and smart alerting pipelines.",
+			"item": [
+				{
+					"name": "List Settings (Category filter)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/settings?category=billing",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"settings"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "billing"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Settings Upsert",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"settings\": {\n    \"OPD_REGISTRATION_FEE\": \"250\",\n    \"MAX_APPOINTMENTS\": \"40\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/settings/billing",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"settings",
+								"billing"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Single Setting Upsert (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"value\": \"300\",\n  \"description\": \"Base clinic booking tariff\",\n  \"is_encrypted\": false\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/settings/billing/OPD_REGISTRATION_FEE",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"settings",
+								"billing",
+								"OPD_REGISTRATION_FEE"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Active Alerts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/alerts?is_resolved=false",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"alerts"
+							],
+							"query": [
+								{
+									"key": "is_resolved",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Trigger Smart Alerts Rule Engine",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/alerts/scan",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"alerts",
+								"scan"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Admin Staff & Role Management",
+			"description": "Directories and configurations for user authorization modifiers.",
+			"item": [
+				{
+					"name": "List Staff Profiles (Admin View)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/staff?page=1&page_size=20",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"staff"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Doctor Consultation Fee",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"consultation_fee\": 600.00\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/staff/{{user_id}}/fee",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"staff",
+								"{{user_id}}",
+								"fee"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Promote/Change Staff Role",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role_id\": \"HNR-001\"\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/staff/{{user_id}}/role",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"staff",
+								"{{user_id}}",
+								"role"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Custom Permissions Override",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"permission_ids\": [\"STF-001\", \"BED-001\"]\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/staff/{{user_id}}/permissions",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"staff",
+								"{{user_id}}",
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Leave Management Workflow",
+			"description": "Leave requests submission and manager approvals operations.",
+			"item": [
+				{
+					"name": "Get My Leave Balance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/staff/me/leaves/balance?year=2026",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"staff",
+								"me",
+								"leaves",
+								"balance"
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2026"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apply for Leave",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.globals.set(\"active_leave_id\", jsonData.data.id);",
+									"        console.log(\"Leave Request ID set: \" + jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"leave_type\": \"CASUAL\",\n  \"from_date\": \"2026-07-10\",\n  \"to_date\": \"2026-07-15\",\n  \"reason\": \"Family function\"\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/staff/me/leaves/apply",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"staff",
+								"me",
+								"leaves",
+								"apply"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Pending Leaves (Admin View)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/leaves/pending?page=1&page_size=20",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"leaves",
+								"pending"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Leave Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/leaves/{{active_leave_id}}/approve",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"leaves",
+								"{{active_leave_id}}",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "9. Wards, Units, & Bed Capacity",
+			"description": "Clinics physical capacity bed allocation and unit controls.",
+			"item": [
+				{
+					"name": "List Wards",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/wards?include_inactive=false",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"wards"
+							],
+							"query": [
+								{
+									"key": "include_inactive",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Ward",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.globals.set(\"ward_id\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Emergency Ward A\",\n  \"ward_type\": \"EMERGENCY\",\n  \"floor\": \"1\",\n  \"capacity\": 20\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/wards",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"wards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Bed Summary Metrics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/beds/summary",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"beds",
+								"summary"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Bed Slot",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.globals.set(\"bed_id\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ward_id\": \"{{ward_id}}\",\n  \"bed_number\": \"EMG-A10\",\n  \"bed_type\": \"ICU\"\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/beds",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"beds"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Bed Status (Maintenance)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"MAINTENANCE\",\n  \"reason\": \"Sanitation cleaning check\"\n}"
+						},
+						"url": {
+							"raw": "{{admin_base_url}}/admin/beds/{{bed_id}}/status",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"beds",
+								"{{bed_id}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "10. Compliance & Security Audit Logs",
+			"description": "Query audit logs and track suspicious activity anomalies or system security grades.",
+			"item": [
+				{
+					"name": "Search Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/compliance/audit?action=staff.role.update&page=1&page_size=50",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"audit"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "staff.role.update"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Suspicious Activity Detections",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/compliance/suspicious-activity?lookback_hours=24",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"suspicious-activity"
+							],
+							"query": [
+								{
+									"key": "lookback_hours",
+									"value": "24"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Security Score Grade",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{admin_base_url}}/admin/compliance/security-score",
+							"host": [
+								"{{admin_base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"security-score"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "auth_base_url",
+			"value": "https://auth-api.example.com/dev",
+			"type": "string"
+		},
+		{
+			"key": "admin_base_url",
+			"value": "https://admin-api.example.com/dev",
+			"type": "string"
+		},
+		{
+			"key": "login_username",
+			"value": "arjun.mehta.b1@hospital.com",
+			"type": "string"
+		},
+		{
+			"key": "login_password",
+			"value": "Temp@123",
+			"type": "string"
+		},
+		{
+			"key": "challenge_session_token",
+			"value": "temp_session_token_placeholder",
+			"type": "string"
+		},
+		{
+			"key": "new_onboarding_user_id",
+			"value": "",
+			"type": "string",
+			"description": "Auto-populated from Step 1 (Create Staff). UUID of newly created staff member."
+		},
+		{
+			"key": "new_onboarding_employee_id",
+			"value": "",
+			"type": "string",
+			"description": "Auto-populated from Step 1 (Create Staff). E.g. DOC-K9O46Z"
+		},
+		{
+			"key": "new_staff_temp_password",
+			"value": "",
+			"type": "string",
+			"description": "V004: Auto-populated from Step 1. Cognito temp password — transmit to staff securely."
+		},
+		{
+			"key": "compliance_doc_id",
+			"value": "",
+			"type": "string",
+			"description": "Auto-populated from Step 7 (Upload Document). UUID of uploaded compliance document."
+		}
+	]
+}
