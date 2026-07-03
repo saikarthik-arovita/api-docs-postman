@@ -12,43 +12,44 @@
 graph TD
     subgraph "Phase 1: Patient & OPD"
         S1["Step 1: Register Patient"] -->|patient_id| S2["Step 2: Book Appointment"]
-        S2 -->|appointment_id| S3["Step 3: Start OPD Consultation"]
-        S3 -->|opd_visit_id| S4["Step 4: Create Surgery Order"]
+        S2 -->|appointment_id| S3["Step 4: Confirm Appointment"]
+        S3 -->|opd_visit_id| S4["Step 5: Start OPD Consultation"]
+        S4 -->|opd_visit_id| S5["Step 6: Create Surgery Order"]
     end
 
     subgraph "Phase 2: IPD Admission"
-        S4 -->|service_order_id| S5["Step 5: Create Admission Request"]
-        S5 -->|request_id| S6["Step 6: Approve Admission Request"]
-        S6 --> S7["Step 7: Create IPD Admission"]
+        S5 -->|service_order_id| S6["Step 7: Create Admission Request"]
+        S6 -->|request_id| S7["Step 8: Approve Admission Request"]
+        S7 --> S8["Step 9: Create IPD Admission"]
     end
 
     subgraph "Phase 3: Surgery Request & OT Scheduling"
-        S7 -->|admission_id| S8["Step 8: Create Surgery Request"]
-        S8 -->|surgery_id| S9["Step 9: Schedule Surgery"]
-        S9 --> S10["Step 10: Create OT Session"]
+        S8 -->|admission_id| S9["Step 10: Create Surgery Request"]
+        S9 -->|surgery_id| S10["Step 11: Schedule Surgery"]
+        S10 --> S11["Step 12: Create OT Session"]
     end
 
     subgraph "Phase 4: Consent & PAC"
-        S10 -->|ot_session_id| S11["Step 11: Create OT Consents"]
-        S11 -->|consent_ids| S12["Step 12: Sign Consents"]
-        S12 --> S13["Step 13: Clear PAC"]
+        S11 -->|ot_session_id| S12["Step 13: Create OT Consents"]
+        S12 -->|consent_ids| S13["Step 14: Sign Consents"]
+        S13 --> S14["Step 15: Clear PAC"]
     end
 
     subgraph "Phase 5: OT Lifecycle"
-        S13 --> S14["Step 14: Complete Pre-Op Checklist"]
-        S14 --> S15["Step 15: Start OT Session"]
-        S15 --> S16["Step 16: Complete OT Session"]
-        S16 --> S17["Step 17: Transfer Out from OT"]
+        S14 --> S15["Step 16: Complete Pre-Op Checklist"]
+        S15 --> S16["Step 17: Start OT Session"]
+        S16 --> S17["Step 18: Complete OT Session"]
+        S17 --> S18["Step 19: Transfer Out from OT"]
     end
 
     subgraph "Phase 6: Discharge & Billing"
-        S17 --> S18["Step 18: Generate Invoice"]
-        S18 -->|invoice_id| S19["Step 19: Collect Payment"]
-        S19 --> S20["Step 20: Get Billing Clearance"]
-        S20 --> S21["Step 21: Initiate Discharge"]
-        S21 --> S22["Step 22: Update Discharge Clearance"]
-        S22 --> S23["Step 23: Complete Discharge"]
-        S23 --> S24["Step 24: Close Case"]
+        S18 --> S19["Step 20: Generate Invoice"]
+        S19 -->|invoice_id| S20["Step 21: Collect Payment"]
+        S20 --> S21["Step 22: Get Billing Clearance"]
+        S21 --> S22["Step 23: Initiate Discharge"]
+        S22 --> S23["Step 24: Update Discharge Clearance"]
+        S23 --> S24["Step 25: Complete Discharge"]
+        S24 --> S25["Step 25: Close Case"]
     end
 ```
 
@@ -104,7 +105,7 @@ graph TD
 
 **Prerequisites**: None
 
-**Next API**: Step 2 (Book Appointment) or Step 5 (Create Admission Request for emergencies)
+**Next API**: Step 2 (Book Appointment) or Step 6 (Create Admission Request for emergencies)
 
 ### Request Fields
 
@@ -213,7 +214,7 @@ graph TD
 
 **Prerequisites**: Step 1 (patient_id)
 
-**Next API**: Step 3 (Start OPD Consultation)
+**Next API**: Step 3 (Confirm Appointment)
 
 ### Request Fields
 
@@ -222,10 +223,10 @@ graph TD
 | `patient_id` | string (UUID) | ✅ | — | Patient UUID from Step 1 |
 | `doctor_id` | string (UUID) | ✅ | — | Doctor to consult with |
 | `department_id` | string (UUID) | ❌ | — | Department UUID |
-| `appointment_date` | string (date) | ✅ | — | ISO 8601 date |
+| `appointment_time` | string | ✅ | — | ISO 8601 datetime string |
 | `slot_time` | string | ❌ | — | Preferred time slot |
 | `appointment_type` | string | ❌ | `NEW`, `FOLLOW_UP` | `NEW` |
-| `priority` | string | ❌ | `ROUTINE`, `URGENT`, `EMERGENCY` | `ROUTINE` |
+| `priority` | integer | ❌ | `1`, `2`, `3` | `1` |
 | `notes` | string | ❌ | — | Appointment notes |
 
 ### Example Request
@@ -235,9 +236,9 @@ graph TD
   "patient_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "doctor_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
   "department_id": "d1234567-abcd-efgh-ijkl-123456789012",
-  "appointment_date": "2026-07-03",
+  "appointment_time": "2026-07-04T10:00:00Z",
   "appointment_type": "NEW",
-  "priority": "ROUTINE",
+  "priority": 1,
   "notes": "Patient requires surgical evaluation"
 }
 ```
@@ -254,7 +255,7 @@ graph TD
     "patient_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "doctor_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
     "department_id": "d1234567-abcd-efgh-ijkl-123456789012",
-    "appointment_date": "2026-07-03",
+    "appointment_time": "2026-07-04T10:00:00Z",
     "token_number": "T-001",
     "status": "SCHEDULED",
     "created_at": "2026-07-03T09:05:00Z"
@@ -270,7 +271,78 @@ graph TD
 
 ---
 
-## Step 3: Start OPD Consultation
+---
+
+## Step 3: Confirm Appointment
+
+**Purpose**: Confirm the booked appointment (patient pays the registration/consultation fee, receptionist confirms it). This moves the appointment status to `CONFIRMED` and automatically creates an `opd_visit` entry in the database.
+
+**Endpoint**: `POST /opd/appointments/{id}/confirm`
+
+**Method**: `POST`
+
+**Module**: `opd`
+
+**Permission**: `appointments:confirm`
+
+**Prerequisites**: Step 2 (appointment booked)
+
+**Next API**: Step 4 (Start OPD Consultation)
+
+### Request Fields
+
+| Field | Type | Required | Enum | Validation | Default | Description |
+|-------|------|----------|------|------------|---------|-------------|
+| `id` (path) | string (UUID) | ✅ | — | Valid UUID | — | Appointment UUID from Step 2 |
+| `payment_status` | string | ✅ | `PAID`, `PENDING` | — | — | Status of consultation fee payment |
+| `payment_mode` | string | ✅ | `CASH`, `CARD`, `UPI`, `BANK_TRANSFER` | — | — | Mode of payment |
+| `amount_paid` | number | ✅ | — | positive decimal | — | Amount paid |
+| `payment_ref` | string | ❌ | — | max 100 chars | — | Payment reference identifier |
+
+### Example Request
+
+```json
+{
+  "payment_status": "PAID",
+  "payment_mode": "CASH",
+  "amount_paid": 500.0,
+  "payment_ref": "TX-MOCK-123"
+}
+```
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Appointment confirmed successfully",
+  "data": {
+    "appointment_id": "e9eee5ce-ac23-445e-bce4-7c66f7c21b20",
+    "opd_visit_id": "df8d2132-a007-4c42-90eb-83cb7109d42a",
+    "status": "CONFIRMED"
+  }
+}
+```
+
+### Dependencies
+
+| Produced ID | Consumed By |
+|-------------|-------------|
+| `data.opd_visit_id` → `opd_visit_id` | Step 4, Step 5, Step 6 |
+
+### Error Responses
+
+```json
+// 404 Not Found — Appointment not found
+{
+  "success": false,
+  "code": 404,
+  "error": "Appointment not found"
+}
+```
+
+## Step 4: Start OPD Consultation
 
 **Purpose**: Begin the doctor's consultation with the patient. Transitions the visit into an active state where clinical decisions (including surgery recommendation) can be made.
 
@@ -284,7 +356,7 @@ graph TD
 
 **Prerequisites**: Step 2 (appointment confirmed)
 
-**Next API**: Step 4 (Create Surgery Order)
+**Next API**: Step 5 (Create Surgery Order)
 
 ### Request Fields
 
@@ -320,11 +392,11 @@ graph TD
 
 | Produced ID | Consumed By |
 |-------------|-------------|
-| `data.id` → `opd_visit_id` | Step 4 |
+| `data.id` → `opd_visit_id` | Step 5 |
 
 ---
 
-## Step 4: Create Surgery / Procedure Order
+## Step 5: Create Surgery / Procedure Order
 
 **Purpose**: Doctor recommends a surgery or procedure during the OPD consultation. Creates a `service_order` record in the `clinical.service_orders` table with `order_type = SURGERY` or `PROCEDURE`. This is the clinical decision point that initiates the surgical pathway.
 
@@ -336,16 +408,16 @@ graph TD
 
 **Permission**: `surgery:create`
 
-**Prerequisites**: Step 1 (patient_id), Step 3 (opd_visit_id — optional)
+**Prerequisites**: Step 1 (patient_id), Step 4 (opd_visit_id - optional)
 
-**Next API**: Step 5 (Create Admission Request) or Step 10 (Create OT Session for day-surgery)
+**Next API**: Step 6 (Create Admission Request) or Step 11 (Create OT Session for day-surgery)
 
 ### Request Fields
 
 | Field | Type | Required | Enum | Validation | Default | Description |
 |-------|------|----------|------|------------|---------|-------------|
 | `patient_id` | string (UUID) | ✅ | — | Valid UUID | — | Patient from Step 1 |
-| `opd_visit_id` | string (UUID) | ❌ | — | — | `null` | OPD visit from Step 3 |
+| `opd_visit_id` | string (UUID) | ❌ | — | — | `null` | OPD visit from Step 4 |
 | `admission_id` | string (UUID) | ❌ | — | — | `null` | Set later if patient is being admitted |
 | `consultation_id` | string (UUID) | ❌ | — | — | `null` | Clinical consultation ID |
 | `order_type` | string | ❌ | `SURGERY`, `PROCEDURE` | — | `SURGERY` | Type of clinical order |
@@ -407,12 +479,12 @@ graph TD
 
 | Produced ID | Consumed By |
 |-------------|-------------|
-| `data.id` → `service_order_id` | Step 10 (Create OT Session) |
-| `data.id` → `source_reference` | Step 5 (optional link) |
+| `data.id` → `service_order_id` | Step 11 (Create OT Session) |
+| `data.id` → `source_reference` | Step 6 (optional link) |
 
 ---
 
-## Step 5: Create Admission Request
+## Step 6: Create Admission Request
 
 **Purpose**: Raise a formal request to admit the patient for the surgery. This begins the IPD admission workflow, and may originate from OPD, Emergency, or other sources.
 
@@ -424,7 +496,7 @@ graph TD
 
 **Prerequisites**: Step 1 (patient_id)
 
-**Next API**: Step 6 (Approve Admission Request)
+**Next API**: Step 7 (Approve Admission Request)
 
 ### Request Fields
 
@@ -435,7 +507,7 @@ graph TD
 | `source_type` | string | ❌ | `OPD`, `EMERGENCY`, `TELECONSULTATION`, `REFERRAL`, `WALK_IN`, `DIALYSIS`, `ONCOLOGY`, `DAY_CARE` | `OPD` | Where request originates |
 | `source_reference` | string | ❌ | — | `null` | OPD visit or service order ID |
 | `admission_type` | string | ❌ | `ELECTIVE`, `EMERGENCY`, `TRANSFER` | `ELECTIVE` | Type of admission |
-| `priority` | string | ❌ | `ROUTINE`, `URGENT`, `EMERGENCY` | `ROUTINE` | Priority |
+| `priority` | integer | ❌ | `1`, `2`, `3` | `1` | Priority |
 | `preferred_ward_id` | string (UUID) | ❌ | — | `null` | Preferred ward |
 | `preferred_bed_type` | string | ❌ | — | `null` | Preferred bed type |
 | `notes` | string | ❌ | — | `null` | Additional notes |
@@ -482,12 +554,12 @@ graph TD
 
 | Produced ID | Consumed By |
 |-------------|-------------|
-| `data.id` → `request_id` | Step 6 |
-| `data.id` → `admission_request_id` | Step 7 |
+| `data.id` → `request_id` | Step 7 |
+| `data.id` → `admission_request_id` | Step 8 |
 
 ---
 
-## Step 6: Approve Admission Request
+## Step 7: Approve Admission Request
 
 **Purpose**: Update the admission request status to `READY`, signaling that the bed allocation and pre-admission checks are complete and the patient can be formally admitted.
 
@@ -497,15 +569,15 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 5 (request_id)
+**Prerequisites**: Step 6 (request_id)
 
-**Next API**: Step 7 (Create Admission)
+**Next API**: Step 8 (Create Admission)
 
 ### Request Fields
 
 | Field | Type | Required | Enum | Description |
 |-------|------|----------|------|-------------|
-| `request_id` (path) | string (UUID) | ✅ | — | Admission request ID from Step 5 |
+| `request_id` (path) | string (UUID) | ✅ | — | Admission request ID from Step 6 |
 | `status` | string | ✅ | `UNDER_REVIEW`, `READY`, `CANCELLED`, `EXPIRED` | Target status |
 | `reason` | string | ❌ | — | Reason for status change |
 
@@ -534,7 +606,7 @@ graph TD
 
 ---
 
-## Step 7: Create IPD Admission
+## Step 8: Create IPD Admission
 
 **Purpose**: Formally admit the patient into the hospital, assigning them a ward and bed. This transitions the patient from OPD/pre-admission to an active inpatient. The `admission_id` produced here is the central reference for the entire IPD and OT lifecycle.
 
@@ -544,9 +616,9 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 1 (patient_id), Step 6 (approved request), bed/ward availability
+**Prerequisites**: Step 1 (patient_id), Step 7 (approved request), bed/ward availability
 
-**Next API**: Step 8 (Create Surgery Request)
+**Next API**: Step 9 (Create Surgery Request)
 
 ### Request Fields
 
@@ -557,8 +629,8 @@ graph TD
 | `bed_id` | string (UUID) | ✅ | — | — | Assigned bed |
 | `attending_doctor_id` | string (UUID) | ✅ | — | — | Primary doctor |
 | `admission_reason` | string | ✅ | — | — | Reason for admission |
-| `admission_request_id` | string (UUID) | ❌ | — | `null` | Link to admission request from Step 5 |
-| `opd_visit_id` | string (UUID) | ❌ | — | `null` | Link to OPD visit from Step 3 |
+| `admission_request_id` | string (UUID) | ❌ | — | `null` | Link to admission request from Step 6 |
+| `opd_visit_id` | string (UUID) | ❌ | — | `null` | Link to OPD visit from Step 4 |
 | `emergency_visit_id` | string (UUID) | ❌ | — | `null` | Link to emergency visit |
 | `admission_type` | string | ❌ | `ELECTIVE`, `EMERGENCY`, `TRANSFER` | `ELECTIVE` | Admission type |
 | `expected_discharge` | string (date) | ❌ | — | `null` | Expected discharge date |
@@ -608,14 +680,14 @@ graph TD
 
 | Produced ID | Consumed By |
 |-------------|-------------|
-| `data.id` → `admission_id` | Steps 8, 10, 11, 17, 18, 21–24 |
+| `data.id` → `admission_id` | Steps 9, 10, 11, 17, 18, 21–24 |
 
 > [!IMPORTANT]
 > The bed is automatically marked `OCCUPIED` and the admission request status changes to `CONVERTED`.
 
 ---
 
-## Step 8: Create Surgery Request (IPD)
+## Step 9: Create Surgery Request (IPD)
 
 **Purpose**: Raise a formal surgery request from within the IPD context. This is the internal surgical planning system that tracks surgeon assignment, urgency, and OT scheduling separately from the OPD service order. Links back to the admission.
 
@@ -625,15 +697,15 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 7 (admission_id, patient_id)
+**Prerequisites**: Step 8 (admission_id, patient_id)
 
-**Next API**: Step 9 (Schedule Surgery)
+**Next API**: Step 10 (Schedule Surgery)
 
 ### Request Fields
 
 | Field | Type | Required | Enum | Description |
 |-------|------|----------|------|-------------|
-| `admission_id` | string (UUID) | ✅ | — | IPD admission from Step 7 |
+| `admission_id` | string (UUID) | ✅ | — | IPD admission from Step 8 |
 | `patient_id` | string (UUID) | ✅ | — | Patient UUID |
 | `doctor_id` | string (UUID) | ✅ | — | Surgeon UUID |
 | `procedure_name` | string | ✅* | — | Name of surgery (*required if `procedure_id` not provided) |
@@ -678,11 +750,11 @@ graph TD
 
 | Produced ID | Consumed By |
 |-------------|-------------|
-| `data.id` → `surgery_id` | Step 9 |
+| `data.id` → `surgery_id` | Step 10 |
 
 ---
 
-## Step 9: Schedule Surgery
+## Step 10: Schedule Surgery
 
 **Purpose**: Assign an OT room and a scheduled datetime to the surgery request. This transitions the surgery request status from `REQUESTED` → `OT_SCHEDULED`.
 
@@ -692,15 +764,15 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 8 (surgery_id)
+**Prerequisites**: Step 9 (surgery_id)
 
-**Next API**: Step 10 (Create OT Session)
+**Next API**: Step 11 (Create OT Session)
 
 ### Request Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` (path) | string (UUID) | ✅ | Surgery request ID from Step 8 |
+| `id` (path) | string (UUID) | ✅ | Surgery request ID from Step 9 |
 | `ot_room_id` | string (UUID) | ✅ | OT room UUID |
 | `scheduled_at` | string (datetime) | ✅ | ISO 8601 datetime for surgery |
 
@@ -731,9 +803,9 @@ graph TD
 
 ---
 
-## Step 10: Create OT Session
+## Step 11: Create OT Session
 
-**Purpose**: Create the actual Operating Theatre session. This is the central OT record that tracks the entire surgical episode from scheduling through recovery. It links back to the clinical service order from Step 4. The OT session status begins at `SCHEDULED`.
+**Purpose**: Create the actual Operating Theatre session. This is the central OT record that tracks the entire surgical episode from scheduling through recovery. It links back to the clinical service order from Step 5. The OT session status begins at `SCHEDULED`.
 
 **Endpoint**: `POST /ipd/ot-sessions`
 
@@ -741,18 +813,18 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 4 (service_order_id), Step 1 (patient_id), surgeon exists
+**Prerequisites**: Step 5 (service_order_id), Step 1 (patient_id), surgeon exists
 
-**Next API**: Step 11 (Create OT Consents)
+**Next API**: Step 12 (Create OT Consents)
 
 ### Request Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `service_order_id` | string (UUID) | ✅ | Service order from Step 4 |
+| `service_order_id` | string (UUID) | ✅ | Service order from Step 5 |
 | `patient_id` | string (UUID) | ✅ | Patient UUID |
 | `surgeon_id` | string (UUID) | ✅ | Primary surgeon UUID |
-| `admission_id` | string (UUID) | ❌ | IPD admission from Step 7 |
+| `admission_id` | string (UUID) | ❌ | IPD admission from Step 8 |
 | `anaesthetist_id` | string (UUID) | ❌ | Anaesthetist UUID |
 | `scrub_nurse_id` | string (UUID) | ❌ | Scrub nurse UUID |
 | `ot_number` | string | ❌ | OT room identifier |
@@ -805,14 +877,14 @@ graph TD
 
 | Produced ID | Consumed By |
 |-------------|-------------|
-| `data.id` → `ot_session_id` (also used as `ot_case_id`) | Steps 11, 12, 13, 14, 15, 16, 17 |
+| `data.id` → `ot_session_id` (also used as `ot_case_id`) | Steps 12, 12, 13, 14, 15, 16, 17 |
 
 > [!NOTE]
 > Creating the OT session also updates the linked service order status to `SCHEDULED`.
 
 ---
 
-## Step 11: Create OT Case Consents
+## Step 12: Create OT Case Consents
 
 **Purpose**: Initialize consent records for the OT case. Mandatory consents (`SURGICAL`, `ANAESTHESIA`, `PROCEDURE`) must be signed before PAC clearance can proceed. Additional consent types can be added as needed.
 
@@ -824,15 +896,15 @@ graph TD
 
 **Permission**: `consent:create`
 
-**Prerequisites**: Step 10 (ot_session_id used as ot_case_id)
+**Prerequisites**: Step 11 (ot_session_id used as ot_case_id)
 
-**Next API**: Step 12 (Sign Consent)
+**Next API**: Step 13 (Sign Consent)
 
 ### Request Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `ot_case_id` (path) | string (UUID) | ✅ | OT session ID from Step 10 |
+| `ot_case_id` (path) | string (UUID) | ✅ | OT session ID from Step 11 |
 | `consent_codes` | string[] | ✅* | List of consent type codes (*required if `consents` not provided) |
 | `consents` | object[] | ✅* | Detailed consent items (*required if `consent_codes` not provided) |
 | `consents[].consent_code` | string | ✅ | One of the valid consent codes |
@@ -899,14 +971,14 @@ graph TD
 
 | Produced ID | Consumed By |
 |-------------|-------------|
-| `data[].id` → `consent_id` | Step 12 (Sign Consent) |
+| `data[].id` → `consent_id` | Step 13 (Sign Consent) |
 
 > [!IMPORTANT]
-> All mandatory consents (`SURGICAL`, `ANAESTHESIA`, `PROCEDURE`) must be signed before Step 13 (PAC Clearance) can succeed. Duplicate consent codes for the same OT case are silently skipped.
+> All mandatory consents (`SURGICAL`, `ANAESTHESIA`, `PROCEDURE`) must be signed before Step 14 (PAC Clearance) can succeed. Duplicate consent codes for the same OT case are silently skipped.
 
 ---
 
-## Step 12: Sign Consent
+## Step 13: Sign Consent
 
 **Purpose**: Record the patient's (or guardian's) signature on a consent form. Transitions consent status from `PENDING` → `SIGNED`. Generates a consent document with a SHA-256 hash for tamper-proof audit trail. **Repeat this for each mandatory consent.**
 
@@ -918,15 +990,15 @@ graph TD
 
 **Permission**: `consent:sign`
 
-**Prerequisites**: Step 11 (consent_id)
+**Prerequisites**: Step 12 (consent_id)
 
-**Next API**: Repeat for all mandatory consents, then Step 13 (Clear PAC)
+**Next API**: Repeat for all mandatory consents, then Step 14 (Clear PAC)
 
 ### Request Fields
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `consent_id` (path) | string (UUID) | ✅ | — | Consent record ID from Step 11 |
+| `consent_id` (path) | string (UUID) | ✅ | — | Consent record ID from Step 12 |
 | `signature_type` | string | ❌ | `DIGITAL` | Signature method |
 | `signed_by` | string (UUID) | ❌ | `null` | Staff user or patient ID who signed |
 | `guardian_name` | string | ❌ | `null` | Guardian name (if minor/incapacitated) |
@@ -984,7 +1056,7 @@ graph TD
 
 ---
 
-## Step 13: Clear Pre-Anaesthetic Checkup (PAC)
+## Step 14: Clear Pre-Anaesthetic Checkup (PAC)
 
 **Purpose**: Record the PAC clearance for the OT session. This validates that all mandatory consents are signed. For emergency admissions with pending consents, a two-doctor emergency override mechanism is available.
 
@@ -994,15 +1066,15 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 10 (ot_session_id), Step 12 (all mandatory consents signed)
+**Prerequisites**: Step 11 (ot_session_id), Step 13 (all mandatory consents signed)
 
-**Next API**: Step 14 (Complete Pre-Op Checklist)
+**Next API**: Step 15 (Complete Pre-Op Checklist)
 
 ### Request Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` (path) | string (UUID) | ✅ | OT session ID from Step 10 |
+| `id` (path) | string (UUID) | ✅ | OT session ID from Step 11 |
 | `notes` | string | ❌ | PAC clearance notes |
 | `emergency_override` | boolean | ❌ | `false` — Set `true` to bypass unsigned mandatory consents (emergency admissions only) |
 | `override_reason` | string | Conditional | Required if `emergency_override = true` |
@@ -1066,7 +1138,7 @@ graph TD
 
 ---
 
-## Step 14: Complete Pre-Op Checklist
+## Step 15: Complete Pre-Op Checklist
 
 **Purpose**: Record the pre-operative checklist completion. This must be done after PAC clearance. The checklist is a free-form JSON object capturing all pre-op verification items. Transitions OT session status to `PRE_OP`.
 
@@ -1076,9 +1148,9 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 13 (PAC cleared — `pac_cleared = true`)
+**Prerequisites**: Step 14 (PAC cleared — `pac_cleared = true`)
 
-**Next API**: Step 15 (Start OT Session)
+**Next API**: Step 16 (Start OT Session)
 
 ### Request Fields
 
@@ -1138,7 +1210,7 @@ graph TD
 
 ---
 
-## Step 15: Start OT Session (Surgery Begins)
+## Step 16: Start OT Session (Surgery Begins)
 
 **Purpose**: Record the start of the actual surgical procedure. Transitions OT session from `SCHEDULED` or `PRE_OP` → `IN_PROGRESS`. Also updates the linked service order status to `IN_PROGRESS`.
 
@@ -1148,9 +1220,9 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 14 (Pre-op completed) or Step 13 (PAC cleared — status must be `SCHEDULED` or `PRE_OP`)
+**Prerequisites**: Step 15 (Pre-op completed) or Step 14 (PAC cleared — status must be `SCHEDULED` or `PRE_OP`)
 
-**Next API**: Step 16 (Complete OT Session)
+**Next API**: Step 17 (Complete OT Session)
 
 ### Request Fields
 
@@ -1194,7 +1266,7 @@ graph TD
 
 ---
 
-## Step 16: Complete OT Session (Surgery Ends)
+## Step 17: Complete OT Session (Surgery Ends)
 
 **Purpose**: Record the completion of the surgical procedure. Captures intra-operative notes and anaesthesia type. Transitions OT session from `IN_PROGRESS` → `POST_OP`. Recovery period begins.
 
@@ -1204,9 +1276,9 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 15 (OT session status = `IN_PROGRESS`)
+**Prerequisites**: Step 16 (OT session status = `IN_PROGRESS`)
 
-**Next API**: Step 17 (Transfer Out from OT)
+**Next API**: Step 18 (Transfer Out from OT)
 
 ### Request Fields
 
@@ -1257,7 +1329,7 @@ graph TD
 
 ---
 
-## Step 17: Transfer Out from OT (Recovery → Ward)
+## Step 18: Transfer Out from OT (Recovery → Ward)
 
 **Purpose**: Transfer the patient from the OT/recovery area back to an inpatient bed in a ward. This completes the OT session lifecycle (`POST_OP` → `COMPLETED`), allocates the new bed, releases the old bed, updates the admission's ward/bed assignment, and marks the service order as `COMPLETED`.
 
@@ -1267,9 +1339,9 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 16 (OT session status = `POST_OP`)
+**Prerequisites**: Step 17 (OT session status = `POST_OP`)
 
-**Next API**: Step 18 (Generate Invoice) or Step 21 (Initiate Discharge)
+**Next API**: Step 19 (Generate Invoice) or Step 22 (Initiate Discharge)
 
 ### Request Fields
 
@@ -1339,7 +1411,7 @@ graph TD
 
 ---
 
-## Step 18: Generate Invoice
+## Step 19: Generate Invoice
 
 **Purpose**: Generate a billing invoice for the IPD admission, aggregating all chargeable items (bed, OT, surgery, pharmacy, labs, etc.) into a single invoice.
 
@@ -1351,9 +1423,9 @@ graph TD
 
 **Permission**: `billing:create`
 
-**Prerequisites**: Step 7 (admission_id), Step 1 (patient_id)
+**Prerequisites**: Step 8 (admission_id), Step 1 (patient_id)
 
-**Next API**: Step 19 (Collect Payment)
+**Next API**: Step 20 (Collect Payment)
 
 ### Request Fields
 
@@ -1361,7 +1433,7 @@ graph TD
 |-------|------|----------|------|-------------|
 | `patient_id` | string (UUID) | ✅ | — | Patient UUID |
 | `visit_type` | string | ✅ | `OPD`, `IPD`, `EMERGENCY` | `IPD` for surgery cases |
-| `visit_id` | string (UUID) | ✅ | — | IPD admission ID from Step 7 |
+| `visit_id` | string (UUID) | ✅ | — | IPD admission ID from Step 8 |
 
 ### Example Request
 
@@ -1419,11 +1491,11 @@ graph TD
 
 | Produced ID | Consumed By |
 |-------------|-------------|
-| `data.invoice_id` → `invoice_id` | Step 19 (Collect Payment) |
+| `data.invoice_id` → `invoice_id` | Step 20 (Collect Payment) |
 
 ---
 
-## Step 19: Collect Payment
+## Step 20: Collect Payment
 
 **Purpose**: Record a payment against the generated invoice. Supports partial payments. Updates invoice status accordingly.
 
@@ -1435,9 +1507,9 @@ graph TD
 
 **Permission**: `billing:payment:collect`
 
-**Prerequisites**: Step 18 (invoice exists)
+**Prerequisites**: Step 19 (invoice exists)
 
-**Next API**: Step 20 (Get Billing Clearance)
+**Next API**: Step 21 (Get Billing Clearance)
 
 ### Request Fields
 
@@ -1478,7 +1550,7 @@ graph TD
 
 ---
 
-## Step 20: Get Billing Clearance (NOC)
+## Step 21: Get Billing Clearance (NOC)
 
 **Purpose**: Check whether the patient has billing clearance (No Objection Certificate) for discharge. Returns `cleared = true` when there is no outstanding balance, or `cleared = false` with blocking reasons.
 
@@ -1490,9 +1562,9 @@ graph TD
 
 **Permission**: `billing:clearance:view`
 
-**Prerequisites**: Step 7 (admission_id)
+**Prerequisites**: Step 8 (admission_id)
 
-**Next API**: Step 21 (Initiate Discharge) — if cleared
+**Next API**: Step 22 (Initiate Discharge) — if cleared
 
 ### Request Fields
 
@@ -1553,7 +1625,7 @@ graph TD
 
 ---
 
-## Step 21: Initiate Discharge
+## Step 22: Initiate Discharge
 
 **Purpose**: Begin the discharge process for the patient. Creates the discharge summary and sets follow-up instructions. This does not immediately discharge the patient — clearance gates must be passed first.
 
@@ -1563,9 +1635,9 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 7 (admission_id), billing cleared or override
+**Prerequisites**: Step 8 (admission_id), billing cleared or override
 
-**Next API**: Step 22 (Update Discharge Clearance)
+**Next API**: Step 23 (Update Discharge Clearance)
 
 ### Request Fields
 
@@ -1606,7 +1678,7 @@ graph TD
 
 ---
 
-## Step 22: Update Discharge Clearance Gates
+## Step 23: Update Discharge Clearance Gates
 
 **Purpose**: Record clearance from each department (BILLING, PHARMACY, NURSING, DOCTOR) before final discharge. Each gate must be individually cleared.
 
@@ -1616,9 +1688,9 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 21 (discharge initiated)
+**Prerequisites**: Step 22 (discharge initiated)
 
-**Next API**: Step 23 (Complete Discharge) — once all gates cleared
+**Next API**: Step 24 (Complete Discharge) — once all gates cleared
 
 ### Request Fields
 
@@ -1662,7 +1734,7 @@ graph TD
 
 ---
 
-## Step 23: Complete Discharge
+## Step 24: Complete Discharge
 
 **Purpose**: Finalize the patient's discharge. Records the complete discharge summary, medications, dietary instructions. Transitions IPD status to `DISCHARGED`, releases the bed, and closes the admission record.
 
@@ -1672,9 +1744,9 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 22 (all discharge gates cleared)
+**Prerequisites**: Step 23 (all discharge gates cleared)
 
-**Next API**: Step 24 (Close Case)
+**Next API**: Step 25 (Close Case)
 
 ### Request Fields
 
@@ -1725,7 +1797,7 @@ graph TD
 
 ---
 
-## Step 24: Close Case
+## Step 25: Close Case
 
 **Purpose**: Final administrative closure of the IPD case. Confirms that all billing is settled and records any final notes. This is the terminal action in the surgical episode.
 
@@ -1735,7 +1807,7 @@ graph TD
 
 **Module**: `ipd`
 
-**Prerequisites**: Step 23 (patient discharged)
+**Prerequisites**: Step 24 (patient discharged)
 
 **Next API**: None (terminal)
 
