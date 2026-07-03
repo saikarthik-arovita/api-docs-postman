@@ -77,7 +77,7 @@ graph TD
 | `SurgeryPriority` | `ROUTINE`, `URGENT`, `EMERGENCY` | Surgery priority |
 | `SurgeryOrderStatus` | `ORDERED`, `SCHEDULED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` | Service order status |
 | `BedStatus` | `AVAILABLE`, `RESERVED`, `OCCUPIED`, `MAINTENANCE` | Bed availability |
-| `WardType` | `GENERAL`, `SEMI_PRIVATE`, `PRIVATE`, `ICU`, `NICU`, `PICU`, `OBSERVATION`, `DAY_CARE`, `ISOLATION`, `HDU`, `OTHER` | Ward category |
+| `WardType` | `GENERAL`, `SEMI_PRIVATE`, `PRIVATE`, `ICU`, `NICU`, `PICU`, `OBSERVATION`, `DAY_CARE`, `ISOLATION`, `HDU`, `OT`, `OTHER` | Ward category |
 | `BillStatus` | `OPEN`, `PARTIALLY_PAID`, `PAID`, `CANCELLED`, `REFUNDED` | Invoice status |
 | `PaymentMode` | `CASH`, `CARD`, `UPI`, `BANK_TRANSFER`, `CHEQUE`, `INSURANCE` | Payment method |
 | `VisitType` | `OPD`, `IPD`, `EMERGENCY` | Visit context for billing |
