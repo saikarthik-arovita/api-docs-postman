@@ -1,0 +1,2032 @@
+{
+    "info": {
+        "_postman_id": "hms-receptionist-v1-2026",
+        "name": "HMS Receptionist Dashboard API Collection",
+        "description": "Comprehensive Postman collection for all APIs used by the HMS Receptionist Dashboard. Divided into OPD, IPD, Emergency (ER), Operating Theatre (OT), Patient Services, and Billing/Cashier operations.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "https://api.hms.local",
+            "type": "string"
+        },
+        {
+            "key": "access_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "patient_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "doctor_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "department_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "appointment_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "admission_request_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "admission_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "ward_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "bed_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "visit_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "invoice_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "ot_case_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "consent_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "ot_session_id",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "01. Patient Services",
+            "item": [
+                {
+                    "name": "1.1 Patient Search",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/patients/search?q=Jane Doe&page=1&page_size=20",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "search"
+                            ],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "Jane Doe"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "page_size",
+                                    "value": "20"
+                                }
+                            ]
+                        },
+                        "description": "Quick lookup used as the first step for every patient interaction. Searches by name, phone, or UHID."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "1.2 Register New Patient",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/patients/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "register"
+                            ]
+                        },
+                        "description": "Registers a new patient with details. Automatically sets patient_id in globals on success.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"full_name\": \"Jane Doe\",\n  \"phone\": \"+919876543210\",\n  \"age\": 30,\n  \"gender\": \"FEMALE\",\n  \"blood_group\": \"A+\",\n  \"dob\": \"1996-06-25\",\n  \"address\": {\n    \"line1\": \"123 Main St\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400001\"\n  },\n  \"abha_number\": \"12-3456-7890-1234\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"patient_id\", jsonData.data.id);",
+                                    "        console.log(\"Patient registered. patient_id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.3 Register Temporary Patient (ER)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/patients/register-temp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "register-temp"
+                            ]
+                        },
+                        "description": "Creates a placeholder patient record when identity is unknown. All fields optional.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"full_name\": \"Unknown Male Patient\",\n  \"age\": 40,\n  \"gender\": \"MALE\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"patient_id\", jsonData.data.id);",
+                                    "        console.log(\"Temp Patient registered. patient_id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.4 Promote Temporary Patient",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/patients/{{patient_id}}/promote",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "{{patient_id}}",
+                                "promote"
+                            ]
+                        },
+                        "description": "Upgrades TEMP-EMG-... UHID to permanent PAT-YYYY-XXXX. All clinical records remain linked.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"full_name\": \"Jane Doe Permanent\",\n  \"phone\": \"+919876543211\",\n  \"age\": 30,\n  \"gender\": \"FEMALE\",\n  \"blood_group\": \"A+\",\n  \"address\": {\n    \"line1\": \"123 Main St\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400001\"\n  },\n  \"abha_number\": \"12-3456-7890-1234\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "1.5 Get Patient Card",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/patients/{{patient_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "{{patient_id}}"
+                            ]
+                        },
+                        "description": "Fetch patient demographic card details."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "1.6 Link Attendant",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/patients/{{patient_id}}/attendant",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "{{patient_id}}",
+                                "attendant"
+                            ]
+                        },
+                        "description": "Setup attendant details for IPD admission.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"full_name\": \"Richard Doe\",\n  \"relationship\": \"Brother\",\n  \"phone\": \"+919876543212\",\n  \"alternate_phone\": \"+919876543213\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "1.7 Link Insurance Policy",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/patients/{{patient_id}}/insurance",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "{{patient_id}}",
+                                "insurance"
+                            ]
+                        },
+                        "description": "Setup insurance policy details for billing.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"provider_name\": \"Star Health\",\n  \"policy_number\": \"POL123456\",\n  \"scheme_type\": \"TPA\",\n  \"valid_from\": \"2026-01-01\",\n  \"valid_till\": \"2026-12-31\"\n}"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "02. OPD Dashboard",
+            "item": [
+                {
+                    "name": "2.1 OPD Today Stats (KPI Cards)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/dashboard",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "dashboard"
+                            ]
+                        },
+                        "description": "OPD dashboard today overview of total appointments, checked-in, completed, cancellations, and doctor queue length."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.2 OPD Dashboard by Date",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/dashboard/date/{{date}}?date=2026-07-02",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "dashboard",
+                                "date",
+                                "{{date}}"
+                            ],
+                            "query": [
+                                {
+                                    "key": "date",
+                                    "value": "2026-07-02"
+                                }
+                            ]
+                        },
+                        "description": "View metrics dashboard for a specific date."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.3 List / Filter Appointments",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/appointments?date=2026-07-02&status=SCHEDULED&page=1&page_size=20",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "appointments"
+                            ],
+                            "query": [
+                                {
+                                    "key": "date",
+                                    "value": "2026-07-02"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "SCHEDULED"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "page_size",
+                                    "value": "20"
+                                }
+                            ]
+                        },
+                        "description": "Retrieve and filter appointments."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.4 Today's Appointments",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/appointments/today",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "appointments",
+                                "today"
+                            ]
+                        },
+                        "description": "Shortcut for loading current day's appointment list."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.5 Appointments by Date",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/appointments/date/{{date}}?date=2026-07-02",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "appointments",
+                                "date",
+                                "{{date}}"
+                            ],
+                            "query": [
+                                {
+                                    "key": "date",
+                                    "value": "2026-07-02"
+                                }
+                            ]
+                        },
+                        "description": "Shortcut to load appointment list by date."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.6 Appointment Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/appointments/{{appointment_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "appointments",
+                                "{{appointment_id}}"
+                            ]
+                        },
+                        "description": "Get detail status and timeline of a single appointment."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.7 Book Appointment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/appointments",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "appointments"
+                            ]
+                        },
+                        "description": "Book an outpatient appointment ticket.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"department_id\": \"{{department_id}}\",\n  \"appointment_date\": \"2026-07-02\",\n  \"appointment_type\": \"OPD\",\n  \"slot_time\": \"10:30 AM\",\n  \"notes\": \"Regular checkup\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"appointment_id\", jsonData.data.id);",
+                                    "        console.log(\"Appointment booked. appointment_id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.8 Confirm Appointment & Check-In",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/appointments/{{appointment_id}}/confirm",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "appointments",
+                                "{{appointment_id}}",
+                                "confirm"
+                            ]
+                        },
+                        "description": "Confirms payment and checks the patient into the queue. Generates queue token server-side.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"payment_status\": \"PAID\",\n  \"payment_mode\": \"UPI\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.9 Update Appointment Status",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/appointments/{{appointment_id}}/status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "appointments",
+                                "{{appointment_id}}",
+                                "status"
+                            ]
+                        },
+                        "description": "Update appointment status (e.g., ARRIVED, NO_SHOW, CANCELLED).",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"status\": \"NO_SHOW\",\n  \"reason\": \"Patient did not arrive\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.10 Token Position",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/appointments/{{appointment_id}}/position",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "appointments",
+                                "{{appointment_id}}",
+                                "position"
+                            ]
+                        },
+                        "description": "Retrieve waitlist/token position for checked-in patient."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.11 Walk-In Registration",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/walkin",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "walkin"
+                            ]
+                        },
+                        "description": "Creates a walk-in OPD appointment without prior booking. Starts in PENDING_PAYMENT state.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"department_id\": \"{{department_id}}\",\n  \"chief_complaint\": \"Mild fever and cough\",\n  \"notes\": \"Patient walked in directly\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"appointment_id\", jsonData.data.id);",
+                                    "        console.log(\"Walk-in registered. appointment_id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.12 Doctor Queue",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/queue/{{doctor_id}}?date=2026-07-02",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "queue",
+                                "{{doctor_id}}"
+                            ],
+                            "query": [
+                                {
+                                    "key": "date",
+                                    "value": "2026-07-02"
+                                }
+                            ]
+                        },
+                        "description": "Returns real-time consultation queue with wait positions."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.13 Next Token Preview",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/queue/{{doctor_id}}/token-preview",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "queue",
+                                "{{doctor_id}}",
+                                "token-preview"
+                            ]
+                        },
+                        "description": "Preview the next token that will be assigned for the doctor."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.14 List Departments",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/departments",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "departments"
+                            ]
+                        },
+                        "description": "Retrieve hospital departments list."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.15 Doctors in Department",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/departments/{{department_id}}/doctors",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "departments",
+                                "{{department_id}}",
+                                "doctors"
+                            ]
+                        },
+                        "description": "Retrieve list of doctors under department with queue lengths."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2.16 Doctor Slot Availability",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/doctors/{{doctor_id}}/slots?date=2026-07-02",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "doctors",
+                                "{{doctor_id}}",
+                                "slots"
+                            ],
+                            "query": [
+                                {
+                                    "key": "date",
+                                    "value": "2026-07-02"
+                                }
+                            ]
+                        },
+                        "description": "Get doctor time slot schedules."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "03. IPD Dashboard",
+            "item": [
+                {
+                    "name": "3.1 IPD Dashboard Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/dashboard",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "dashboard"
+                            ]
+                        },
+                        "description": "Inpatient KPI stats: total admitted, emergency, pending discharges, bed occupancy."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.2 Ward Occupancy Dashboard",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/dashboard/wards",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "dashboard",
+                                "wards"
+                            ]
+                        },
+                        "description": "Ward-by-ward vacancy/occupancy tracking."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.3 Live Patient Tracking",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/dashboard/tracking",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "dashboard",
+                                "tracking"
+                            ]
+                        },
+                        "description": "Real-time locations of all admitted patients."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.4 List Wards",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/wards?ward_type=GENERAL&is_active=true",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "wards"
+                            ],
+                            "query": [
+                                {
+                                    "key": "ward_type",
+                                    "value": "GENERAL"
+                                },
+                                {
+                                    "key": "is_active",
+                                    "value": "true"
+                                }
+                            ]
+                        },
+                        "description": "Wards list with filter parameters."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.5 List Beds",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/beds?ward_id={{ward_id}}&status=AVAILABLE",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "beds"
+                            ],
+                            "query": [
+                                {
+                                    "key": "ward_id",
+                                    "value": "{{ward_id}}"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "AVAILABLE"
+                                }
+                            ]
+                        },
+                        "description": "Beds grid list inside ward."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.6 Bed Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/beds/{{bed_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "beds",
+                                "{{bed_id}}"
+                            ]
+                        },
+                        "description": "Details of specific bed."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.7 Bed Availability Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/beds/availability?ward_id={{ward_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "beds",
+                                "availability"
+                            ],
+                            "query": [
+                                {
+                                    "key": "ward_id",
+                                    "value": "{{ward_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Aggregated bed capacity counts."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.8 Update Bed Status (Manual)",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/beds/{{bed_id}}/status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "beds",
+                                "{{bed_id}}",
+                                "status"
+                            ]
+                        },
+                        "description": "Put bed under maintenance/maintenance release.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"status\": \"MAINTENANCE\",\n  \"reason\": \"Deep cleaning in progress\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.9 Admission Request Inbox",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admission-requests?status=REQUESTED",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admission-requests"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "REQUESTED"
+                                }
+                            ]
+                        },
+                        "description": "Inbox of pending doctor recommendation notes for admission."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.10 Create Admission Request",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admission-requests",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admission-requests"
+                            ]
+                        },
+                        "description": "Initiate an admission request from receptionist dashboard.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"request_reason\": \"Scheduled laparoscopic surgery\",\n  \"priority\": \"ROUTINE\",\n  \"source_type\": \"OPD\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"admission_request_id\", jsonData.data.id);",
+                                    "        console.log(\"Admission request created. id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "3.11 Approve / Update Admission Request",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admission-requests/{{admission_request_id}}/status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admission-requests",
+                                "{{admission_request_id}}",
+                                "status"
+                            ]
+                        },
+                        "description": "Change status (READY, UNDER_REVIEW, CANCELLED) of request.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"status\": \"READY\",\n  \"reason\": \"Bed B-12 confirmed in General Ward\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.12 Create Admission (Allocate Bed)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admissions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admissions"
+                            ]
+                        },
+                        "description": "Officially admit patient and reserve bed.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"ward_id\": \"{{ward_id}}\",\n  \"bed_id\": \"{{bed_id}}\",\n  \"admitting_doctor_id\": \"{{doctor_id}}\",\n  \"admission_request_id\": \"{{admission_request_id}}\",\n  \"emergency_visit_id\": \"{{emergency_visit_id}}\",\n  \"admission_type\": \"ELECTIVE\",\n  \"diagnosis\": \"Acute appendicitis\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"admission_id\", jsonData.data.id);",
+                                    "        console.log(\"Admission created. admission_id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "3.13 List Admissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admissions?status=ADMITTED&ward_id={{ward_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admissions"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "ADMITTED"
+                                },
+                                {
+                                    "key": "ward_id",
+                                    "value": "{{ward_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Fetch active admitted patient list."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.14 Admission Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admissions/{{admission_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admissions",
+                                "{{admission_id}}"
+                            ]
+                        },
+                        "description": "Get details of admission file."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.15 Internal Bed Transfer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/transfer",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admissions",
+                                "{{admission_id}}",
+                                "transfer"
+                            ]
+                        },
+                        "description": "Transfer patient to another bed / ward.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"to_ward_id\": \"{{to_ward_id}}\",\n  \"to_bed_id\": \"{{to_bed_id}}\",\n  \"reason\": \"Patient condition worsened, transferring to ICU\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.16 Initiate Discharge",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/discharge/initiate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admissions",
+                                "{{admission_id}}",
+                                "discharge",
+                                "initiate"
+                            ]
+                        },
+                        "description": "Creates four parallel clearance gates (NURSING, DIAGNOSTIC, PHARMACY, BILLING) in PENDING status."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.17 Update Discharge Clearance Gate",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/discharge/clearance",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admissions",
+                                "{{admission_id}}",
+                                "discharge",
+                                "clearance"
+                            ]
+                        },
+                        "description": "Update status of discharge clearance gate.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"gate\": \"BILLING\",\n  \"status\": \"CLEARED\",\n  \"cleared_by\": \"receptionist-uuid\",\n  \"notes\": \"Invoice settled via UPI\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3.18 Complete Discharge",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/admissions/{{admission_id}}/discharge/complete",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "admissions",
+                                "{{admission_id}}",
+                                "discharge",
+                                "complete"
+                            ]
+                        },
+                        "description": "Finalizes discharge checklist once all 4 gates are CLEARED. Releases bed."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "04. Emergency (ER) Dashboard",
+            "item": [
+                {
+                    "name": "4.1 Create Emergency Visit",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/emergency",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "emergency"
+                            ]
+                        },
+                        "description": "Intake form for emergency patients, triages colors and sets ambulance/walkin info.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"triage_level\": \"RED\",\n  \"arrival_mode\": \"AMBULANCE\",\n  \"chief_complaint\": \"Severe chest pain and sweating\",\n  \"assigned_doctor_id\": \"{{doctor_id}}\",\n  \"notes\": \"Brought in by bystanders\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"visit_id\", jsonData.data.id);",
+                                    "        console.log(\"Emergency visit created. visit_id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4.2 Emergency Dashboard",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/emergency?date=2026-07-02",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "emergency"
+                            ],
+                            "query": [
+                                {
+                                    "key": "date",
+                                    "value": "2026-07-02"
+                                }
+                            ]
+                        },
+                        "description": "List active ER cases sorted by severity triage level."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "4.3 Update Emergency Visit Status",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/opd/emergency/{{visit_id}}/status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "opd",
+                                "emergency",
+                                "{{visit_id}}",
+                                "status"
+                            ]
+                        },
+                        "description": "Update emergency process status (TRIAGED, UNDER_TREATMENT, ADMITTED, DISCHARGED).",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"status\": \"UNDER_TREATMENT\",\n  \"assigned_doctor_id\": \"{{doctor_id}}\",\n  \"notes\": \"Patient responding to treatment\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "4.4 Assign / Transfer / Release Emergency Bed",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/emergency/{{visit_id}}/bed",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "emergency",
+                                "{{visit_id}}",
+                                "bed"
+                            ]
+                        },
+                        "description": "Assign bed to emergency patient.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"bed_id\": \"{{bed_id}}\"\n}"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "05. Operating Theatre (OT) Dashboard",
+            "item": [
+                {
+                    "name": "5.1 Create OT Session",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/ot-sessions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "ot-sessions"
+                            ]
+                        },
+                        "description": "Reserve OT slot and map clinical staff.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"surgery_request_id\": \"{{surgery_request_id}}\",\n  \"ot_room_id\": \"{{ot_room_id}}\",\n  \"scheduled_start\": \"2026-07-02T10:00:00Z\",\n  \"scheduled_end\": \"2026-07-02T12:00:00Z\",\n  \"surgeon_id\": \"{{doctor_id}}\",\n  \"anaesthetist_id\": \"{{anaesthetist_id}}\",\n  \"scrub_nurse_id\": \"{{nurse_id}}\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"ot_session_id\", jsonData.data.id);",
+                                    "        console.log(\"OT session created. id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "5.2 Get OT Session Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "ot-sessions",
+                                "{{ot_session_id}}"
+                            ]
+                        },
+                        "description": "Fetch surgical schedule details."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5.3 List Consents for OT Case",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/ot-cases/{{ot_case_id}}/consents",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "ot-cases",
+                                "{{ot_case_id}}",
+                                "consents"
+                            ]
+                        },
+                        "description": "Retrieve checklist of required surgical consents."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5.4 Create Consents for OT Case",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/ot-cases/{{ot_case_id}}/consents",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "ot-cases",
+                                "{{ot_case_id}}",
+                                "consents"
+                            ]
+                        },
+                        "description": "Generate required consent templates for the surgical case."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5.5 Sign Consent",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/consents/{{consent_id}}/sign",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "consents",
+                                "{{consent_id}}",
+                                "sign"
+                            ]
+                        },
+                        "description": "Digitally capture authorization signatures.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"signature_type\": \"DIGITAL\",\n  \"signed_by\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"witness_id\": \"{{witness_id}}\",\n  \"remarks\": \"Signed in person by patient\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5.6 PAC Clearance",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/pac",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "ot-sessions",
+                                "{{ot_session_id}}",
+                                "pac"
+                            ]
+                        },
+                        "description": "Update Anaesthetist fit-for-surgery check.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"pac_cleared\": true,\n  \"cleared_by\": \"{{anaesthetist_id}}\",\n  \"notes\": \"Patient fit for GA\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5.7 Complete Pre-Op Checklist",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/pre-op",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "ot-sessions",
+                                "{{ot_session_id}}",
+                                "pre-op"
+                            ]
+                        },
+                        "description": "Submit checklist checks before patient enters theatre.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"checklist\": {\n    \"fasting_confirmed\": true,\n    \"consent_signed\": true,\n    \"site_marked\": true,\n    \"jewellery_removed\": true,\n    \"iv_access\": true,\n    \"pre_med_given\": true\n  },\n  \"pre_op_notes\": \"Patient ready for incision\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5.8 Start OT Session",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/start",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "ot-sessions",
+                                "{{ot_session_id}}",
+                                "start"
+                            ]
+                        },
+                        "description": "Record surgery start timestamp.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"started_by\": \"{{doctor_id}}\",\n  \"actual_start\": \"2026-07-02T10:15:00Z\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5.9 Complete OT Session & Recovery Transfer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/complete",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ipd",
+                                "ot-sessions",
+                                "{{ot_session_id}}",
+                                "complete"
+                            ]
+                        },
+                        "description": "End surgical log and dispatch bed in recovery ward.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"transferred_to_ward_id\": \"{{recovery_ward_id}}\",\n  \"transferred_to_bed_id\": \"{{recovery_bed_id}}\",\n  \"recovery_notes\": \"Post-operative observations normal\"\n}"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "06. Billing & Cashier",
+            "item": [
+                {
+                    "name": "6.1 Check Billing Clearance",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/billing/clearance/{{admission_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "billing",
+                                "clearance",
+                                "{{admission_id}}"
+                            ]
+                        },
+                        "description": "Calculate outstanding balance for patient admission."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "6.2 Force Billing Clearance (Override)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/billing/clearance/{{admission_id}}/clear",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "billing",
+                                "clearance",
+                                "{{admission_id}}",
+                                "clear"
+                            ]
+                        },
+                        "description": "Override billing blocks for credit/charity exclusions.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"clearance_type\": \"CREDIT_GUARANTEE\",\n  \"approved_by\": \"{{admin_id}}\",\n  \"notes\": \"Corporate credit approval attached\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "6.3 Collect Payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/billing/collect",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "billing",
+                                "collect"
+                            ]
+                        },
+                        "description": "Settle payments for bills and generate receipts.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"payment_mode\": \"UPI\",\n  \"amount\": 500,\n  \"reference_no\": \"UPI9876543210\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "6.4 Generate Invoice",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/billing/invoices",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "billing",
+                                "invoices"
+                            ]
+                        },
+                        "description": "Generate a billing invoice.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"admission_id\": \"{{admission_id}}\",\n  \"appointment_id\": \"{{appointment_id}}\"\n}"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.id) {",
+                                    "        pm.globals.set(\"invoice_id\", jsonData.data.id);",
+                                    "        console.log(\"Invoice generated. invoice_id set to: \" + jsonData.data.id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6.5 Get Invoice Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/billing/invoices/{{invoice_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "billing",
+                                "invoices",
+                                "{{invoice_id}}"
+                            ]
+                        },
+                        "description": "Load lines items and bill breaks of single invoice."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

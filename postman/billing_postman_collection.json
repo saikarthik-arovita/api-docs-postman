@@ -1,0 +1,440 @@
+{
+	"info": {
+		"_postman_id": "7bf361ad-e612-4217-a06f-bc3a1c8f121d",
+		"name": "HMS Billing Service Collection (Workflow Ordered)",
+		"description": "Comprehensive Postman collection structured in sequential working flows for Outpatient (OPD) and Inpatient (IPD) patient journeys.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Outpatient (OPD) Billing Flow",
+			"description": "Sequential steps to charge and check in outpatients.",
+			"item": [
+				{
+					"name": "Step 1: Generate OPD Invoice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.invoice_id) {",
+									"        pm.globals.set(\"invoice_id\", jsonData.data.invoice_id);",
+									"        console.log(\"OPD Invoice generated. invoice_id set to: \" + jsonData.data.invoice_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"visit_type\": \"OPD\",\n  \"visit_id\": \"{{opd_visit_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/invoices",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"invoices"
+							]
+						},
+						"description": "Collect consultation fees and services to generate an OPD invoice."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Settle OPD Dues (Collect Payment)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"payment_mode\": \"UPI\",\n  \"amount\": 500.00,\n  \"reference_no\": \"UPI_OPD_TXN9988\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/collect",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"collect"
+							]
+						},
+						"description": "Collect the consultation payment. Once outstanding dues reach zero, the bill flips to PAID enabling doctor consultation check-in."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: View Invoice Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/invoices/{{invoice_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"invoices",
+								"{{invoice_id}}"
+							]
+						},
+						"description": "Verify that the invoice totals and payment status have been updated correctly."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Inpatient (IPD) Clearance Flow",
+			"description": "Sequential steps to generate, clear, and override IPD dues prior to physical patient discharge.",
+			"item": [
+				{
+					"name": "Step 1: Generate Final IPD Invoice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.invoice_id) {",
+									"        pm.globals.set(\"invoice_id\", jsonData.data.invoice_id);",
+									"        console.log(\"IPD Invoice generated. invoice_id set to: \" + jsonData.data.invoice_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"visit_type\": \"IPD\",\n  \"visit_id\": \"{{admission_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/invoices",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"invoices"
+							]
+						},
+						"description": "Aggregate bed rents, surgeries, diagnostics, and pharmacy orders accumulated during admission to generate the IPD invoice."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Check IPD Billing Clearance Dues",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/clearance/{{admission_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"clearance",
+								"{{admission_id}}"
+							]
+						},
+						"description": "Verify outstanding dues and whether billing blocks prevent the discharge case from being processed."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3a: Settle IPD Dues (Standard Cashier Collection)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"payment_mode\": \"CARD\",\n  \"amount\": 15000.00,\n  \"reference_no\": \"CARD_TXN_IPD_8811\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/collect",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"collect"
+							]
+						},
+						"description": "Standard flow payment collection. Resolving outstanding dues to zero automatically clears the IPD billing clearance status."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3b: Force Billing Clearance (Credit/Charity Override)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clearance_type\": \"CREDIT_GUARANTEE\",\n  \"approved_by\": \"{{admin_id}}\",\n  \"notes\": \"Approved by Managing Director. Post-discharge corporate clearance applies.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/clearance/{{admission_id}}/clear",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"clearance",
+								"{{admission_id}}",
+								"clear"
+							]
+						},
+						"description": "Bypasses outstanding dues checks to clear the billing block for charity, corporate credit agreements, or employee benefits."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 4: Update Clearance Notes",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Clarification: Guarantee letter copy verified and attached to audit voucher.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/clearance/{{admission_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"clearance",
+								"{{admission_id}}"
+							]
+						},
+						"description": "Update notes/clarifications on active clearances."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 5: Verify Final Clearance Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/clearance/{{admission_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"clearance",
+								"{{admission_id}}"
+							]
+						},
+						"description": "Confirm that the billing gate is now fully CLEARED and the patient can proceed with physical discharge."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Reporting & Auditing",
+			"description": "Analytics, audit trails, and reporting endpoints.",
+			"item": [
+				{
+					"name": "3.1 Get Patient Billing Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/patient/{{patient_id}}/summary?recent_limit=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"patient",
+								"{{patient_id}}",
+								"summary"
+							],
+							"query": [
+								{
+									"key": "recent_limit",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Retrieve lifetime invoice counts, total payments, insurance distributions, and recent bills for a patient's profile card."
+					},
+					"response": []
+				},
+				{
+					"name": "3.2 List All Invoices / Bills",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/bills?page=1&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"bills"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Fetch a list of all bills for auditing."
+					},
+					"response": []
+				},
+				{
+					"name": "3.3 Get Billing Dashboard Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"dashboard"
+							]
+						},
+						"description": "Fetch today's total bills, total revenue trends, cash/UPI/insurance breakdowns, and high-value pending alerts."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
