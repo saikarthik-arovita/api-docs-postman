@@ -1,6 +1,10 @@
 # HMS V2 Inpatient Clinical Workflows Integration Guide
 
+> [!IMPORTANT]
+> The OT / Surgery flow has been simplified and consolidated. Please refer to [unified_ot_surgery_flow.md](file:///c:/Users/saika/OneDrive/Desktop/Arovita/ops-hms-ljb/docs/unified_ot_surgery_flow.md) for the latest unified sequence and API quick reference.
+
 This guide details the APIs, request schemas (mandatory/optional fields), response formats, and step-by-step API integration sequences for standard inpatient clinical workflows.
+
 
 ---
 

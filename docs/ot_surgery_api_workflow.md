@@ -1,8 +1,12 @@
 # OT / Surgery Lifecycle — Complete Sequential API Contract
 
+> [!IMPORTANT]
+> The OT / Surgery flow has been simplified and consolidated. Please refer to [unified_ot_surgery_flow.md](file:///c:/Users/saika/OneDrive/Desktop/Arovita/ops-hms-ljb/docs/unified_ot_surgery_flow.md) for the latest unified sequence and API quick reference.
+
 > **Source of Truth**: Derived exclusively from source code analysis of `ops-hms-ljb`
 > **Services Involved**: `patient`, `opd`, `ipd`, `billing`
 > **Generated**: 2026-07-03
+
 
 ---
 

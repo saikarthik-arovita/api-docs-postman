@@ -1,8 +1,12 @@
 # Arovita HMS — Surgery & Procedure Documentation Flow Spec
 
+> [!IMPORTANT]
+> The OT / Surgery flow has been simplified and consolidated. Please refer to [unified_ot_surgery_flow.md](file:///c:/Users/saika/OneDrive/Desktop/Arovita/ops-hms-ljb/docs/unified_ot_surgery_flow.md) for the latest unified sequence and API quick reference.
+
 **Version:** 1.0 (Production Reference Guide)  
 **Target Audience:** Frontend Engineers, API Consumers, QA Engineers, Core Backend Developers  
 **Core Objective:** Map the state transitions, database schema tables, and exact API request/response payloads for major Operating Theatre (OT) Surgeries and Minor Bedside Procedures.
+
 
 ---
 

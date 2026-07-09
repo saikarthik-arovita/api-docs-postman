@@ -1,6 +1,10 @@
 # Inpatient Department (IPD), OT Surgeries, & Discharge Clearance API Specification
 
+> [!IMPORTANT]
+> The OT / Surgery flow has been simplified and consolidated. Please refer to [unified_ot_surgery_flow.md](file:///c:/Users/saika/OneDrive/Desktop/Arovita/ops-hms-ljb/docs/unified_ot_surgery_flow.md) for the latest unified sequence and API quick reference.
+
 This reference document outlines the complete REST API specification for Inpatient Department (IPD) clinical lifecycles, Operating Theatre (OT) surgeries, clinical consent signatures, and multi-department discharge gate clearance workflows.
+
 
 ---
 
