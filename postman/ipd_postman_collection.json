@@ -1734,7 +1734,7 @@
           }
         },
         {
-          "name": "Create Surgery Request",
+          "name": "Create Surgery Advice (OPD/IPD)",
           "event": [
             {
               "listen": "test",
@@ -1743,8 +1743,8 @@
                   "if (pm.response.code === 201 || pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    if (jsonData.data && jsonData.data.id) {",
-                  "        pm.collectionVariables.set(\"surgery_request_id\", jsonData.data.id);",
-                  "        console.log(\"Surgery Request created. surgery_request_id set to: \" + jsonData.data.id);",
+                  "        pm.collectionVariables.set(\"service_order_id\", jsonData.data.id);",
+                  "        console.log(\"Surgery advice created. service_order_id set to: \" + jsonData.data.id);",
                   "    }",
                   "}"
                 ],
@@ -1762,100 +1762,38 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"clinical_escalation_id\": \"{{clinical_escalation_id}}\",\n  \"admission_id\": \"{{admission_id}}\",\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\",\n  \"procedure_id\": \"{{catalogue_surgery_id}}\",\n  \"urgency\": \"EMERGENCY\",\n  \"notes\": \"OT room 2 assigned\"\n}"
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"service_name\": \"Appendectomy\",\n  \"order_type\": \"SURGERY\",\n  \"priority\": \"HIGH\",\n  \"admission_id\": \"{{admission_id}}\",\n  \"notes\": \"Advised surgery for acute appendicitis.\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/ipd/surgeries",
+              "raw": "{{base_url}}/opd/surgery",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "ipd",
-                "surgeries"
+                "opd",
+                "surgery"
               ]
             }
           }
         },
         {
-          "name": "Schedule Surgery Request",
+          "name": "List Surgery Advices",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ot_room_id\": \"84820843-9876-4321-9abc-1234567890ab\",\n  \"scheduled_at\": \"2026-06-20T18:00:00Z\",\n  \"scheduled_by\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
-            },
+            "method": "GET",
             "url": {
-              "raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/schedule",
+              "raw": "{{base_url}}/opd/surgery?patient_id={{patient_id}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "ipd",
-                "surgeries",
-                "{{surgery_request_id}}",
-                "schedule"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Start Surgery Request",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"doctor_id\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/start",
-              "host": [
-                "{{base_url}}"
+                "opd",
+                "surgery"
               ],
-              "path": [
-                "ipd",
-                "surgeries",
-                "{{surgery_request_id}}",
-                "start"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Complete Surgery Request",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"surgery_notes\": \"Appendectomy complete\",\n  \"completed_by\": \"ffeee23d-9a29-454f-9f46-192f1aaab285\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/ipd/surgeries/{{surgery_request_id}}/complete",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "ipd",
-                "surgeries",
-                "{{surgery_request_id}}",
-                "complete"
+              "query": [
+                {
+                  "key": "patient_id",
+                  "value": "{{patient_id}}"
+                }
               ]
             }
           }
@@ -2102,6 +2040,62 @@
                 "ipd",
                 "ot-sessions",
                 "{{ot_session_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add OT Consumables",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_name\": \"Suture Thread\",\n  \"quantity\": 2,\n  \"batch_no\": \"B-88712\",\n  \"implant_serial\": \"SN-01289\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/consumables",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}",
+                "consumables"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel OT Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Patient developed high fever before pre-op clearance.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ipd/ot-sessions/{{ot_session_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipd",
+                "ot-sessions",
+                "{{ot_session_id}}",
+                "cancel"
               ]
             }
           }
