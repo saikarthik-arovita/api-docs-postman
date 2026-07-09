@@ -1,0 +1,547 @@
+{
+	"info": {
+		"_postman_id": "b3e0d8ea-1721-4f90-8dfb-a81d2df89a19",
+		"name": "HMS Compliance & Security and Roles Configuration Collection",
+		"description": "Comprehensive Postman Collection for testing all APIs developed for the Compliance & Security Dashboard module and the Edit Roles & Permissions Configurator in the Admin Service.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Compliance & Security Dashboard",
+			"description": "Aggregate and analytics endpoints for compliance, security switches, audit logs, and reports.",
+			"item": [
+				{
+					"name": "GET System Audit Logs Overview",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/audit-overview?page=1&page_size=10&severity=CRITICAL&user=John&module=auth&fromDate=2026-07-01T00:00:00Z&toDate=2026-07-08T23:59:59Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"audit-overview"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "page_size",
+									"value": "10",
+									"description": "Results per page"
+								},
+								{
+									"key": "severity",
+									"value": "CRITICAL",
+									"description": "Filter by severity (CRITICAL, WARNING, INFO)"
+								},
+								{
+									"key": "user",
+									"value": "John",
+									"description": "Full name or email substring search for user"
+								},
+								{
+									"key": "module",
+									"value": "auth",
+									"description": "Filter by system module action"
+								},
+								{
+									"key": "fromDate",
+									"value": "2026-07-01T00:00:00Z",
+									"description": "Filter logs starting from date"
+								},
+								{
+									"key": "toDate",
+									"value": "2026-07-08T23:59:59Z",
+									"description": "Filter logs ending at date"
+								}
+							]
+						},
+						"description": "Returns high-level metric cards (total events, critical alerts, warnings, failed login attempts) and a paginated list of audit events matching filters."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Security Settings Switches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/security-settings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"security-settings"
+							]
+						},
+						"description": "Gets current system security flags: MFA requirement, Auto-logout idle duration, and configured Emergency alerting protocols."
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH Update Security Settings",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"twoFactorAuthentication\": true,\n    \"autoLogoutDuration\": \"45 Minutes\",\n    \"emergencyAlerts\": [\"sms\", \"in-app\", \"email\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/security-settings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"security-settings"
+							]
+						},
+						"description": "Updates system-wide security settings and saves configuration changes to database settings."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Security Analytics & Login Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/security-analytics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"security-analytics"
+							]
+						},
+						"description": "Returns security events charts data (successful logins, failed logins, critical counts) for a rolling 7-day period alongside activity summary categories."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Role Access Permission Matrix",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/access-overview",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"access-overview"
+							]
+						},
+						"description": "Returns module permission matrix, a list of privileged system users, and elevated permission action logs."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Export Compliance Audit Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/report?format=PDF",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"report"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "PDF",
+									"description": "Export format: PDF, EXCEL, or CSV"
+								}
+							]
+						},
+						"description": "Exports a dynamic audit report for compliance officers in CSV, Excel, or PDF format."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Roles & Permissions Configurator",
+			"description": "Configure roles priority, hierarchy levels, scope exclusions, approve user overrides, and save granular permission checklists in drafts before publishing.",
+			"item": [
+				{
+					"name": "GET Role Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/roles/:roleId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								":roleId"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": "MED-001",
+									"description": "Primary role identifier"
+								}
+							]
+						},
+						"description": "Retrieves the core details of a role including name, priority weight hierarchy, and scope limitations."
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH Modify Role Configuration",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roleName\": \"Lead Surgeon Configuration\",\n    \"hierarchy\": 12,\n    \"departmentScope\": \"ALL\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/roles/:roleId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								":roleId"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": "MED-001",
+									"description": "Primary role identifier to modify"
+								}
+							]
+						},
+						"description": "Modifies basic properties (name, priority hierarchy levels, or scope boundaries) of an existing role."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Pending Override Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/roles/pending-requests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								"pending-requests"
+							]
+						},
+						"description": "Lists all user assignment override requests waiting for higher-authority approvals."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Approve Override Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/roles/pending-requests/:requestId/approve",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								"pending-requests",
+								":requestId",
+								"approve"
+							],
+							"variable": [
+								{
+									"key": "requestId",
+									"value": "7bd2fae4-233d-432e-9685-d03ca383b1e2",
+									"description": "The pending override request UUID to approve"
+								}
+							]
+						},
+						"description": "Approves the request, promotion, or transfer assignment, updating the user's role in production and logging the audit event."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Reject Override Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/roles/pending-requests/:requestId/reject",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								"pending-requests",
+								":requestId",
+								"reject"
+							],
+							"variable": [
+								{
+									"key": "requestId",
+									"value": "7bd2fae4-233d-432e-9685-d03ca383b1e2",
+									"description": "The pending override request UUID to reject"
+								}
+							]
+						},
+						"description": "Rejects the request, moving its status to REJECTED and recording the event."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Role Granular Permissions List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/roles/:roleId/permissions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								":roleId",
+								"permissions"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": "MED-001",
+									"description": "Primary role identifier"
+								}
+							]
+						},
+						"description": "Returns a structured checklist of all system permission codes grouped into distinct categories, showing both their active configuration status and any unstaged draft modifications."
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH Modify Permissions (Save to Draft)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"permissionIds\": [\"CMP-001\", \"CMP-002\", \"ROL-001\", \"ROL-002\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/roles/:roleId/permissions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								":roleId",
+								"permissions"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": "MED-001",
+									"description": "Primary role identifier to modify permissions checklist"
+								}
+							]
+						},
+						"description": "Bulk saves the modified permission states to draft staging. This does not disrupt production configuration parameters until explicit publishing actions are triggered."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Publish Role Draft Permissions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/roles/:roleId/publish",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								":roleId",
+								"publish"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": "MED-001",
+									"description": "Primary role identifier to publish"
+								}
+							]
+						},
+						"description": "Commits all saved draft configurations directly to active production permissions maps and clears draft staging records."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Discard Role Draft Permissions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/roles/:roleId/discard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"roles",
+								":roleId",
+								"discard"
+							],
+							"variable": [
+								{
+									"key": "roleId",
+									"value": "MED-001",
+									"description": "Primary role identifier to discard"
+								}
+							]
+						},
+						"description": "Clears and discards all unstaged permissions draft adjustments."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

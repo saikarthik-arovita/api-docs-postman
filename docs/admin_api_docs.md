@@ -43,6 +43,177 @@ All API responses follow the standard envelope format:
 
 ## 2. Dashboards & Analytics
 
+### 2.0 Command Center Aggregate Dashboard APIs
+
+The following endpoints support consolidated aggregate metric retrieval for the Analytics & Reports Dashboard figma cards:
+
+#### 2.0.1 GET /admin/dashboard/overview
+Returns all top KPI cards (Patients, Emergency Cases, Bed Occupancy, Procedures, Revenue, Pending Payments, Conversion Rate) for the current period, along with percentage change compared to the previous period of equal duration.
+
+* **Query Parameters:**
+  * `hospitalId` / `hospital_id` (UUID, optional)
+  * `branchId` / `branch_id` (UUID, optional)
+  * `departmentId` / `department_id` (UUID, optional)
+  * `fromDate` / `from_date` (date: `YYYY-MM-DD`, optional)
+  * `toDate` / `to_date` (date: `YYYY-MM-DD`, optional)
+  * `timeRange` / `time_range` (string, optional: `today`, `this-week`, `this-month`, `last-30-days`, `last-90-days`)
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "patients": { "value": 1248, "change_pct": 12.0 },
+    "emergency_cases": { "value": 42, "change_pct": -3.0 },
+    "bed_occupancy": { "value": 85.0, "change_pct": 5.0 },
+    "procedures": { "value": 18, "change_pct": -12.0 },
+    "revenue": { "value": 840000.00, "change_pct": 15.0 },
+    "pending_payments": { "value": 120000.00, "change_pct": -5.0 },
+    "conversion_rate": { "value": 15.0, "change_pct": 2.0 }
+  }
+}
+```
+
+#### 2.0.2 GET /admin/dashboard/hospital-performance
+Returns Operations Overview trends (OPD, IPD, Emergency, OT) and Revenue vs Expense trends.
+
+* **Query Parameters:** Same as overview filters.
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "operations_overview": [
+      { "label": "01 Jun 2026", "opd": 150, "ipd": 40, "emergency": 25, "ot": 12 },
+      { "label": "15 Jun 2026", "opd": 180, "ipd": 45, "emergency": 30, "ot": 15 }
+    ],
+    "revenue_overview": [
+      { "label": "01 Jun 2026", "revenue": 240000.00, "expenses": 180000.00 },
+      { "label": "15 Jun 2026", "revenue": 280000.00, "expenses": 210000.00 }
+    ]
+  }
+}
+```
+
+#### 2.0.3 GET /admin/dashboard/resource-utilization
+Returns Staff, Bed, Ward, and Ambulance utilization metrics.
+
+* **Query Parameters:** Same as overview filters.
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "staff_utilization": 78.8,
+    "bed_utilization": 82.4,
+    "ward_utilization": 68.3,
+    "ambulance_utilization": 91.7
+  }
+}
+```
+
+#### 2.0.4 GET /admin/dashboard/reports
+Returns paginated, searchable, and filtered recent reports.
+
+* **Query Parameters:**
+  * `page` (int, default: 1)
+  * `page_size` (int, default: 10)
+  * `search` (string, optional)
+  * `status` (string, optional)
+  * `department` (string, optional)
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "rep-001",
+        "report_name": "OPD Summary Report",
+        "department": "Outpatient",
+        "reporting_period": "Jun 1 - Jun 30, 2025",
+        "generated_by": "Dr. Priya Mehta",
+        "generated_on": "2025-07-01T00:00:00Z",
+        "status": "Pending"
+      }
+    ],
+    "meta": {
+      "total": 124,
+      "page": 1,
+      "page_size": 5,
+      "total_pages": 25
+    }
+  }
+}
+```
+
+#### 2.0.5 GET /admin/dashboard/statistics
+Returns Hospital Occupancy split (by Ward Type) and Expense Breakdown splits.
+
+* **Query Parameters:** Same as overview filters.
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "hospital_occupancy": [
+      { "name": "ICU", "value": 82.0 },
+      { "name": "General Ward", "value": 10.0 }
+    ],
+    "expense_breakdown": [
+      { "name": "Salaries & Wages", "value": 288000.00 },
+      { "name": "Maintenance & Ops", "value": 128000.00 }
+    ]
+  }
+}
+```
+
+#### 2.0.6 GET /admin/dashboard/department-performance
+Returns revenue, expenses, net profit, and profit margin metrics for each active department.
+
+* **Query Parameters:** Same as overview filters.
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "departments": [
+      {
+        "department_name": "Pharmacy",
+        "revenue": 230000.00,
+        "expenses": 190000.00,
+        "net_profit": 40000.00,
+        "margin_pct": 17.4
+      }
+    ]
+  }
+}
+```
+
+#### 2.0.7 GET /admin/dashboard/report-library
+Returns roster of available report templates, supported export formats, and active status.
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "templates": [
+      {
+        "report_type": "REVENUE_SUMMARY",
+        "name": "Revenue Summary Report",
+        "description": "Aggregated daily/monthly billing revenues...",
+        "category": "FINANCE",
+        "supported_formats": ["PDF", "CSV", "XLSX"],
+        "status": "Active"
+      }
+    ],
+    "total": 4
+  }
+}
+```
+
+---
+
 ### 2.1 Dashboard Summary (Short View)
 Returns a basic count overview of active staff, pending leaves, and bed capacities.
 
@@ -538,7 +709,51 @@ Allows managers to assign or revoke individual permissions directly on a user wi
 }
 ```
 
-* `GET /admin/departments` - List active departments.
+### List Departments (Enriched & Paginated)
+* **Endpoint:** `GET /admin/departments`
+* **Query Parameters:**
+  * `page` (integer, optional, default: 1): Page number.
+  * `page_size` (integer, optional, default: 10): Page size.
+  * `search` (string, optional): Case-insensitive search on department name.
+  * `status` (string, optional): Filter by occupancy status (`Healthy`, `Moderate`, `Critical`).
+  * `sort_by` (string, optional, default: `department_name`): Whitelisted sort fields: `department_name`, `total_staff`, `capacity_beds`, `occupied_beds`, `available_beds`, `status`, `updated_at`.
+  * `sort_order` (string, optional, default: `asc`): Sorting direction (`asc` or `desc`).
+  * `include_inactive` (boolean, optional, default: false): Include inactive departments.
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "department_id": "47832613-a7dc-4584-bec6-79725bf33a21",
+        "department_name": "Emergency",
+        "is_active": true,
+        "created_at": "2026-06-15T12:48:05.606200+05:30",
+        "updated_at": "2026-06-15T12:48:50.764601+05:30",
+        "block": "Block A",
+        "floor": "Ground Floor",
+        "doctor_id": "662dde10-b6e9-4d06-b27e-1972b778f72d",
+        "doctor_name": "Dr. Anil Pandey",
+        "avatar_initial": "A",
+        "total_staff": 3,
+        "capacity_beds": 20,
+        "occupied_beds": 0,
+        "available_beds": 19,
+        "status": "Healthy"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 10,
+      "total_records": 65,
+      "total_pages": 7
+    }
+  }
+}
+```
+
 * `PATCH /admin/departments/{department_id}` - Toggle status or name.
 * `GET /admin/specializations` - List medical specialties.
 * `POST /admin/specializations` - Create specialization.
@@ -1168,4 +1383,294 @@ All endpoints require `Authorization: Bearer <access_token>`.
     "is_active": true
   }
 }
+```
+
+---
+
+## 14. Compliance & Roles Configuration Module
+
+All endpoints require `Authorization: Bearer <access_token>`.
+
+### 14.1 Compliance Dashboard
+
+#### System Audit Logs Overview
+* **Endpoint:** `GET /admin/compliance/audit-overview`
+* **Query Parameters:**
+  * `page` (optional, default: `1`)
+  * `page_size` (optional, default: `10`)
+  * `severity` (optional) - Filter by `CRITICAL`, `WARNING`, `INFO`
+  * `user` (optional) - Substring search for user full name/email
+  * `module` (optional) - Substring search for action name
+  * `fromDate` (optional) - ISO datetime string
+  * `toDate` (optional) - ISO datetime string
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "metrics": {
+      "totalEvents": 450,
+      "criticalEvents": 12,
+      "failedLogins": 85,
+      "warningsCount": 30
+    },
+    "logs": [
+      {
+        "id": "log-uuid-123456",
+        "userName": "Alice Smith",
+        "userEmail": "alice@hms.com",
+        "action": "user.login",
+        "module": "auth",
+        "status": "success",
+        "severity": "INFO",
+        "timestamp": "2026-07-08T10:15:00Z",
+        "ipAddress": "192.168.1.1",
+        "metadata": {}
+      }
+    ],
+    "pagination": {
+      "total": 450,
+      "page": 1,
+      "pageSize": 10,
+      "totalPages": 45
+    }
+  }
+}
+```
+
+#### Get Security Settings
+* **Endpoint:** `GET /admin/compliance/security-settings`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "twoFactorAuthentication": true,
+    "autoLogoutDuration": "30 Minutes",
+    "emergencyAlerts": ["sms", "email"]
+  }
+}
+```
+
+#### Update Security Settings
+* **Endpoint:** `PATCH /admin/compliance/security-settings`
+* **Request Body:**
+```json
+{
+  "twoFactorAuthentication": true,
+  "autoLogoutDuration": "45 Minutes",
+  "emergencyAlerts": ["sms", "in-app", "email"]
+}
+```
+* **Success Response (200 OK):** Updated settings model.
+
+#### Security Analytics & Login Trends
+* **Endpoint:** `GET /admin/compliance/security-analytics`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "securityEvents": {
+      "labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      "successfulLogins": [120, 150, 110, 130, 140, 90, 80],
+      "failedLogins": [5, 2, 8, 1, 3, 12, 0],
+      "criticalEvents": [0, 1, 0, 0, 2, 0, 1]
+    },
+    "activitySummary": {
+      "userActivities": 5400,
+      "configurationChanges": 34,
+      "resourceUpdates": 128,
+      "financialChanges": 92
+    }
+  }
+}
+```
+
+#### Role Access matrix & Privileged Users
+* **Endpoint:** `GET /admin/compliance/access-overview`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "accessMatrix": [
+      {
+        "module": "Compliance & Security",
+        "admin": "Active",
+        "doctor": "None",
+        "nurse": "None",
+        "receptionist": "None",
+        "billing": "None"
+      }
+    ],
+    "privilegedUsers": [
+      {
+        "name": "Super Admin",
+        "role": "Super Admin",
+        "accessLevel": "ADMIN",
+        "lastLogin": "2026-07-08T12:00:00Z",
+        "status": "Active"
+      }
+    ],
+    "elevatedAccess": [
+      {
+        "id": "event-uuid",
+        "description": "Permissions assigned to Doctor role",
+        "timestamp": "2026-07-08T09:30:00Z",
+        "severity": "CRITICAL"
+      }
+    ]
+  }
+}
+```
+
+#### Export Compliance Audit Report
+* **Endpoint:** `GET /admin/compliance/report`
+* **Query Parameters:**
+  * `format` (optional, default: `PDF`, options: `PDF`, `EXCEL`, `CSV`)
+* **Success Response (200 OK):** Returns raw binary attachment with content types `application/pdf`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, or `text/csv`.
+
+---
+
+### 14.2 Roles and Permissions Configurator
+
+#### GET Role Details
+* **Endpoint:** `GET /admin/roles/{roleId}`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "roleId": "MED-001",
+    "roleName": "Lead Physician",
+    "hierarchy": 10,
+    "departmentScope": "CLINICAL",
+    "isSuperAdmin": false
+  }
+}
+```
+
+#### PATCH Modify Role Configuration
+* **Endpoint:** `PATCH /admin/roles/{roleId}`
+* **Request Body:**
+```json
+{
+  "roleName": "Lead Clinical Physician",
+  "hierarchy": 12,
+  "departmentScope": "CLINICAL"
+}
+```
+* **Success Response (200 OK):** Updated role details.
+
+#### GET Pending Override Requests
+* **Endpoint:** `GET /admin/roles/pending-requests`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "request-uuid-abc",
+      "tenantId": "branch-uuid",
+      "requestType": "ROLE_CHANGE",
+      "requesterName": "Admin user",
+      "targetUserName": "Dr. Smith",
+      "roleId": "MED-001",
+      "roleName": "Lead Physician",
+      "reason": "Promotion",
+      "status": "PENDING",
+      "createdAt": "2026-07-08T08:00:00Z"
+    }
+  ]
+}
+```
+
+#### POST Approve Override Request
+* **Endpoint:** `POST /admin/roles/pending-requests/{requestId}/approve`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Role request approved and applied successfully."
+}
+```
+
+#### POST Reject Override Request
+* **Endpoint:** `POST /admin/roles/pending-requests/{requestId}/reject`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Role request rejected successfully."
+}
+```
+
+#### GET Role Granular Permissions
+* **Endpoint:** `GET /admin/roles/{roleId}/permissions`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "roleId": "MED-001",
+    "roleName": "Lead Physician",
+    "categories": [
+      {
+        "categoryName": "Clinical & Patient Care",
+        "permissions": [
+          {
+            "id": "CMP-001",
+            "code": "compliance:view",
+            "name": "View Compliance Logs",
+            "isActive": true,
+            "isDraftActive": true
+          }
+        ]
+      }
+    ],
+    "hasDraftChanges": false
+  }
+}
+```
+
+#### PATCH Modify Permissions (Save to Draft)
+* **Endpoint:** `PATCH /admin/roles/{roleId}/permissions`
+* **Request Body:**
+```json
+{
+  "permissionIds": ["CMP-001", "CMP-002", "ROL-001"]
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Permissions updated in draft state."
+}
+```
+
+#### POST Publish Role Draft Permissions
+* **Endpoint:** `POST /admin/roles/{roleId}/publish`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "roleId": "MED-001",
+    "roleName": "Lead Physician",
+    "publishedCount": 3
+  }
+}
+```
+
+#### POST Discard Role Draft Permissions
+* **Endpoint:** `POST /admin/roles/{roleId}/discard`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Draft permission modifications discarded."
+}
+```
 ```

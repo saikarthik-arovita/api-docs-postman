@@ -1,0 +1,998 @@
+{
+	"info": {
+		"_postman_id": "c1f72782-b7e1-4c6e-927b-fb8a2ad81b53",
+		"name": "HMS Admin Reports and Analytics Collection",
+		"description": "Comprehensive Postman Collection containing only the API endpoints hosted by the Admin Service for dashboards, business intelligence analytics, generated operational reports, and compliance/audit logging.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Admin Dashboards",
+			"description": "High-level summary metrics and system-wide KPI dashboards.",
+			"item": [
+				{
+					"name": "Full Dashboard Overview",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard"
+							]
+						},
+						"description": "Aggregated endpoint returning complete overview matrices: patients registration footfalls, today billing collection details, TPA claims, and PO procurement spending values."
+					},
+					"response": []
+				},
+				{
+					"name": "Dashboard & Roster Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"summary"
+							]
+						},
+						"description": "Returns staff headcounts, active departments, specialty configuration totals, daily roster details, leave rates, and count of generated reports."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Dashboard Overview",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/overview?timeRange=last-30-days",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"overview"
+							],
+							"query": [
+								{
+									"key": "timeRange",
+									"value": "last-30-days"
+								}
+							]
+						},
+						"description": "Returns all top KPI cards (Patients, Emergency Cases, Bed Occupancy, Procedures, Revenue, Pending Payments, Conversion Rate) for the current period, along with percentage change compared to the previous period."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Hospital Performance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/hospital-performance?timeRange=last-30-days",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"hospital-performance"
+							],
+							"query": [
+								{
+									"key": "timeRange",
+									"value": "last-30-days"
+								}
+							]
+						},
+						"description": "Returns Operations Overview (OPD, IPD, Emergency, OT) and Revenue Overview chart data."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Resource Utilization",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/resource-utilization",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"resource-utilization"
+							]
+						},
+						"description": "Returns Staff, Bed, Ward, and Ambulance utilization metrics."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Dashboard Reports",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/reports?page=1&page_size=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Returns recent reports with pagination, search, status, and department filters."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Dashboard Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/statistics?timeRange=last-30-days",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"statistics"
+							],
+							"query": [
+								{
+									"key": "timeRange",
+									"value": "last-30-days"
+								}
+							]
+						},
+						"description": "Returns Hospital Occupancy and Expense Breakdown chart data."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Department Performance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/department-performance?timeRange=last-30-days",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"department-performance"
+							],
+							"query": [
+								{
+									"key": "timeRange",
+									"value": "last-30-days"
+								}
+							]
+						},
+						"description": "Returns revenue, expenses, profit, and margin for each department."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Report Library",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/report-library",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"report-library"
+							]
+						},
+						"description": "Returns available report templates, supported export formats, and report status."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Admin Analytics Trends",
+			"description": "Detailed business intelligence trends and operational analysis dashboards.",
+			"item": [
+				{
+					"name": "Analytics KPI Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/kpi",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"kpi"
+							]
+						},
+						"description": "Returns top-level management KPIs (total patients weekly variance, active emergency today, bed occupancy rate, procedures, outstanding billing collection, and OPD-to-IPD conversion rate)."
+					},
+					"response": []
+				},
+				{
+					"name": "Patient Inflow Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/patient-inflow?granularity=daily&periods=30",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"patient-inflow"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "daily",
+									"description": "Supports: daily, weekly, monthly"
+								},
+								{
+									"key": "periods",
+									"value": "30",
+									"description": "Number of periods to fetch"
+								}
+							]
+						},
+						"description": "Returns outpatient, inpatient, and emergency footfall and admissions inflow trends over a specified period."
+					},
+					"response": []
+				},
+				{
+					"name": "Revenue Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/revenue?granularity=monthly&periods=12",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"revenue"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "monthly",
+									"description": "Supports: daily, weekly, monthly"
+								},
+								{
+									"key": "periods",
+									"value": "12",
+									"description": "Number of periods to fetch"
+								}
+							]
+						},
+						"description": "Returns monthly or weekly revenue trends, target revenue, highest revenue department, and top earning service."
+					},
+					"response": []
+				},
+				{
+					"name": "OPD-to-IPD Conversion Analysis",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/opd-ipd-conversion?granularity=monthly&periods=6",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"opd-ipd-conversion"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "monthly",
+									"description": "Supports: daily, weekly, monthly"
+								},
+								{
+									"key": "periods",
+									"value": "6",
+									"description": "Number of periods to fetch"
+								}
+							]
+						},
+						"description": "Returns historical conversion rates from outpatient visits to inpatient admissions."
+					},
+					"response": []
+				},
+				{
+					"name": "Doctor Performance & Workload",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/doctor-performance?from_date=2026-06-01&to_date=2026-06-13&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"doctor-performance"
+							],
+							"query": [
+								{
+									"key": "from_date",
+									"value": "2026-06-01",
+									"description": "Start date for analysis (YYYY-MM-DD)"
+								},
+								{
+									"key": "to_date",
+									"value": "2026-06-13",
+									"description": "End date for analysis (YYYY-MM-DD)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Limit response list count"
+								}
+							]
+						},
+						"description": "Returns consultant-wise workload, consultations count, completed surgeries, and average prescription rating."
+					},
+					"response": []
+				},
+				{
+					"name": "Emergency Caseload Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/emergency?granularity=daily&periods=30",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"emergency"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "daily",
+									"description": "Supports: daily, weekly, monthly"
+								},
+								{
+									"key": "periods",
+									"value": "30",
+									"description": "Number of periods to fetch"
+								}
+							]
+						},
+						"description": "Returns emergency caseload trends, waiting times, and triage counts."
+					},
+					"response": []
+				},
+				{
+					"name": "Bed Occupancy Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/bed-occupancy?granularity=daily&periods=30",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"bed-occupancy"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "daily",
+									"description": "Supports: daily, weekly, monthly"
+								},
+								{
+									"key": "periods",
+									"value": "30",
+									"description": "Number of periods to fetch"
+								}
+							]
+						},
+						"description": "Returns daily/weekly/monthly bed occupancy rates, turn-over rates, and capacity indicators."
+					},
+					"response": []
+				},
+				{
+					"name": "Operating Theatre (OT) Load Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/ot?granularity=monthly&periods=6",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"ot"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "monthly",
+									"description": "Supports: daily, weekly, monthly"
+								},
+								{
+									"key": "periods",
+									"value": "6",
+									"description": "Number of periods to fetch"
+								}
+							]
+						},
+						"description": "Returns scheduled vs completed surgeries, delay metrics, and equipment utilization status."
+					},
+					"response": []
+				},
+				{
+					"name": "Lab Turnaround Time (TAT) Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/lab-tat?granularity=weekly&periods=12",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"lab-tat"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "weekly",
+									"description": "Supports: daily, weekly, monthly"
+								},
+								{
+									"key": "periods",
+									"value": "12",
+									"description": "Number of periods to fetch"
+								}
+							]
+						},
+						"description": "Returns laboratory Turnaround Time (TAT) efficiency, sample-to-validation stages times, and validation delay trends."
+					},
+					"response": []
+				},
+				{
+					"name": "Billing & Financial Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/analytics/billing?granularity=monthly&periods=12",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"analytics",
+								"billing"
+							],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "monthly",
+									"description": "Supports: daily, weekly, monthly"
+								},
+								{
+									"key": "periods",
+									"value": "12",
+									"description": "Number of periods to fetch"
+								}
+							]
+						},
+						"description": "Returns invoice settlements billing trends, payment modes breakdown, and refund logs summary."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Operational Reports",
+			"description": "Endpoints to view templates, list recent, and generate on-demand PDFs/Data for operational areas.",
+			"item": [
+				{
+					"name": "List Operational Templates",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/reports",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"reports"
+							]
+						},
+						"description": "Lists all available report templates including REVENUE_SUMMARY, INVENTORY_VALUATION, CLINICAL_CENSUS, and STAFF_COMPLIANCE."
+					},
+					"response": []
+				},
+				{
+					"name": "List Recent Generated Reports",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/reports/recent?page=1&page_size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"recent"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Lists recently generated operational reports from the system."
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Revenue Summary Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/reports/REVENUE_SUMMARY",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"REVENUE_SUMMARY"
+							]
+						},
+						"description": "Generates an Executive Revenue Summary report containing billing trends and transaction lists."
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Inventory Valuation Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/reports/INVENTORY_VALUATION",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"INVENTORY_VALUATION"
+							]
+						},
+						"description": "Generates an Inventory Valuation report detailing total stock value, item master counts, and low stock lists."
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Clinical Census Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/reports/CLINICAL_CENSUS",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"CLINICAL_CENSUS"
+							]
+						},
+						"description": "Generates a Clinical Census report detailing patient inflow, occupancy rate, and emergency status."
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Staff Compliance Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/reports/STAFF_COMPLIANCE",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"STAFF_COMPLIANCE"
+							]
+						},
+						"description": "Generates a Staff & Document Compliance report containing roster status, leave counts, and uploaded regulatory document status."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Compliance & Audit Reports",
+			"description": "Endpoints to search system audit trails, suspicious activity, and regulatory compliance documents.",
+			"item": [
+				{
+					"name": "List Regulatory Certification Reports",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/reports",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"reports"
+							]
+						},
+						"description": "Lists active regulatory and certification compliance reports (ISO-27001, HIPAA, NABL certification, Bio-medical Waste compliance, etc.)."
+					},
+					"response": []
+				},
+				{
+					"name": "List Compliance Incident Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/incidents?page=1&page_size=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"incidents"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Lists compliance incidents reported (e.g. system downtime, bio-waste spillage, unauthorized entries)."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/audit-logs?page=1&page_size=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"audit-logs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "50"
+								},
+								{
+									"key": "user_id",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "action",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "entity",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "ip_address",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "from_dt",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "to_dt",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Searches and filters system audit trail logs."
+					},
+					"response": []
+				},
+				{
+					"name": "List Suspicious Security Activities",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/compliance/suspicious-activity",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"compliance",
+								"suspicious-activity"
+							]
+						},
+						"description": "Lists suspicious activity notifications (such as brute force attempts or privilege escalations)."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

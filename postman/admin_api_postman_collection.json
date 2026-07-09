@@ -937,6 +937,56 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "List Departments (Enriched)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{admin_base_url}}/admin/departments?page=1&page_size=5&search=General&status=Healthy&sort_by=department_name&sort_order=asc",
+              "host": [
+                "{{admin_base_url}}"
+              ],
+              "path": [
+                "admin",
+                "departments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "5"
+                },
+                {
+                  "key": "search",
+                  "value": "General"
+                },
+                {
+                  "key": "status",
+                  "value": "Healthy"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "department_name"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "Returns enriched department dashboard list with pagination, search, status, and sorting filters."
+          },
+          "response": []
         }
       ]
     },
