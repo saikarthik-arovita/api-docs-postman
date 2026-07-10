@@ -1051,7 +1051,181 @@ All endpoints require `Authorization: Bearer <access_token>`.
 
 ---
 
-### 13.1 Wards
+### 13.1 Blocks
+
+Physical building blocks (e.g. "Block A", "Block B", "OPD Block").
+
+#### Create Block
+* **Endpoint:** `POST /admin/blocks`
+* **Request Body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `floor_id` | UUID | ✅ | Parent Floor UUID |
+| `name` | string | ✅ | Block name (2–100 chars) |
+| `code` | string | ✅ | Unique block code per facility (1–50 chars) |
+| `description` | string | ➖ | Optional description (max 500 chars) |
+
+```json
+{
+  "floor_id": "22222222-2222-2222-2222-222222222222",
+  "name": "Block B",
+  "code": "BLK-B",
+  "description": "Critical care building block"
+}
+```
+* **Success Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "11111111-1111-1111-1111-111111111111",
+    "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+    "floor_id": "22222222-2222-2222-2222-222222222222",
+    "name": "Block B",
+    "code": "BLK-B",
+    "description": "Critical care building block",
+    "is_active": true,
+    "created_at": "2026-07-10T12:00:00Z"
+  }
+}
+```
+
+#### List Blocks
+* **Endpoint:** `GET /admin/blocks`
+* **Query Parameters:**
+  * `floor_id` *(optional)* — Filter blocks belonging to a specific floor.
+  * `include_inactive` *(optional)* — `true` | `false` (default: `false`)
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "floor_id": "22222222-2222-2222-2222-222222222222",
+        "name": "Block B",
+        "code": "BLK-B",
+        "description": "Critical care building block",
+        "is_active": true,
+        "created_at": "2026-07-10T12:00:00Z"
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+#### Get Block by ID
+* **Endpoint:** `GET /admin/blocks/{block_id}`
+* **Success Response (200 OK):** Same as individual item in List Blocks response.
+
+#### Update Block
+* **Endpoint:** `PATCH /admin/blocks/{block_id}`
+* **Request Body** *(all fields optional)*:
+
+| Field | Type | Description |
+|---|---|---|
+| `floor_id` | UUID | Re-associate block to a different Floor |
+| `name` | string | Updated block name |
+| `code` | string | Updated block code |
+| `description` | string | Updated description |
+| `is_active` | boolean | `true` to reactivate, `false` to deactivate |
+
+```json
+{
+  "name": "Block B - ICU Wing",
+  "floor_id": "22222222-2222-2222-2222-222222222222"
+}
+```
+* **Success Response (200 OK):** Updated `BlockResponse` object.
+
+---
+
+### 13.2 Floors
+
+Floors allocated inside the hospital facility.
+
+#### Create Floor
+* **Endpoint:** `POST /admin/floors`
+* **Request Body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `floor_number` | integer | ✅ | Numeric floor number (e.g. `0` for Ground, `1`, `2`, `-1` for Basement) |
+| `floor_label` | string | ✅ | Display label (e.g. `G`, `1`, `B1`, `3rd Floor`) |
+
+```json
+{
+  "floor_number": 3,
+  "floor_label": "3"
+}
+```
+* **Success Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "22222222-2222-2222-2222-222222222222",
+    "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+    "floor_number": 3,
+    "floor_label": "3",
+    "is_active": true,
+    "created_at": "2026-07-10T12:05:00Z"
+  }
+}
+```
+
+#### List Floors
+* **Endpoint:** `GET /admin/floors`
+* **Query Parameters:**
+  * `include_inactive` *(optional)* — `true` | `false` (default: `false`)
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "22222222-2222-2222-2222-222222222222",
+        "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "floor_number": 3,
+        "floor_label": "3",
+        "is_active": true,
+        "created_at": "2026-07-10T12:05:00Z"
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+#### Get Floor by ID
+* **Endpoint:** `GET /admin/floors/{floor_id}`
+* **Success Response (200 OK):** Same as individual item in List Floors response.
+
+#### Update Floor
+* **Endpoint:** `PATCH /admin/floors/{floor_id}`
+* **Request Body** *(all fields optional)*:
+
+| Field | Type | Description |
+|---|---|---|
+| `floor_number` | integer | Updated floor number |
+| `floor_label` | string | Updated floor label |
+| `is_active` | boolean | `true` to reactivate, `false` to deactivate |
+
+```json
+{
+  "floor_label": "Third Floor (ICU)"
+}
+```
+* **Success Response (200 OK):** Updated `FloorResponse` object.
+
+---
+
+### 13.3 Wards
 
 #### List Wards
 * **Endpoint:** `GET /admin/wards`
@@ -1094,7 +1268,8 @@ All endpoints require `Authorization: Bearer <access_token>`.
 | `name` | string | ✅ | Ward name (2–100 chars) |
 | `ward_type` | enum | ✅ | `GENERAL` / `ICU` / `SURGICAL` / etc. |
 | `capacity` | integer | ✅ | Total capacity (1–500) |
-| `floor` | string | ➖ | Floor label e.g. `G`, `1`, `2` (max 10 chars) |
+| `floor` | string | ➖ | Legacy floor label (e.g. `G`, `1`) |
+| `block_id` | UUID | ➖ | Physical Block UUID link |
 | `work_area_id` | UUID | ➖ | Links ward to a departmental work area |
 
 ```json
@@ -1102,7 +1277,7 @@ All endpoints require `Authorization: Bearer <access_token>`.
   "name": "ICU Block B",
   "ward_type": "ICU",
   "capacity": 12,
-  "floor": "3",
+  "block_id": "11111111-1111-1111-1111-111111111111",
   "work_area_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"
 }
 ```
@@ -1116,6 +1291,7 @@ All endpoints require `Authorization: Bearer <access_token>`.
     "name": "ICU Block B",
     "ward_type": "ICU",
     "floor": "3",
+    "block_id": "11111111-1111-1111-1111-111111111111",
     "capacity": 12,
     "is_active": true,
     "created_at": "2026-07-01T09:00:00Z",
@@ -1144,12 +1320,14 @@ All endpoints require `Authorization: Bearer <access_token>`.
 | `name` | string | New ward name |
 | `ward_type` | enum | Updated type |
 | `capacity` | integer | Updated total capacity (1–500) |
-| `floor` | string | Updated floor label |
+| `floor` | string | Updated legacy floor label |
+| `block_id` | UUID | Updated physical Block UUID |
 | `is_active` | boolean | `true` to reactivate, `false` to deactivate |
 
 ```json
 {
   "capacity": 15,
+  "block_id": "11111111-1111-1111-1111-111111111111",
   "is_active": true
 }
 ```

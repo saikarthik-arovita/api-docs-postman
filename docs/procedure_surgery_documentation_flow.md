@@ -28,9 +28,8 @@ graph TD
 
     %% Major Surgery Flow
     subgraph Major Surgical OT Session
-        S1[Create Surgery Request] -->|POST /ipd/surgeries| S2[Status: REQUESTED]
-        S2 -->|POST /ipd/surgeries/{id}/schedule| S3[Status: OT_SCHEDULED]
-        S3 -->|POST /ipd/ot-sessions| S4[OT Session: SCHEDULED]
+        S1[Create Surgery Advice] -->|POST /opd/surgery| S2[Advice: ORDERED]
+        S2 -->|POST /ipd/ot-sessions| S4[OT Session: SCHEDULED]
         S4 -->|Sign Consents| S5[OT Consent Clear]
         S5 -->|POST /ipd/ot-sessions/{id}/pac| S6[PAC Cleared]
         S6 -->|POST /ipd/ot-sessions/{id}/pre-op| S7[Status: PRE_OP]
@@ -190,19 +189,18 @@ Coordinates live surgery steps inside the Operating Theatre.
 
 ## 🔪 4. Major Surgery & Operation Theatre API Contracts
 
-### Phase 4.1: Surgery Request Lifecycle
+### Phase 4.1: Surgery Advice Lifecycle
 
-#### A. Create Surgery Request
-* **Endpoint:** `POST /ipd/surgeries`
+#### A. Advise Surgery / Create Surgery Advice
+* **Endpoint:** `POST /opd/surgery`
 * **Request Body:**
 ```json
 {
-  "admission_id": "8b52f36d-92a0-47bf-8f55-1f9e1e123456",
   "patient_id": "f512723d-0d0d-491d-83d6-37f3bcde518d",
-  "doctor_id": "ffeee23d-9a29-454f-9f46-192f1aaab285",
-  "procedure_id": "020088b9-38cd-47ef-a152-78ab9c0d12e4", // Target surgery lookup from catalogue
-  "urgency": "EMERGENCY",                                     // ELECTIVE or EMERGENCY
-  "clinical_escalation_id": "e44d32a1-b8cd-47ef-a152-78ab9c0d12e4", // Optional
+  "service_name": "Laparoscopic Appendectomy",
+  "order_type": "SURGERY",
+  "priority": "HIGH",
+  "admission_id": "8b52f36d-92a0-47bf-8f55-1f9e1e123456",             // Optional: Binds to inpatient admission
   "notes": "Acute appendicitis escalation. Needs urgent laparoscopic intervention."
 }
 ```
@@ -213,38 +211,37 @@ Coordinates live surgery steps inside the Operating Theatre.
   "code": 201,
   "data": {
     "id": "a9a8b8c8-ffee-4a3b-9c9c-77d77fef8899",
-    "branch_id": "9a12b243-ea77-44df-9e22-83b38c291244",
-    "clinical_escalation_id": "e44d32a1-b8cd-47ef-a152-78ab9c0d12e4",
-    "admission_id": "8b52f36d-92a0-47bf-8f55-1f9e1e123456",
-    "patient_id": "f512723d-0d0d-491d-83d6-37f3bcde518d",
-    "doctor_id": "ffeee23d-9a29-454f-9f46-192f1aaab285",
-    "procedure_name": "Laparoscopic Appendectomy",
-    "urgency": "EMERGENCY",
-    "status": "REQUESTED",
+    "service_name": "Laparoscopic Appendectomy",
+    "status": "ORDERED",
     "created_at": "2026-06-30T09:35:00Z"
   }
 }
 ```
 
-#### B. Schedule Surgery Request
-* **Endpoint:** `POST /ipd/surgeries/{id}/schedule`
-* **Request Body:**
-```json
-{
-  "ot_room_id": "d13543cc-89de-4b11-a83a-888bb1123456",
-  "scheduled_at": "2026-06-30T14:30:00Z"
-}
-```
+#### B. List Surgery Advices
+* **Endpoint:** `GET /opd/surgery`
+* **Query Parameters:** `patient_id=<patient-uuid>`
 * **Success Response (200 OK):**
 ```json
 {
   "success": true,
   "code": 200,
   "data": {
-    "id": "a9a8b8c8-ffee-4a3b-9c9c-77d77fef8899",
-    "status": "OT_SCHEDULED",
-    "ot_room_id": "d13543cc-89de-4b11-a83a-888bb1123456",
-    "scheduled_at": "2026-06-30T14:30:00Z"
+    "surgeries": [
+      {
+        "id": "a9a8b8c8-ffee-4a3b-9c9c-77d77fef8899",
+        "patient_id": "f512723d-0d0d-491d-83d6-37f3bcde518d",
+        "service_name": "Laparoscopic Appendectomy",
+        "order_type": "SURGERY",
+        "priority": "HIGH",
+        "status": "ORDERED",
+        "notes": "Acute appendicitis escalation."
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 20,
+    "total_pages": 1
   }
 }
 ```

@@ -89,9 +89,8 @@ graph TD
         B3 -->|POST /ipd/procedures/{id}/complete| B4[Status: COMPLETED]
 
         %% Surgery Flow
-        C1 -->|POST /ipd/surgeries| C2[Status: REQUESTED]
-        C2 -->|POST /ipd/surgeries/{id}/schedule| C3[Status: OT_SCHEDULED]
-        C3 -->|POST /ipd/ot-sessions| C4[OT Session: SCHEDULED]
+        C1 -->|POST /opd/surgery| C2[Advice: ORDERED]
+        C2 -->|POST /ipd/ot-sessions| C4[OT Session: SCHEDULED]
         C4 -->|POST /ipd/ot-cases/{id}/consents| C5[Consents Created]
         C5 -->|POST /ipd/consents/{id}/sign| C6[Patient/Doctor Signed]
         C6 -->|POST /ipd/ot-sessions/{id}/pac| C7[PAC Cleared]
@@ -342,15 +341,14 @@ Lightweight bedside clinical procedure requests mapped to a patient admission.
 
 ## 🏛️ 4. Major OT Surgeries & OT Session Lifecycle APIs
 
-### A. List Surgery Requests
-Retrieves surgery requests/orders for the branch/tenant with support for pagination and filtering.
-* **Endpoint:** `GET /ipd/surgeries`
+### A. List Surgery Advices
+Retrieves clinical surgery advices/orders for the branch/tenant with support for pagination and filtering.
+* **Endpoint:** `GET /opd/surgery`
 * **Headers:** `X-Tenant-Id: <tenant-uuid>`
 * **Query Parameters:**
-  * `status`: Optional filter by status (e.g. `REQUESTED`, `OT_SCHEDULED`, `COMPLETED`, `CANCELLED`)
-  * `urgency`: Optional filter by urgency (e.g. `ELECTIVE`, `URGENT`, `EMERGENCY`)
+  * `status`: Optional filter by status (e.g. `ORDERED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`)
   * `patient_id`: Optional filter by patient ID
-  * `doctor_id`: Optional filter by doctor ID
+  * `assigned_doctor_id`: Optional filter by doctor ID
   * `page`: Page index (Default: `1`)
   * `page_size`: Page size limit (Default: `20`)
 * **Success Response (200 OK):**
@@ -359,27 +357,15 @@ Retrieves surgery requests/orders for the branch/tenant with support for paginat
     "success": true,
     "code": 200,
     "data": {
-      "requests": [
+      "surgeries": [
         {
           "id": "7848855e-d0fc-4710-bc94-76afc790cdc7",
-          "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
-          "clinical_escalation_id": null,
-          "admission_id": "81463aef-7253-4bef-87b9-31e2b5c1a928",
           "patient_id": "c2cf0ed3-e8bf-4efe-a8a7-f5815c269b2b",
-          "doctor_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
-          "procedure_name": "Appendectomy",
-          "urgency": "ELECTIVE",
-          "status": "REQUESTED",
-          "ot_room_id": null,
-          "scheduled_at": null,
-          "started_at": null,
-          "completed_at": null,
-          "notes": null,
-          "created_at": "2026-07-01T09:58:25Z",
-          "updated_at": "2026-07-01T09:58:25Z",
-          "patient_name": "Consent Test Patient",
-          "patient_uhid": "PAT-2026-0065",
-          "doctor_name": "Anita Rao"
+          "service_name": "Appendectomy",
+          "order_type": "SURGERY",
+          "priority": "HIGH",
+          "status": "ORDERED",
+          "notes": "Advised surgery for acute appendicitis."
         }
       ],
       "total": 1,
@@ -390,17 +376,17 @@ Retrieves surgery requests/orders for the branch/tenant with support for paginat
   }
   ```
 
-### B. Create Surgery Request
-Creates a surgical log entry under the patient's active inpatient admission.
-* **Endpoint:** `POST /ipd/surgeries`
+### B. Create Surgery Advice (Advise Surgery)
+Creates a unified surgery/procedure advice order across OPD and IPD contexts.
+* **Endpoint:** `POST /opd/surgery`
 * **Request Body:**
   ```json
   {
-    "admission_id": "81463aef-7253-4bef-87b9-31e2b5c1a928",
     "patient_id": "c2cf0ed3-e8bf-4efe-a8a7-f5815c269b2b",
-    "doctor_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
-    "procedure_name": "Appendectomy", // Can pass procedure_id (catalogue ID) instead
-    "urgency": "ELECTIVE", // Options: "ELECTIVE", "URGENT", "EMERGENCY" (Default: "ELECTIVE")
+    "service_name": "Appendectomy",
+    "order_type": "SURGERY",
+    "priority": "HIGH",
+    "admission_id": "81463aef-7253-4bef-87b9-31e2b5c1a928", // Optional: Binds to inpatient admission
     "notes": "Laparoscopic appendectomy planned." // Optional
   }
   ```
@@ -411,34 +397,8 @@ Creates a surgical log entry under the patient's active inpatient admission.
     "code": 201,
     "data": {
       "id": "7848855e-d0fc-4710-bc94-76afc790cdc7",
-      "procedure_name": "Appendectomy",
-      "urgency": "ELECTIVE",
-      "status": "REQUESTED",
-      "created_at": "2026-07-01T07:15:00Z"
-    }
-  }
-  ```
-
-### C. Schedule Surgery Request
-Sets the Operation Theatre room and schedule time.
-* **Endpoint:** `POST /ipd/surgeries/{id}/schedule`
-* **Request Body:**
-  ```json
-  {
-    "ot_room_id": "OT-3", // Handled as string identifier (VARCHAR(50))
-    "scheduled_at": "2026-07-02T09:00:00.000Z"
-  }
-  ```
-* **Success Response (200 OK):**
-  ```json
-  {
-    "success": true,
-    "code": 200,
-    "data": {
-      "id": "7848855e-d0fc-4710-bc94-76afc790cdc7",
-      "ot_room_id": "OT-3",
-      "scheduled_at": "2026-07-02T09:00:00Z",
-      "status": "OT_SCHEDULED"
+      "service_name": "Appendectomy",
+      "status": "ORDERED"
     }
   }
   ```
@@ -449,7 +409,7 @@ Once scheduled, staff create an active OT session mapping the clinical crew and 
 * **Request Body:**
   ```json
   {
-    "service_order_id": "7848855e-d0fc-4710-bc94-76afc790cdc7", // Target Surgery Request ID
+    "service_order_id": "7848855e-d0fc-4710-bc94-76afc790cdc7", // Target Surgery Advice ID (service_order_id)
     "admission_id": "81463aef-7253-4bef-87b9-31e2b5c1a928",
     "patient_id": "c2cf0ed3-e8bf-4efe-a8a7-f5815c269b2b",
     "surgeon_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",

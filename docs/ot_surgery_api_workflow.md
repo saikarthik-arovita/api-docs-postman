@@ -691,119 +691,17 @@ graph TD
 
 ---
 
-## Step 9: Create Surgery Request (IPD)
+## Step 9: [DEPRECATED] Create Surgery Request (IPD)
 
-**Purpose**: Raise a formal surgery request from within the IPD context. This is the internal surgical planning system that tracks surgeon assignment, urgency, and OT scheduling separately from the OPD service order. Links back to the admission.
-
-**Endpoint**: `POST /ipd/surgeries`
-
-**Method**: `POST`
-
-**Module**: `ipd`
-
-**Prerequisites**: Step 8 (admission_id, patient_id)
-
-**Next API**: Step 10 (Schedule Surgery)
-
-### Request Fields
-
-| Field | Type | Required | Enum | Description |
-|-------|------|----------|------|-------------|
-| `admission_id` | string (UUID) | ✅ | — | IPD admission from Step 8 |
-| `patient_id` | string (UUID) | ✅ | — | Patient UUID |
-| `doctor_id` | string (UUID) | ✅ | — | Surgeon UUID |
-| `procedure_name` | string | ✅* | — | Name of surgery (*required if `procedure_id` not provided) |
-| `procedure_id` | string (UUID) | ✅* | — | Catalogue ID (*required if `procedure_name` not provided) |
-| `urgency` | string | ❌ | `ELECTIVE`, `URGENT`, `EMERGENCY` | Urgency level |
-| `notes` | string | ❌ | — | Clinical notes |
-
-### Example Request
-
-```json
-{
-  "admission_id": "e5f6g7h8-i9j0-1234-efgh-345678901234",
-  "patient_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "doctor_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
-  "procedure_name": "Laparoscopic Appendectomy",
-  "urgency": "ELECTIVE",
-  "notes": "Standard laparoscopic approach planned"
-}
-```
-
-### Example Response
-
-```json
-{
-  "success": true,
-  "code": 201,
-  "data": {
-    "id": "f6g7h8i9-j0k1-2345-fghi-456789012345",
-    "branch_id": "t1234567-abcd-efgh-ijkl-123456789012",
-    "admission_id": "e5f6g7h8-i9j0-1234-efgh-345678901234",
-    "patient_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "doctor_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
-    "procedure_name": "Laparoscopic Appendectomy",
-    "status": "REQUESTED",
-    "urgency": "ELECTIVE",
-    "created_at": "2026-07-03T11:00:00Z"
-  }
-}
-```
-
-### Dependencies
-
-| Produced ID | Consumed By |
-|-------------|-------------|
-| `data.id` → `surgery_id` | Step 10 |
+> [!WARNING]
+> This step has been decommissioned. In the new unified OT/Surgery flow, surgery requests are not created separately in IPD. Instead, the clinician creates a surgery advice via `POST /opd/surgery` (Step 5), which is then scheduled directly as an OT Session (Step 11).
 
 ---
 
-## Step 10: Schedule Surgery
+## Step 10: [DEPRECATED] Schedule Surgery
 
-**Purpose**: Assign an OT room and a scheduled datetime to the surgery request. This transitions the surgery request status from `REQUESTED` → `OT_SCHEDULED`.
-
-**Endpoint**: `POST /ipd/surgeries/{id}/schedule`
-
-**Method**: `POST`
-
-**Module**: `ipd`
-
-**Prerequisites**: Step 9 (surgery_id)
-
-**Next API**: Step 11 (Create OT Session)
-
-### Request Fields
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` (path) | string (UUID) | ✅ | Surgery request ID from Step 9 |
-| `ot_room_id` | string (UUID) | ✅ | OT room UUID |
-| `scheduled_at` | string (datetime) | ✅ | ISO 8601 datetime for surgery |
-
-### Example Request
-
-```json
-{
-  "ot_room_id": "ot-room-01-abcd-1234-efgh-567890123456",
-  "scheduled_at": "2026-07-04T09:00:00+05:30"
-}
-```
-
-### Example Response
-
-```json
-{
-  "success": true,
-  "code": 200,
-  "data": {
-    "id": "f6g7h8i9-j0k1-2345-fghi-456789012345",
-    "status": "OT_SCHEDULED",
-    "ot_room_id": "ot-room-01-abcd-1234-efgh-567890123456",
-    "scheduled_at": "2026-07-04T09:00:00+05:30",
-    "updated_at": "2026-07-03T11:30:00Z"
-  }
-}
-```
+> [!WARNING]
+> This step has been decommissioned. Staff schedule surgeries by creating an OT Session directly (Step 11).
 
 ---
 

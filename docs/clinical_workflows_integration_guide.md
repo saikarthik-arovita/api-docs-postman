@@ -252,21 +252,19 @@ Admitting a patient only means "requires inpatient care." Any critical change of
 
 ### 1.5 Surgeries (Operating Theater Workflows)
 
-Surgeries require a prior approved Clinical Escalation of type `SURGERY`.
+Surgeries follow a unified clinical advice and session management process (no separate duplicate surgery requests).
 
-#### A. Create Surgery Request
-* **Endpoint**: `POST /ipd/surgeries`
+#### A. Advise Surgery / Create Surgery Advice
+* **Endpoint**: `POST /opd/surgery`
 * **Request Body**:
 ```json
 {
-  "clinical_escalation_id": "escalation-uuid",                // Mandatory (UUID)
-  "admission_id": "admission-uuid",                          // Mandatory (UUID)
   "patient_id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",       // Mandatory (UUID)
-  "doctor_id": "doctor-uuid",                                // Mandatory (UUID)
-  "procedure_id": "surgery-catalogue-uuid",                  // Optional (UUID) - If provided, resolves name from master clinical catalogue
-  "procedure_name": "Emergency Appendectomy",                // Mandatory if procedure_id not provided (String) - Free-text fallback
-  "urgency": "EMERGENCY",                                    // Mandatory (Enum: ROUTINE, URGENT, EMERGENCY)
-  "notes": "OT room 2 assigned"                              // Optional (String)
+  "service_name": "Laparoscopic Appendectomy",               // Mandatory (String)
+  "order_type": "SURGERY",                                   // Mandatory (Enum: SURGERY, PROCEDURE)
+  "priority": "HIGH",                                        // Mandatory (Enum: ROUTINE, URGENT, EMERGENCY)
+  "admission_id": "admission-uuid",                          // Optional (UUID) - Binds to inpatient admission
+  "notes": "Advised for acute appendicitis."                 // Optional (String)
 }
 ```
 * **Success Response (201 Created)**:
@@ -275,21 +273,19 @@ Surgeries require a prior approved Clinical Escalation of type `SURGERY`.
   "success": true,
   "code": 201,
   "data": {
-    "id": "surgery-request-uuid",
-    "procedure_name": "Emergency Appendectomy",
-    "status": "REQUESTED"
+    "id": "service-order-uuid",
+    "service_name": "Laparoscopic Appendectomy",
+    "status": "ORDERED"
   }
 }
 ```
 
-#### B. Schedule Surgery
-* **Endpoint**: `POST /ipd/surgeries/{surgery_id}/schedule`
+#### B. Cancel OT Session
+* **Endpoint**: `POST /ipd/ot-sessions/{id}/cancel`
 * **Request Body**:
 ```json
 {
-  "scheduled_by": "doctor-uuid",                             // Mandatory (UUID)
-  "ot_room_id": "84820843-9876-4321-9abc-1234567890ab",      // Mandatory (UUID)
-  "scheduled_at": "2026-06-20T18:00:00Z"                     // Mandatory (ISO Timestamp)
+  "reason": "Patient developed high fever prior to surgery."  // Mandatory (String)
 }
 ```
 * **Success Response (200 OK)**:
@@ -298,56 +294,39 @@ Surgeries require a prior approved Clinical Escalation of type `SURGERY`.
   "success": true,
   "code": 200,
   "data": {
-    "id": "surgery-request-uuid",
-    "status": "OT_SCHEDULED",
-    "ot_room_id": "84820843-9876-4321-9abc-1234567890ab",
-    "scheduled_at": "2026-06-20T18:00:00Z"
+    "id": "ot-session-uuid",
+    "status": "CANCELLED",
+    "cancellation_reason": "Patient developed high fever prior to surgery."
   }
 }
 ```
+* **Note**: Reverts the linked service order status back to `ORDERED` to preserve the advice for later scheduling.
 
-#### C. Start Surgery
-* **Endpoint**: `POST /ipd/surgeries/{surgery_id}/start`
-* **Purpose**: Moving the patient into OT updates the surgery to `IN_OT` and updates the escalation to `IN_PROGRESS`.
+#### C. Log OT Consumables
+* **Endpoint**: `POST /ipd/ot-sessions/{id}/consumables`
 * **Request Body**:
 ```json
 {
-  "doctor_id": "doctor-uuid"                                 // Mandatory (UUID)
+  "item_name": "Suture Thread",                              // Mandatory (String)
+  "quantity": 2.0,                                           // Mandatory (Numeric)
+  "batch_no": "B-99812",                                     // Optional (String)
+  "implant_serial": "SN-10298"                               // Optional (String)
 }
 ```
-* **Success Response (200 OK)**:
+* **Success Response (201 Created)**:
 ```json
 {
   "success": true,
-  "code": 200,
+  "code": 201,
   "data": {
-    "id": "surgery-request-uuid",
-    "status": "IN_OT"
+    "id": "consumable-uuid",
+    "ot_session_id": "ot-session-uuid",
+    "item_name": "Suture Thread (Batch: B-99812, Serial: SN-10298)",
+    "quantity": 2.0
   }
 }
 ```
-
-#### D. Complete Surgery
-* **Endpoint**: `POST /ipd/surgeries/{surgery_id}/complete`
-* **Purpose**: Completes the surgery request and transitions the Clinical Escalation to `COMPLETED`.
-* **Request Body**:
-```json
-{
-  "completed_by": "doctor-uuid",                             // Mandatory (UUID)
-  "surgery_notes": "Appendectomy complete. Patient stable."  // Optional (String)
-}
-```
-* **Success Response (200 OK)**:
-```json
-{
-  "success": true,
-  "code": 200,
-  "data": {
-    "id": "surgery-request-uuid",
-    "status": "COMPLETED"
-  }
-}
-```
+* **Note**: Can only be called while the OT session status is `IN_PROGRESS`.
 
 
 ---
@@ -611,40 +590,34 @@ sequenceDiagram
     Doc->>API: 1. Order Lab Test (POST /diagnostic-orders)
     API-->>Lab: Lab test shows critical inflammation (Status: COMPLETED)
     
-    Note over Doc: Decision: Escalate to Surgery
-    Doc->>API: 2. Create Clinical Escalation (POST /ipd/clinical-escalations)
-    API-->>Doc: Returns escalation_id (Status: REQUESTED)
-    
-    Doc->>API: 3. Approve Clinical Escalation (POST /ipd/clinical-escalations/{id}/approve)
-    API-->>Doc: Returns Status: APPROVED
-    
-    Doc->>API: 4. Create Surgery Request (POST /ipd/surgeries)
-    API-->>Doc: Returns surgery_request_id (Status: REQUESTED)
-    
-    Surg->>API: 5. Schedule Surgery (POST /ipd/surgeries/{id}/schedule)
-    API-->>Surg: Returns Status: OT_SCHEDULED
+    Note over Doc: Decision: Advise Surgery
+    Doc->>API: 2. Advise Surgery (POST /opd/surgery)
+    API-->>Doc: Returns service_order_id (Status: ORDERED)
     
     Note over Surg: Booking OT Session
-    Surg->>API: 6. Create OT Session (POST /ipd/ot-sessions)
+    Surg->>API: 3. Create OT Session (POST /ipd/ot-sessions)
     API-->>Surg: Returns ot_session_id (Status: SCHEDULED)
     
     Note over Doc: Pre-Surgery Checkups
-    Doc->>API: 7. Clear PAC (POST /ipd/ot-sessions/{id}/pac)
+    Doc->>API: 4. Clear PAC (POST /ipd/ot-sessions/{id}/pac)
     API-->>Doc: Returns pac_cleared = true
     
-    Doc->>API: 8. Complete Pre-Op Checklist (POST /ipd/ot-sessions/{id}/pre-op)
+    Doc->>API: 5. Complete Pre-Op Checklist (POST /ipd/ot-sessions/{id}/pre-op)
     API-->>Doc: Returns Status: PRE_OP
     
     Note over Surg: Inside Operating Theatre
-    Surg->>API: 9. Start OT Session (POST /ipd/ot-sessions/{id}/start)
-    Note over API: Automatically marks service order and surgery request as IN_PROGRESS / IN_OT
+    Surg->>API: 6. Start OT Session (POST /ipd/ot-sessions/{id}/start)
+    Note over API: Automatically marks service order status as IN_PROGRESS
     API-->>Surg: Returns Status: IN_PROGRESS
     
-    Surg->>API: 10. Complete OT Session (POST /ipd/ot-sessions/{id}/complete)
+    Surg->>API: 7. Log Consumables (POST /ipd/ot-sessions/{id}/consumables)
+    API-->>Surg: Consumable logged successfully
+    
+    Surg->>API: 8. Complete OT Session (POST /ipd/ot-sessions/{id}/complete)
     API-->>Surg: Returns Status: POST_OP
     
     Note over Surg: Recovery Completed
-    Surg->>API: 11. Transfer Out OT Session (POST /ipd/ot-sessions/{id}/transfer-out)
+    Surg->>API: 9. Transfer Out OT Session (POST /ipd/ot-sessions/{id}/transfer-out)
     Note over API: Automatically releases old bed, allocates new bed, updates admission ward/bed, and sets service order status to COMPLETED
     API-->>Surg: Returns Status: COMPLETED
 ```
