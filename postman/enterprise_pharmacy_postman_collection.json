@@ -60,6 +60,233 @@
       ]
     },
     {
+      "name": "Prescription Management",
+      "item": [
+        {
+          "name": "Create Prescription",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.success && response.data) {",
+                  "    pm.collectionVariables.set('prescription_id', response.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"00000000-0000-0000-0000-000000000002\",\n  \"context_type\": \"OPD_VISIT\",\n  \"context_id\": \"00000000-0000-0000-0000-000000000003\",\n  \"source_module\": \"OPD\",\n  \"encounter_type\": \"CONSULTATION\",\n  \"items\": [\n    {\n      \"medicine_id\": \"{{medicine_id}}\",\n      \"route\": \"ORAL\",\n      \"dosage\": \"1 capsule\",\n      \"frequency\": \"TDS\",\n      \"duration_days\": 5,\n      \"with_food\": true\n    }\n  ],\n  \"allergy_checked\": true,\n  \"interaction_checked\": true,\n  \"notes\": \"Prescription created from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prescription Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/{{prescription_id}}",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "{{prescription_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Prescription (New Version)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"change_reason\": \"Adjusting dosage due to recovery progress\",\n  \"items\": [\n    {\n      \"medicine_id\": \"{{medicine_id}}\",\n      \"route\": \"ORAL\",\n      \"dosage\": \"1 capsule\",\n      \"frequency\": \"BD\",\n      \"duration_days\": 3\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/{{prescription_id}}",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "{{prescription_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Treatment regime completely discontinued\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/{{prescription_id}}/cancel",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "{{prescription_id}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prescription History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/{{prescription_id}}/history",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "{{prescription_id}}",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prescription Versions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/{{prescription_id}}/versions",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "{{prescription_id}}",
+                "versions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prescription Queue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/prescriptions/queue?status=PENDING&q=",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "prescriptions",
+                "queue"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING"
+                },
+                {
+                  "key": "q",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Inventory Access",
       "item": [
         {
@@ -95,6 +322,150 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Get Medicine Alternatives",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/medicines/{{medicine_id}}/alternatives",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "medicines",
+                "{{medicine_id}}",
+                "alternatives"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inventory Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/inventory/items",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "inventory",
+                "items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inventory Batches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/inventory/batches",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "inventory",
+                "batches"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Adjust Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_id\": \"{{medicine_id}}\",\n  \"batch_number\": \"BAT-2026-001\",\n  \"adjustment_qty\": -5,\n  \"reason\": \"Damaged stock disposal\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/inventory/adjust",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "inventory",
+                "adjust"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_id\": \"{{medicine_id}}\",\n  \"batch_number\": \"BAT-2026-001\",\n  \"quantity\": 10,\n  \"from_location\": \"MAIN_STORE\",\n  \"to_location\": \"OPD_COUNTER\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/inventory/transfer",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "inventory",
+                "transfer"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -119,7 +490,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"walk_in_customer\": {\n    \"full_name\": \"John Doe\",\n    \"phone\": \"555-0199\",\n    \"email\": \"johndoe@example.com\"\n  },\n  \"items\": [\n    {\n      \"medicine_id\": \"00000000-0000-0000-0000-000000000100\",\n      \"quantity\": 5\n    }\n  ],\n  \"payment_mode\": \"CASH\",\n  \"notes\": \"OTC Walk-in Sale\"\n}"
+              "raw": "{\n  \"walk_in_customer\": {\n    \"full_name\": \"John Doe\",\n    \"phone\": \"555-0199\",\n    \"email\": \"johndoe@example.com\"\n  },\n  \"items\": [\n    {\n      \"medicine_id\": \"{{medicine_id}}\",\n      \"quantity\": 5\n    }\n  ],\n  \"payment_mode\": \"CASH\",\n  \"notes\": \"OTC Walk-in Sale\"\n}"
             },
             "url": {
               "raw": "{{pharmacy_base_url}}/pharmacy/dispense",
@@ -152,7 +523,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"patient_id\": \"a1737d0a-8091-701a-4fa7-1a9fef5825e9\",\n  \"items\": [\n    {\n      \"medicine_id\": \"00000000-0000-0000-0000-000000000100\",\n      \"quantity\": 2,\n      \"batch_id\": \"00000000-0000-0000-0000-000000000400\"\n    }\n  ],\n  \"payment_mode\": \"UPI\",\n  \"notes\": \"Prescription dispensing\"\n}"
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"items\": [\n    {\n      \"medicine_id\": \"{{medicine_id}}\",\n      \"quantity\": 2,\n      \"batch_id\": \"00000000-0000-0000-0000-000000000400\"\n    }\n  ],\n  \"payment_mode\": \"UPI\",\n  \"notes\": \"Prescription dispensing\"\n}"
             },
             "url": {
               "raw": "{{pharmacy_base_url}}/pharmacy/prescriptions/{{prescription_id}}/dispense",
@@ -164,6 +535,282 @@
                 "prescriptions",
                 "{{prescription_id}}",
                 "dispense"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pharmacy Billing Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/billing/invoices?date_from=2026-07-01&date_to=2026-07-31&category=TABLET&department=OPD_VISIT&payment_modes=CASH,CARD&shift_type=MORNING",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "billing",
+                "invoices"
+              ],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "2026-07-01"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-07-31"
+                },
+                {
+                  "key": "category",
+                  "value": "TABLET"
+                },
+                {
+                  "key": "department",
+                  "value": "OPD_VISIT"
+                },
+                {
+                  "key": "payment_modes",
+                  "value": "CASH,CARD"
+                },
+                {
+                  "key": "shift_type",
+                  "value": "MORNING"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Carts Engine",
+      "item": [
+        {
+          "name": "Create Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.success && response.data) {",
+                  "    pm.collectionVariables.set('cart_id', response.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"cart_type\": \"PRESCRIPTION\",\n  \"prescription_id\": \"{{prescription_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/carts",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "carts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Cart Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/carts/{{cart_id}}",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "carts",
+                "{{cart_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Item to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medicine_id\": \"{{medicine_id}}\",\n  \"quantity\": 2,\n  \"batch_number\": \"BAT-2026-001\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/carts/{{cart_id}}/items",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "carts",
+                "{{cart_id}}",
+                "items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/carts/{{cart_id}}/items/{{cart_item_id}}",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "carts",
+                "{{cart_id}}",
+                "items",
+                "{{cart_item_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/carts/{{cart_id}}/verify",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "carts",
+                "{{cart_id}}",
+                "verify"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout/Dispense Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_mode\": \"CASH\",\n  \"payment_status\": \"PAID\"\n}"
+            },
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/carts/{{cart_id}}/checkout",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "carts",
+                "{{cart_id}}",
+                "checkout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Cleanup Carts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/carts/cleanup",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "carts",
+                "cleanup"
               ]
             }
           },
@@ -192,7 +839,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"invoice_id\": \"{{billing_record_id}}\",\n  \"items\": [\n    {\n      \"medicine_id\": \"00000000-0000-0000-0000-000000000100\",\n      \"quantity\": 2,\n      \"type\": \"RETURN\",\n      \"reason\": \"Excess\"\n    }\n  ]\n}"
+              "raw": "{\n  \"invoice_id\": \"{{billing_record_id}}\",\n  \"items\": [\n    {\n      \"medicine_id\": \"{{medicine_id}}\",\n      \"quantity\": 2,\n      \"type\": \"RETURN\",\n      \"reason\": \"Excess\"\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{pharmacy_base_url}}/pharmacy/returns",
@@ -247,6 +894,37 @@
     {
       "name": "Patient Assistance",
       "item": [
+        {
+          "name": "List Patient Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{pharmacy_base_url}}/pharmacy/patients/{{patient_id}}?status=SIGNED",
+              "host": [
+                "{{pharmacy_base_url}}"
+              ],
+              "path": [
+                "pharmacy",
+                "patients",
+                "{{patient_id}}"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "SIGNED"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
         {
           "name": "Schedule Refill Reminder",
           "request": {
@@ -635,6 +1313,21 @@
     {
       "key": "patient_id",
       "value": "a1737d0a-8091-701a-4fa7-1a9fef5825e9",
+      "type": "string"
+    },
+    {
+      "key": "medicine_id",
+      "value": "00000000-0000-0000-0000-000000000100",
+      "type": "string"
+    },
+    {
+      "key": "cart_id",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "cart_item_id",
+      "value": "00000000-0000-0000-0000-000000000000",
       "type": "string"
     },
     {
