@@ -1,0 +1,413 @@
+{
+	"info": {
+		"_postman_id": "c138ba47-3333-4704-9430-f82d6dcfa34c",
+		"name": "HMS Lab Pathologist Flow Dashboard",
+		"description": "Postman Collection for HMS Lab Pathologist Dashboard & Verification workflow APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Pathologist Verification Statistics",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/statistics",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"statistics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Verification Queue List",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results?status=READY_FOR_REVIEW",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "READY_FOR_REVIEW"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get Report Detailed Review Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{resultId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{resultId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Action: Approve Result & Apply Digital Signature",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"APPROVED\",\n  \"remarks\": \"Verified report parameters. Signed by pathologist.\",\n  \"digitalSignature\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{resultId}}/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{resultId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Action: Return result for Correction (Reject)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"RETURNED_FOR_CORRECTION\",\n  \"remarks\": \"WBC count values seem mismatched with analyzer draft log.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{resultId}}/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{resultId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Action: Reprocess Result (Re-run)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"REPROCESSING\",\n  \"remarks\": \"Analyzer calibration failed. Rerunning specimen.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{resultId}}/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{resultId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. Action: Deliver Final Report",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"REPORT_DELIVERED\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{resultId}}/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{resultId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8. Download Report PDF Document",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{resultId}}/pdf",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{resultId}}",
+						"pdf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9. Create Clinical Addendum",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"lab_result_id\": \"{{resultId}}\",\n  \"patient_name\": \"Rajan Kumar\",\n  \"patient_uhid\": \"UHID-2026-091245\",\n  \"test_type\": \"Lipid Profile\",\n  \"amendment_type\": \"Clinical Interpretation Update\",\n  \"requested_by\": \"Dr. Priya Sharma\",\n  \"updated_by\": \"Dr. Rajesh Mehta\",\n  \"reason\": \"Incorporate post-release clinical notes\",\n  \"clinical_notes\": \"Slight hyperlipidemia observed, follow up in 2 months\",\n  \"status\": \"Pending\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/addendums",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"addendums"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10. List Addendum Reports",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/addendums?status=Pending",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"addendums"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "Pending"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11. View Addendum Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/addendums/{{addendumId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"addendums",
+						"{{addendumId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12. Update Addendum Status & Notes",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"Approved\",\n  \"clinical_notes\": \"Reviewed and signed off clinical interpretation notes.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/addendums/{{addendumId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"addendums",
+						"{{addendumId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "your_access_token",
+			"type": "string"
+		},
+		{
+			"key": "resultId",
+			"value": "result-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "addendumId",
+			"value": "addendum-uuid-here",
+			"type": "string"
+		}
+	]
+}

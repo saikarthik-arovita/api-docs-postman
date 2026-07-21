@@ -1,0 +1,491 @@
+{
+  "info": {
+    "name": "HMS Laboratory Module GET APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Dashboard Overview",
+      "item": [
+        {
+          "name": "Get Analytics & Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Get Staff Analytics/Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/dashboard/technician",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "dashboard", "technician"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Inventory Portal",
+      "item": [
+        {
+          "name": "List All Inventory Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/inventory?page=1&limit=20&search=EDTA",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "inventory"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "search", "value": "EDTA" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Inventory Item Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/inventory/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "inventory", ":id"],
+              "variable": [{ "key": "id", "value": "e22af11c-16ac-4e3d-b27b-068e52109db4" }]
+            }
+          }
+        },
+        {
+          "name": "Get Inventory Alerts / Low Stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/inventory/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "inventory", "statistics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Vendor Management",
+      "item": [
+        {
+          "name": "List All Vendors",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/vendors?search=Fisher",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "vendors"],
+              "query": [{ "key": "search", "value": "Fisher" }]
+            }
+          }
+        },
+        {
+          "name": "Get Single Vendor Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/vendors/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "vendors", ":id"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Purchase & Procurement",
+      "item": [
+        {
+          "name": "List Procurement Records / Purchase Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/procurement?status=APPROVED",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "procurement"],
+              "query": [{ "key": "status", "value": "APPROVED" }]
+            }
+          }
+        },
+        {
+          "name": "Get Single Procurement Record",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/procurement/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "procurement", ":id"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Procurement/Vendor Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/sample-management/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "sample-management", "statistics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Billing & Payments",
+      "item": [
+        {
+          "name": "List All Billing Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/billing/invoices?status=PAID",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "billing", "invoices"],
+              "query": [{ "key": "status", "value": "PAID" }]
+            }
+          }
+        },
+        {
+          "name": "Get Single Billing Invoice",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/billing/invoices/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "billing", "invoices", ":id"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        },
+        {
+          "name": "Get Lab Order Billing Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/:id/billing",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "registrations", ":id", "billing"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Analytics & MIS",
+      "item": [
+        {
+          "name": "Get Lab Test Processing Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/test-processing/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "test-processing", "statistics"]
+            }
+          }
+        },
+        {
+          "name": "Get Result Submission Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/result-submission/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "result-submission", "statistics"]
+            }
+          }
+        },
+        {
+          "name": "Get Pathologist Validation Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/results/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "results", "statistics"]
+            }
+          }
+        },
+        {
+          "name": "Get Reports Delivery Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/results/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["lab", "results", "statistics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Audit & Compliance",
+      "item": [
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/audit",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "audit"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Audit Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/audit/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "audit", ":id"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Staff Management",
+      "item": [
+        {
+          "name": "List Staff Profile Directory",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/staff",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "staff"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Staff Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/staff/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "staff", ":id"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        },
+        {
+          "name": "List Technician Bench Assignments",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/bench-assignments",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "bench-assignments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. System Configuration",
+      "item": [
+        {
+          "name": "List Configuration Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/config",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "config"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Config Setting",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/config/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "config", ":id"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        },
+        {
+          "name": "List User Access Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "roles"]
+            }
+          }
+        },
+        {
+          "name": "Get Role Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/roles/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "roles", ":id"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        },
+        {
+          "name": "List Available Lab Catalog Tests",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/lab/tests",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "lab", "tests"]
+            }
+          }
+        },
+        {
+          "name": "Get Lab Test Catalog Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "X-Tenant-Id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/diagnostic-orders/tests/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["diagnostic-orders", "tests", ":id"],
+              "variable": [{ "key": "id", "value": "uuid-here" }]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

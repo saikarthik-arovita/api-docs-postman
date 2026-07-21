@@ -1,0 +1,731 @@
+{
+	"info": {
+		"_postman_id": "8c4ab1cf-2a3b-4890-a548-c8914baab821",
+		"name": "HMS Lab Registration Workflow",
+		"description": "Collection of APIs for the Laboratory Registration workflow inside the Diagnostics microservice.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Initialize Dropdowns",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registration/init",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registration",
+						"init"
+					]
+				},
+				"description": "Retrieves configuration dropdown list options for Visit Types, Priorities, Sample Types, Departments, Packages, etc."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Search Patients",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/patients?q=PAT-2026-0001",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"patients"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "PAT-2026-0001",
+							"description": "Search term (UHID, Name, or Phone)"
+						}
+					]
+				},
+				"description": "Searches patient database for registration matching UHID, Name, or Phone."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Search Tests Catalog",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/tests?search=Blood&active=true",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"tests"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "Blood"
+						},
+						{
+							"key": "active",
+							"value": "true"
+						}
+					]
+				},
+				"description": "Retrieves lab test catalog grouped by category, supporting filtering by search string, department, packages, popular status, and page limits."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Create Registration Draft",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"DRAFT\",\n  \"patient_id\": \"93643ddd-0d0d-491d-83d6-37f3bcde518d\",\n  \"visit_type\": \"Walk-in\",\n  \"doctor_id\": \"cab7cc4e-3ec7-49d9-a393-bbdb93bf58c2\",\n  \"department_id\": \"46d19155-09a1-462e-b256-ce2a5741b091\",\n  \"selected_tests\": [\n    {\n      \"test_id\": \"16a43dca-eb71-4b85-ab0a-3b984816cadf\"\n    }\n  ],\n  \"priority\": \"Normal\",\n  \"remarks\": \"Draft registration details\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations"
+					]
+				},
+				"description": "Saves a diagnostic registration as a draft. Does not generate bills, queue tokens, or barcode numbers."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Register and Pay",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"REGISTER_AND_PAY\",\n  \"patient_id\": \"93643ddd-0d0d-491d-83d6-37f3bcde518d\",\n  \"visit_type\": \"OPD Referral\",\n  \"doctor_id\": \"cab7cc4e-3ec7-49d9-a393-bbdb93bf58c2\",\n  \"department_id\": \"46d19155-09a1-462e-b256-ce2a5741b091\",\n  \"selected_tests\": [\n    {\n      \"test_id\": \"16a43dca-eb71-4b85-ab0a-3b984816cadf\"\n    }\n  ],\n  \"priority\": \"Urgent\",\n  \"remarks\": \"Standard patient register with instant payment\",\n  \"payment_metadata\": {\n    \"payment_mode\": \"UPI\",\n    \"reference_no\": \"REF-UPI-884422\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations"
+					]
+				},
+				"description": "Registers diagnostic order, calculates bill, generates token number, barcodes, and marks payment status to PAID."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Get Registration Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/{{registrationId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations",
+						"{{registrationId}}"
+					]
+				},
+				"description": "Retrieves diagnostic order detail including ordered tests, sample statuses, and generated barcode image base64."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Get Registration Billing",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/{{registrationId}}/billing",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations",
+						"{{registrationId}}",
+						"billing"
+					]
+				},
+				"description": "Gets outstanding charges, GST, discounts, and payments for the specific registration order."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Process Registration Payment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"payment_mode\": \"CARD\",\n  \"amount_paid\": 50.0,\n  \"reference_no\": \"TXN-CARD-992211\",\n  \"notes\": \"Partial payment transaction\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/{{registrationId}}/payment",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations",
+						"{{registrationId}}",
+						"payment"
+					]
+				},
+				"description": "Records custom payment transactions against outstanding registration bills and adjusts remaining balance."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Get Registration Summary",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/{{registrationId}}/summary",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations",
+						"{{registrationId}}",
+						"summary"
+					]
+				},
+				"description": "Returns a summary invoice details page suitable for printout or receipts."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Patch Action (Cancel)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"CANCEL\",\n  \"payload\": {\n    \"reason\": \"Patient requested cancellation\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/{{registrationId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations",
+						"{{registrationId}}"
+					]
+				},
+				"description": "Generic patch triggers. Supported actions:\n- UPDATE_PRIORITY\n- UPDATE_SAMPLE\n- UPDATE_REMARKS\n- CANCEL\n- REOPEN\n- REGENERATE_TOKEN\n- REGENERATE_BARCODE\n- PRINT\n- SHARE"
+			},
+			"response": []
+		},
+		{
+			"name": "11. List Lab Orders",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/orders?page=1&limit=10&status=PENDING",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"orders"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "status",
+							"value": "PENDING"
+						}
+					]
+				},
+				"description": "Lists lab orders with sorting, filters, KPIs card figures, and system-wide operational alerts."
+			},
+			"response": []
+		},
+		{
+			"name": "12. Get Patient Profile",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/orders/{{orderId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"orders",
+						"{{orderId}}"
+					]
+				},
+				"description": "Fetches detailed patient files, lab history timeline, warning banners, and assigned tokens."
+			},
+			"response": []
+		},
+		{
+			"name": "13. Patch Lab Order (Generic)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"COLLECT_SAMPLE\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/orders/{{orderId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"orders",
+						"{{orderId}}"
+					]
+				},
+				"description": "Execures workflow state transitions (COLLECT_SAMPLE, START_PROCESSING, MARK_COMPLETED), collector/technician assignments, and updates remarks."
+			},
+			"response": []
+		},
+		{
+			"name": "14. List Lab Reports",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/reports?page=1&limit=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"reports"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				},
+				"description": "Fetches reports ready list, date filters, verification status flags, and report listing metrics."
+			},
+			"response": []
+		},
+		{
+			"name": "15. Get Report Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/reports/{{reportId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"reports",
+						"{{reportId}}"
+					]
+				},
+				"description": "Fetches pathology report details, verifier signatures, and analytes list matching reference ranges."
+			},
+			"response": []
+		},
+		{
+			"name": "16. Export Report",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"format\": \"pdf\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/reports/{{reportId}}/export",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"reports",
+						"{{reportId}}",
+						"export"
+					]
+				},
+				"description": "Requests export files (PDF, HTML) and returns mock download links while adding tracking logs to the audit stream."
+			},
+			"response": []
+		},
+		{
+			"name": "17. Patch Report (Pathologist)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"VERIFY\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/reports/{{reportId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"reports",
+						"{{reportId}}"
+					]
+				},
+				"description": "Pathologist verification controls (VERIFY, RELEASE, HOLD, SHARE)."
+			},
+			"response": []
+		},
+		{
+			"name": "18. Get Technician Dashboard",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/dashboard?dashboardType=TECHNICIAN",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"dashboard"
+					],
+					"query": [
+						{
+							"key": "dashboardType",
+							"value": "TECHNICIAN"
+						}
+					]
+				},
+				"description": "Returns the Technician Dashboard widgets including counts, status checks, Weekly Sample Volume, Today's Intake, and Analyzer status list."
+			},
+			"response": []
+		},
+		{
+			"name": "19. List Lab Samples (Unified Queue)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/samples?status=PENDING&page=1&limit=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"samples"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "PENDING"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				},
+				"description": "Generic Sample Queue endpoint supporting filtering (by status, priority, analyzer, critical flags) and returning status aggregates."
+			},
+			"response": []
+		},
+		{
+			"name": "20. Patch Lab Sample (Generic)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"START_PROCESSING\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/samples/{{sampleId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"samples",
+						"{{sampleId}}"
+					]
+				},
+				"description": "Generic Sample Action endpoint triggers (ASSIGN_TECHNICIAN, ASSIGN_ANALYZER, COLLECT_SAMPLE, START_PROCESSING, MARK_COMPLETED, VERIFY_RESULT, REJECT_RESULT, RECOLLECT_SAMPLE, UPDATE_PRIORITY, UPDATE_SAMPLE, CANCEL, REOPEN, PRINT_BARCODE, DOWNLOAD_LABEL, REGENERATE_BARCODE)."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "your-jwt-auth-token-here",
+			"type": "string"
+		},
+		{
+			"key": "registrationId",
+			"value": "d3e40fba-6d9a-4b52-9a52-fd3eec45980b",
+			"type": "string"
+		},
+		{
+			"key": "orderId",
+			"value": "e6699078-a427-49d2-a9e3-4df532d0c499",
+			"type": "string"
+		},
+		{
+			"key": "reportId",
+			"value": "df86983c-abf4-4d8e-af12-561ab71f02f3",
+			"type": "string"
+		},
+		{
+			"key": "sampleId",
+			"value": "a7984c1c-849a-4782-b465-732180570422",
+			"type": "string"
+		}
+	]
+}

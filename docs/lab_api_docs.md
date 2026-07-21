@@ -1209,3 +1209,854 @@ Modifies billing status or matches invoice values.
   }
 }
 ```
+
+---
+
+## 6. Extended Dashboards & Pathologist Verification Workflow APIs
+
+### 6.1 Sample Management Statistics
+Retrieves statistics for the Sample Management dashboard.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/sample-management/statistics`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "completion_rate": 88.5,
+    "rejection_rate": 1.2,
+    "in_transit": 4,
+    "awaiting_processing": 12,
+    "on_analyzer": 5,
+    "avg_tat_minutes": 24.5
+  }
+}
+```
+
+---
+
+### 6.2 List Dashboard Samples
+Lists all samples currently in phlebotomy, transit, or lab receiving.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/samples`
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:** `status`, `priority`, `search`, `page`, `limit`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "items": [
+      {
+        "sample_id": "df86d618-0977-4579-a061-e75b1d14d4dd",
+        "barcode": "BAR-10029",
+        "patient_name": "Karan Sharma",
+        "patient_uhid": "UHID-2026-98721",
+        "test_name": "Complete Blood Count",
+        "machine_name": "Sysmex XN-1000",
+        "technician_name": "Amit Sharma",
+        "status": "IN_TRANSIT",
+        "priority": "Routine",
+        "created_at": "2026-06-23T10:40:00Z",
+        "tat_minutes": 15.2
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 6.3 Confirm Sample Arrival
+Technician registers container arrival at receiving bay, transitioning status from `IN_TRANSIT` to `AWAITING_PROCESSING`.
+
+* **Endpoint:** `PATCH /diagnostic-orders/lab/samples/{id}/confirm-arrival`
+* **Required Permission:** `diagnostics:lab:collect`
+* **Path Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `id` | UUID | **Mandatory** | The lab order item identifier |
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Sample arrival confirmed successfully",
+  "data": {
+    "id": "df86d618-0977-4579-a061-e75b1d14d4dd",
+    "status": "SCHEDULED",
+    "updated_at": "2026-07-13T11:00:00Z"
+  }
+}
+```
+
+---
+
+### 6.4 Test Processing Statistics
+Retrieves statistics for the Test Processing dashboard.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/test-processing/statistics`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "assigned_bays": 3,
+    "hl7_pending": 8,
+    "manual_pending": 4,
+    "total_tests": 12
+  }
+}
+```
+
+---
+
+### 6.5 List Bench Assignments
+Lists all laboratory workspaces, running instruments, and workloads.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/bench-assignments`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "bench_name": "Hematology Bench A",
+      "machine_name": "Sysmex XN-1000",
+      "technician_name": "Amit Sharma",
+      "active_test_count": 5
+    }
+  ]
+}
+```
+
+---
+
+### 6.6 Save Result Draft
+Autosaves temporary parameter entries.
+
+* **Endpoint:** `POST /diagnostic-orders/lab/results/{orderId}/draft`
+* **Required Permission:** `diagnostics:lab:collect`
+* **Path Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `orderId` | UUID | **Mandatory** | The lab order item identifier |
+* **Request Body:**
+```json
+{
+  "draft_values": {
+    "wbc_param_id": "14.2",
+    "hgb_param_id": "11.2"
+  },
+  "remarks": "Slight turbidity noted"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Draft saved successfully"
+}
+```
+
+---
+
+### 6.7 Mark Critical Value & Pathologist Alert
+Flags high-risk parameters and sends alerts to pathologists.
+
+* **Endpoint:** `PATCH /diagnostic-orders/lab/results/{orderId}/critical`
+* **Required Permission:** `diagnostics:lab:collect`
+* **Request Body:**
+```json
+{
+  "parameter_ids": ["wbc_param_id"],
+  "reason": "WBC count highly elevated",
+  "pathologist_id": "pathologist-uuid-1111"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Results marked as critical and pathologist notified"
+}
+```
+
+---
+
+### 6.8 Acknowledge Critical Alert
+Enables clinicians or technicians to sign-off critical alarms.
+
+* **Endpoint:** `POST /diagnostic-orders/lab/result-submission/critical-logs/{id}/acknowledge`
+* **Required Permission:** `diagnostics:lab:collect`
+* **Request Body:**
+```json
+{
+  "notes": "Notified Dr. Reyes via phone call at 08:32"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Critical result log acknowledged successfully"
+}
+```
+
+---
+
+### 6.9 Result Submission Dashboard Statistics
+Retrieves statistics for the Result Submission screen.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/result-submission/statistics`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "ready_to_send": 4,
+    "sent_to_pathologist": 1,
+    "unacknowledged_criticals": 3,
+    "criticals_triggered": 5
+  }
+}
+```
+
+---
+
+### 6.10 Reports & Delivery Extended Statistics
+Compiles verification KPIs for the pathologist.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/results/statistics`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "critical_values": 3,
+    "delta_flagged": 5,
+    "abnormal_results": 3,
+    "within_range": 2,
+    "approved_today": 142,
+    "generated_today": 186,
+    "delivered_today": 180
+  }
+}
+```
+
+---
+
+### 6.11 Update Result Status (Approve, Reprocess, Sign, Deliver)
+Pathologist validation and report lifecycle transitions.
+
+* **Endpoint:** `PATCH /diagnostic-orders/lab/results/{id}/status`
+* **Required Permission:** `diagnostics:lab:result:validate`
+* **Path Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `id` | UUID | **Mandatory** | The result identifier |
+
+* **Request Examples:**
+  * **Approve & Digitally Sign:**
+    ```json
+    {
+      "status": "APPROVED",
+      "remarks": "Verified",
+      "digitalSignature": true
+    }
+    ```
+  * **Reprocess / Re-run:**
+    ```json
+    {
+      "status": "REPROCESSING",
+      "remarks": "Analyzer calibration failed"
+    }
+    ```
+  * **Deliver Report:**
+    ```json
+    {
+      "status": "REPORT_DELIVERED"
+    }
+    ```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Result status updated successfully",
+  "data": {
+    "id": "result-uuid-1111",
+    "status": "APPROVED",
+    "digital_signature": true,
+    "validated_by": "pathologist-uuid-1111"
+  }
+}
+```
+
+---
+
+## 7. Clinical Addendum Resource APIs
+
+Clinical addenda management for post-release updates.
+
+### 7.1 Create Addendum
+* **Endpoint:** `POST /diagnostic-orders/lab/addendums`
+* **Required Permission:** `diagnostics:lab:result:validate`
+* **Request Body:**
+```json
+{
+  "lab_result_id": "result-uuid-1111",
+  "patient_name": "Rajan Kumar",
+  "patient_uhid": "UHID-2026-091245",
+  "test_type": "Lipid Profile",
+  "amendment_type": "Clinical Interpretation Update",
+  "requested_by": "Dr. Priya Sharma",
+  "updated_by": "Dr. Rajesh Mehta",
+  "reason": "Incorporate post-release clinical notes",
+  "clinical_notes": "Slight hyperlipidemia observed, follow up in 2 months",
+  "status": "Pending"
+}
+```
+* **Success Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Addendum report created successfully",
+  "data": {
+    "id": "addendum-uuid-5555",
+    "status": "Pending",
+    "created_at": "2026-07-13T11:25:00Z"
+  }
+}
+```
+
+---
+
+### 7.2 List Addendums
+* **Endpoint:** `GET /diagnostic-orders/lab/addendums`
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:** `status`, `reportId`, `patient`, `doctor`, `page`, `limit`, `search`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "items": [
+      {
+        "addendum_id": "addendum-uuid-5555",
+        "lab_result_id": "result-uuid-1111",
+  "success": true,
+  "message": "Draft saved successfully"
+}
+```
+
+---
+
+### 6.7 Mark Critical Value & Pathologist Alert
+Flags high-risk parameters and sends alerts to pathologists.
+
+* **Endpoint:** `PATCH /diagnostic-orders/lab/results/{orderId}/critical`
+* **Required Permission:** `diagnostics:lab:collect`
+* **Request Body:**
+```json
+{
+  "parameter_ids": ["wbc_param_id"],
+  "reason": "WBC count highly elevated",
+  "pathologist_id": "pathologist-uuid-1111"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Results marked as critical and pathologist notified"
+}
+```
+
+---
+
+### 6.8 Acknowledge Critical Alert
+Enables clinicians or technicians to sign-off critical alarms.
+
+* **Endpoint:** `POST /diagnostic-orders/lab/result-submission/critical-logs/{id}/acknowledge`
+* **Required Permission:** `diagnostics:lab:collect`
+* **Request Body:**
+```json
+{
+  "notes": "Notified Dr. Reyes via phone call at 08:32"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Critical result log acknowledged successfully"
+}
+```
+
+---
+
+### 6.9 Result Submission Dashboard Statistics
+Retrieves statistics for the Result Submission screen.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/result-submission/statistics`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "ready_to_send": 4,
+    "sent_to_pathologist": 1,
+    "unacknowledged_criticals": 3,
+    "criticals_triggered": 5
+  }
+}
+```
+
+---
+
+### 6.10 Reports & Delivery Extended Statistics
+Compiles verification KPIs for the pathologist.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/results/statistics`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "critical_values": 3,
+    "delta_flagged": 5,
+    "abnormal_results": 3,
+    "within_range": 2,
+    "approved_today": 142,
+    "generated_today": 186,
+    "delivered_today": 180
+  }
+}
+```
+
+---
+
+### 6.11 Update Result Status (Approve, Reprocess, Sign, Deliver)
+Pathologist validation and report lifecycle transitions.
+
+* **Endpoint:** `PATCH /diagnostic-orders/lab/results/{id}/status`
+* **Required Permission:** `diagnostics:lab:result:validate`
+* **Path Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `id` | UUID | **Mandatory** | The result identifier |
+
+* **Request Examples:**
+  * **Approve & Digitally Sign:**
+    ```json
+    {
+      "status": "APPROVED",
+      "remarks": "Verified",
+      "digitalSignature": true
+    }
+    ```
+  * **Reprocess / Re-run:**
+    ```json
+    {
+      "status": "REPROCESSING",
+      "remarks": "Analyzer calibration failed"
+    }
+    ```
+  * **Deliver Report:**
+    ```json
+    {
+      "status": "REPORT_DELIVERED"
+    }
+    ```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Result status updated successfully",
+  "data": {
+    "id": "result-uuid-1111",
+    "status": "APPROVED",
+    "digital_signature": true,
+    "validated_by": "pathologist-uuid-1111"
+  }
+}
+```
+
+---
+
+## 7. Clinical Addendum Resource APIs
+
+Clinical addenda management for post-release updates.
+
+### 7.1 Create Addendum
+* **Endpoint:** `POST /diagnostic-orders/lab/addendums`
+* **Required Permission:** `diagnostics:lab:result:validate`
+* **Request Body:**
+```json
+{
+  "lab_result_id": "result-uuid-1111",
+  "patient_name": "Rajan Kumar",
+  "patient_uhid": "UHID-2026-091245",
+  "test_type": "Lipid Profile",
+  "amendment_type": "Clinical Interpretation Update",
+  "requested_by": "Dr. Priya Sharma",
+  "updated_by": "Dr. Rajesh Mehta",
+  "reason": "Incorporate post-release clinical notes",
+  "clinical_notes": "Slight hyperlipidemia observed, follow up in 2 months",
+  "status": "Pending"
+}
+```
+* **Success Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Addendum report created successfully",
+  "data": {
+    "id": "addendum-uuid-5555",
+    "status": "Pending",
+    "created_at": "2026-07-13T11:25:00Z"
+  }
+}
+```
+
+---
+
+### 7.2 List Addendums
+* **Endpoint:** `GET /diagnostic-orders/lab/addendums`
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:** `status`, `reportId`, `patient`, `doctor`, `page`, `limit`, `search`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "items": [
+      {
+        "addendum_id": "addendum-uuid-5555",
+        "lab_result_id": "result-uuid-1111",
+        "patient_name": "Rajan Kumar",
+        "amendment_type": "Clinical Interpretation Update",
+        "status": "Pending"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 7.3 View Addendum Detail
+* **Endpoint:** `GET /diagnostic-orders/lab/addendums/{id}`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "addendum-uuid-5555",
+    "lab_result_id": "result-uuid-1111",
+    "patient_name": "Rajan Kumar",
+    "patient_uhid": "UHID-2026-091245",
+    "test_type": "Lipid Profile",
+    "amendment_type": "Clinical Interpretation Update",
+    "requested_by": "Dr. Priya Sharma",
+    "updated_by": "Dr. Rajesh Mehta",
+    "reason": "Incorporate post-release clinical notes",
+    "clinical_notes": "Slight hyperlipidemia observed, follow up in 2 months",
+    "status": "Pending",
+    "created_at": "2026-07-13T11:25:00Z"
+  }
+}
+```
+
+---
+
+### 7.4 Update Addendum
+Updates the status or clinical notes of a released addendum.
+
+* **Endpoint:** `PATCH /diagnostic-orders/lab/addendums/{id}`
+* **Required Permission:** `diagnostics:lab:result:validate`
+* **Request Body:**
+```json
+{
+  "status": "Approved",
+  "clinical_notes": "Reviewed and signed off clinical interpretation notes."
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Addendum report updated successfully",
+  "data": {
+    "id": "addendum-uuid-5555",
+    "status": "Approved",
+    "updated_at": "2026-07-13T11:30:00Z"
+  }
+}
+```
+
+---
+
+## 8. Dashboard Feeds & Workflow Pipelines
+
+### 8.1 List HL7 Imported Results
+Lists imported analyser findings from integrated laboratory instruments.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/results/hl7`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "hl7-result-uuid",
+      "machine_name": "Sysmex XN-1000",
+      "test_name": "Hemoglobin (HGB)",
+      "result_value": "11.2",
+      "unit": "g/dL",
+      "flag": "Low",
+      "timestamp": "2026-07-13T08:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 8.2 List Manual Entry Queue
+Lists test orders awaiting manually typed parameter entries.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/results/manual-entry`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "order_item_id": "item-uuid-1111",
+      "patient_name": "Maria Santos",
+      "test_name": "Complete Blood Count",
+      "status": "AWAITING_PROCESSING"
+    }
+  ]
+}
+```
+
+---
+
+### 8.3 Get Result Entry Details
+Loads dynamic parameters, units, saved drafts, and patient history for Result Entry.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/results/{orderId}/details`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "patient": {
+      "name": "Karan Sharma",
+      "uhid": "UHID-2026-98721",
+      "age": 42,
+      "gender": "Male"
+    },
+    "doctor": "Dr. Ramesh Nair",
+    "department": "General Medicine",
+    "order_id": "order-uuid-2222",
+    "items": [
+      {
+        "item_id": "item-uuid-1111",
+        "test_name": "Complete Blood Count",
+        "parameters": [
+          {
+            "id": "param-uuid-1111",
+            "parameter_name": "Hemoglobin",
+            "reference_range": "13.0 - 17.0",
+            "unit": "g/dL"
+          }
+        ],
+        "draft": {
+          "values": {
+            "param-uuid-1111": "11.2"
+          },
+          "remarks": "Slight low"
+        }
+      }
+    ],
+    "previous_results": []
+  }
+}
+```
+
+---
+
+### 8.4 Submit Result Values
+Submits completed parameters, validating that all mandatory fields are present.
+
+* **Endpoint:** `POST /diagnostic-orders/lab/results/{orderId}/submit`
+* **Required Permission:** `diagnostics:lab:collect`
+* **Request Body:**
+```json
+{
+  "result_values": {
+    "param-uuid-1111": "11.2"
+  },
+  "remarks": "Results typing complete"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Results submitted successfully"
+}
+```
+
+---
+
+### 8.5 List Pathologist Queue (Result Review)
+Lists submitted result records in the Pathologist Verification workflow pipeline.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/result-submission/pathologist-queue`
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:** `status` (Ready, Sent, Held), `search`, `page`, `limit`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "total": 1,
+    "items": [
+      {
+        "order_item_id": "item-uuid-1111",
+        "patient_name": "Maria Santos",
+        "test_name": "Complete Blood Count",
+        "doctor_name": "Dr. Reyes",
+        "status": "Ready to Send"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 8.6 List Critical Flags Queue
+Lists critical alarms requiring clinical sign-off.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/result-submission/critical-logs`
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:** `status` (unacknowledged, acknowledged)
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "log_id": "log-uuid-1111",
+      "patient_name": "Maria Santos",
+      "priority": "Emergency",
+      "doctor_name": "Dr. Reyes",
+      "reason": "WBC count highly elevated",
+      "parameter_details": "WBC: 12.4 10^3/uL",
+      "timestamp": "2026-07-13T08:31:00Z",
+      "acknowledged_at": null
+    }
+  ]
+}
+```
+
+---
+
+### 8.7 Send Result to Pathologist Queue
+Promotes autosaved drafts into final review status (`READY_FOR_REVIEW`).
+
+* **Endpoint:** `POST /diagnostic-orders/lab/result-submission/results/{id}/send`
+* **Required Permission:** `diagnostics:lab:collect`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Result sent to pathologist successfully"
+}
+```
+
+---
+
+### 8.8 Get Detailed Result Details (Pathologist Report Review)
+Loads detailed context for laboratory investigation reports.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/results/{id}`
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "patient": {
+      "name": "Rajan Kumar",
+      "uhid": "UHID-2026-091245",
+      "age": 42,
+      "gender": "Male",
+      "phone": "+919999999999"
+    },
+    "doctor": "Dr. Priya Sharma",
+    "department": "General Medicine",
+    "barcode": "LX-2026-43482",
+    "result_id": "result-uuid-1111",
+    "status": "APPROVED",
+    "digital_signature": true,
+    "parameters": [
+      {
+        "parameter_name": "Hemoglobin",
+        "actual_value": "11.2",
+        "unit": "g/dL",
+        "reference_range": "13.0 - 17.0"
+      }
+    ],
+    "previous_reports": [],
+    "status_history": []
+  }
+}
+```
+
+---
+
+### 8.9 Download Signed Investigation Report PDF
+Streams dynamic report PDF document downloads.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/results/{id}/pdf`
+* **Required Permission:** `diagnostics:order:view`
+* **Response:**
+  * **Content-Type:** `application/pdf`
+  * **Content-Disposition:** `attachment; filename=lab_report_{id}.pdf`
+
+---
+
+### 8.10 Export Filtered Result Rows
+Streams worklist spreadsheet downloads matching current filter criteria.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/results/export`
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:** `status`, `search`, `format` (default: `csv`)
+* **Response:**
+  * **Content-Type:** `text/csv`
+  * **Content-Disposition:** `attachment; filename=lab_samples_export.csv`

@@ -1,0 +1,394 @@
+{
+	"info": {
+		"_postman_id": "c138ba47-2222-4704-9430-f82d6dcfa34c",
+		"name": "HMS Lab Technician Flow Dashboard",
+		"description": "Postman Collection for HMS Lab Technician Dashboard APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Sample Management Statistics",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/sample-management/statistics",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"sample-management",
+						"statistics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Confirm Sample Arrival",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/samples/{{orderItemId}}/confirm-arrival",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"samples",
+						"{{orderItemId}}",
+						"confirm-arrival"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Test Processing Statistics",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/test-processing/statistics",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"test-processing",
+						"statistics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. List Bench Assignments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/bench-assignments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"bench-assignments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. List HL7 Instrument Results",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/hl7",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"hl7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Save Result Draft",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"draft_values\": {\n    \"wbc_param_id\": \"14.2\",\n    \"hgb_param_id\": \"11.2\"\n  },\n  \"remarks\": \"Slight turbidity noted\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{orderItemId}}/draft",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{orderItemId}}",
+						"draft"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. Submit Result Values",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"result_values\": {\n    \"param-uuid-1111\": \"11.2\"\n  },\n  \"remarks\": \"Results typing complete\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{orderItemId}}/submit",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{orderItemId}}",
+						"submit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8. Flag Critical Values",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"parameter_ids\": [\"param-uuid-1111\"],\n  \"reason\": \"Hemoglobin critically low\",\n  \"pathologist_id\": \"pathologist-uuid\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{orderItemId}}/critical",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{orderItemId}}",
+						"critical"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9. Result Submission Dashboard Statistics",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/result-submission/statistics",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"result-submission",
+						"statistics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10. Send Result to Pathologist Verification Queue",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/result-submission/results/{{orderItemId}}/send",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"result-submission",
+						"results",
+						"{{orderItemId}}",
+						"send"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11. Acknowledge Critical Alert Alarm",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"notes\": \"Notified Dr. Reyes via phone call at 08:32\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/result-submission/critical-logs/{{criticalLogId}}/acknowledge",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"result-submission",
+						"critical-logs",
+						"{{criticalLogId}}",
+						"acknowledge"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12. Export Filtered Samples (CSV/Spreadsheet)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/export?format=csv",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"export"
+					],
+					"query": [
+						{
+							"key": "format",
+							"value": "csv"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "your_access_token",
+			"type": "string"
+		},
+		{
+			"key": "orderItemId",
+			"value": "item-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "criticalLogId",
+			"value": "log-uuid-here",
+			"type": "string"
+		}
+	]
+}

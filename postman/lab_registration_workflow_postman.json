@@ -1,0 +1,355 @@
+{
+	"info": {
+		"_postman_id": "c138ba47-1111-4704-9430-f82d6dcfa34c",
+		"name": "HMS Lab Registration Staff Dashboard",
+		"description": "Comprehensive Postman Collection for Laboratory Registration Workflow inside the Diagnostics microservice.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Initialize Dropdowns",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registration/init",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registration",
+						"init"
+					]
+				},
+				"description": "Retrieves configuration dropdown list options for Visit Types, Priorities, Sample Types, Departments, Packages, etc."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Search Patients",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/patients?q=PAT-2026-0001",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"patients"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "PAT-2026-0001",
+							"description": "Search term (UHID, Name, or Phone)"
+						}
+					]
+				},
+				"description": "Searches patient database for registration matching UHID, Name, or Phone."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Search Tests Catalog",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/tests?search=Blood&active=true",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"tests"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "Blood"
+						},
+						{
+							"key": "active",
+							"value": "true"
+						}
+					]
+				},
+				"description": "Retrieves lab test catalog grouped by category, supporting filtering by search string, department, packages, popular status, and page limits."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Create Registration Draft",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"DRAFT\",\n  \"patient_id\": \"93643ddd-0d0d-491d-83d6-37f3bcde518d\",\n  \"visit_type\": \"Walk-in\",\n  \"doctor_id\": \"cab7cc4e-3ec7-49d9-a393-bbdb93bf58c2\",\n  \"department_id\": \"46d19155-09a1-462e-b256-ce2a5741b091\",\n  \"selected_tests\": [\n    {\n      \"test_id\": \"16a43dca-eb71-4b85-ab0a-3b984816cadf\"\n    }\n  ],\n  \"priority\": \"Normal\",\n  \"remarks\": \"Draft registration details\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations"
+					]
+				},
+				"description": "Saves a diagnostic registration as a draft. Does not generate bills, queue tokens, or barcode numbers."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Register and Pay",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"REGISTER_AND_PAY\",\n  \"patient_id\": \"93643ddd-0d0d-491d-83d6-37f3bcde518d\",\n  \"visit_type\": \"OPD Referral\",\n  \"doctor_id\": \"cab7cc4e-3ec7-49d9-a393-bbdb93bf58c2\",\n  \"department_id\": \"46d19155-09a1-462e-b256-ce2a5741b091\",\n  \"selected_tests\": [\n    {\n      \"test_id\": \"16a43dca-eb71-4b85-ab0a-3b984816cadf\"\n    }\n  ],\n  \"priority\": \"Urgent\",\n  \"remarks\": \"Standard patient register with instant payment\",\n  \"payment_metadata\": {\n    \"payment_mode\": \"UPI\",\n    \"reference_no\": \"REF-UPI-884422\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations"
+					]
+				},
+				"description": "Registers diagnostic order, calculates bill, generates token number, barcodes, and marks payment status to PAID."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Get Registration Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/{{registrationId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations",
+						"{{registrationId}}"
+					]
+				},
+				"description": "Retrieves diagnostic order detail including ordered tests, sample statuses, and generated barcode image base64."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Get Registration Billing",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/{{registrationId}}/billing",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations",
+						"{{registrationId}}",
+						"billing"
+					]
+				},
+				"description": "Gets outstanding charges, GST, discounts, and payments for the specific registration order."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Process Registration Payment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"payment_mode\": \"CARD\",\n  \"amount_paid\": 500.0,\n  \"reference_no\": \"TXN-CARD-992211\",\n  \"notes\": \"Partial payment transaction\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/registrations/{{registrationId}}/payments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"registrations",
+						"{{registrationId}}",
+						"payments"
+					]
+				},
+				"description": "Records additional payment transaction against registered diagnostic orders."
+			},
+			"response": []
+		},
+		{
+			"name": "9. List Lab Samples (Figma Dashboard Feed)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/samples?status=IN_TRANSIT&search=Rajesh",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"samples"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "IN_TRANSIT"
+						},
+						{
+							"key": "search",
+							"value": "Rajesh"
+						}
+					]
+				},
+				"description": "Lists dashboard samples with dynamic filters and searches."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Get Result Entry Details Context",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/diagnostic-orders/lab/results/{{orderId}}/details",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"diagnostic-orders",
+						"lab",
+						"results",
+						"{{orderId}}",
+						"details"
+					]
+				},
+				"description": "Fetches patient details, parameters, drafts, and patient history for Result Entry."
+			},
+			"response": []
+		}
+	],
+	"event": [],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "your_access_token",
+			"type": "string"
+		},
+		{
+			"key": "registrationId",
+			"value": "registration-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "orderId",
+			"value": "order-uuid-here",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,67 @@
+{
+  "id": "env-1acb6990-d624-44df-ad81-67130264824a",
+  "name": "Laboratory Module Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://api-dev.hms.arovita.com",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "token",
+      "value": "cognito-jwt-access-token-placeholder",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "lab_id",
+      "value": "b8baa583-6e36-400d-a822-61b6b0811931",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "patient_id",
+      "value": "5221a442-e75f-49d5-aa42-860dc76a76de",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "doctor_id",
+      "value": "8b7f50c4-fa3a-4aef-ab27-f42b7fb0e54f",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "department_id",
+      "value": "46d19155-09a1-462e-b256-ce2a5741b091",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "order_id",
+      "value": "bff7e889-ff76-463a-ae62-386e97802b26",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "id",
+      "value": "bff7e889-ff76-463a-ae62-386e97802b26",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "vendor_id",
+      "value": "8a9e7cf5-8f03-416a-aa37-e1a3d1d45d46",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "audit_id",
+      "value": "958f69dd-97dc-472f-b33c-8dc5372ac7e0",
+      "enabled": true,
+      "type": "default"
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

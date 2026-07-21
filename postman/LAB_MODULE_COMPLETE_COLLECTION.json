@@ -1,0 +1,2068 @@
+{
+  "info": {
+    "name": "Lab Service \u2014 Complete API Collection",
+    "_postman_id": "lab-service-complete-v2",
+    "description": "Complete Postman collection for Lab Module API. Generated from live source code and actual database responses.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.arovita.com"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    },
+    {
+      "key": "tenant_id",
+      "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c"
+    }
+  ],
+  "item": [
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List Lab Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders"
+              ]
+            },
+            "description": "List all lab orders with pagination."
+          }
+        },
+        {
+          "name": "List Lab Orders (Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "NEW"
+                },
+                {
+                  "key": "priority",
+                  "value": "URGENT"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Single Order",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders/{{order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders",
+                "{{order_id}}"
+              ]
+            },
+            "description": "Get a single lab order by UUID."
+          }
+        },
+        {
+          "name": "Create Diagnostic Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"8404356a-9d8d-494b-bd29-ddc76b0fb58b\",\n  \"doctor_id\": \"cab7cc4e-3ec7-49d9-a393-bbdb93bf58c2\",\n  \"order_type\": \"LAB\",\n  \"priority\": \"ROUTINE\",\n  \"context_type\": \"OPD\",\n  \"context_id\": \"46d19155-09a1-462e-b256-ce2a5741b091\",\n  \"source_module\": \"OPD\",\n  \"encounter_type\": \"WALK_IN\",\n  \"lab_items\": [\n    {\n      \"test_id\": \"52949dc3-e8b3-4abc-8d5d-c95b00337f6c\",\n      \"fasting_required\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Accept Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders/{{order_id}}/actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders",
+                "{{order_id}}",
+                "actions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"accept\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Collect Sample",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders/{{order_id}}/actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders",
+                "{{order_id}}",
+                "actions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"collect-sample\",\n  \"barcode\": \"BC-10019\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Submit Results",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders/{{order_id}}/actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders",
+                "{{order_id}}",
+                "actions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"submit-values\",\n  \"result_values\": {\n    \"hemoglobin\": \"14.5\",\n    \"wbc\": \"7500\"\n  },\n  \"remarks\": \"Normal values\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Send to Pathologist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders/{{order_id}}/actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders",
+                "{{order_id}}",
+                "actions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"send-to-pathologist\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reject Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders/{{order_id}}/actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders",
+                "{{order_id}}",
+                "actions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"reject\",\n  \"reason\": \"Duplicate order\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Bulk Accept",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/orders/bulk/actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "orders",
+                "bulk",
+                "actions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"accept\",\n  \"ids\": [\n    \"uuid1\",\n    \"uuid2\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lookup / Dropdowns",
+      "item": [
+        {
+          "name": "Lookup - Tests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "tests"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Lookup - Packages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "packages"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Lookup - Machines",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "machines"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Lookup - Departments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "departments"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Lookup - Shifts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "shifts"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Lookup - Permissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "permissions"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Lookup - Printers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "printers"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Lookup - Report Templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "report-templates"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Lookup - Dropdowns (default)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/lookup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "dropdowns"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Analytics",
+      "item": [
+        {
+          "name": "Dashboard KPIs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "dashboard"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "List Inventory Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/inventory",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "inventory"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List Inventory (Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/inventory",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "inventory"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "REAGENT"
+                },
+                {
+                  "key": "stockLevel",
+                  "value": "low"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Inventory Item",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/inventory/{{item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "inventory",
+                "{{item_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Create Inventory Item (Minimal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/inventory",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "inventory"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_code\": \"REAG-GLU-001\",\n  \"item_name\": \"Glucose Reagent Kit\",\n  \"category\": \"REAGENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create Inventory Item (Full)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/inventory",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "inventory"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_code\": \"REAG-GLU-002\",\n  \"item_name\": \"Glucose Reagent Kit Plus\",\n  \"category\": \"REAGENT\",\n  \"sub_category\": \"Biochemistry\",\n  \"description\": \"Enzymatic reagent kit\",\n  \"hazard_class\": \"NONE\",\n  \"uom\": \"BOX\",\n  \"storage_condition\": \"REFRIGERATED\",\n  \"storage_temperature_min\": 2,\n  \"storage_temperature_max\": 8,\n  \"brand\": \"Abbott\",\n  \"manufacturer\": \"Abbott Diagnostics\",\n  \"mrp\": 2850.5,\n  \"gst_percent\": 18,\n  \"reorder_level\": 10,\n  \"minimum_stock\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Inventory Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/inventory/{{item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "inventory",
+                "{{item_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_name\": \"Updated Reagent Name\",\n  \"mrp\": 3000.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vendors",
+      "item": [
+        {
+          "name": "List Vendors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "vendors"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Vendor Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "vendors",
+                "{{vendor_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Vendor Detail (with includes)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "vendors",
+                "{{vendor_id}}"
+              ],
+              "query": [
+                {
+                  "key": "include",
+                  "value": "contracts,analytics,financial"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Create Vendor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "vendors"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendor_name\": \"BioLab Supplies Pvt. Ltd.\",\n  \"vendor_code\": \"BLS-001\",\n  \"vendor_type\": \"MANUFACTURER\",\n  \"official_email\": \"info@biolabsupplies.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Vendor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "vendors",
+                "{{vendor_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendor_name\": \"Updated Vendor Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Vendor",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "vendors",
+                "{{vendor_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Procurement",
+      "item": [
+        {
+          "name": "List Purchase Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/procurement",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "procurement"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List GRNs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/procurement",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "procurement"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "grn"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List Vendor Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/procurement",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "procurement"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "invoice"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get PO Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/procurement/{{po_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "procurement",
+                "{{po_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get GRN Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/procurement/{{grn_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "procurement",
+                "{{grn_id}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "grn"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Billing",
+      "item": [
+        {
+          "name": "List Billing Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/billing/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "billing",
+                "invoices"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List Invoices (Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/billing/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "billing",
+                "invoices"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PAID"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Export Invoices CSV",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/billing/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "billing",
+                "invoices"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "csv"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Invoice Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/billing/invoices/{{invoice_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "billing",
+                "invoices",
+                "{{invoice_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Staff",
+      "item": [
+        {
+          "name": "List Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/staff",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "staff"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List Staff (Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/staff",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "staff"
+              ],
+              "query": [
+                {
+                  "key": "designation",
+                  "value": "Technician"
+                },
+                {
+                  "key": "department",
+                  "value": "Diagnostics"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Staff Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/staff/{{staff_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "staff",
+                "{{staff_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles (RBAC)",
+      "item": [
+        {
+          "name": "List All Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "roles"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Role Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "roles"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"LAB_SUPERVISOR\",\n  \"description\": \"Laboratory supervisor with full access\",\n  \"status\": \"ACTIVE\",\n  \"permissions\": [\n    \"diagnostics:order:view\",\n    \"diagnostics:lab:collect\",\n    \"diagnostics:test:manage\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Assign Users to Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/roles/{{role_id}}/actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "roles",
+                "{{role_id}}",
+                "actions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"assign-users\",\n  \"userIds\": [\n    \"uuid1\",\n    \"uuid2\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Role Permissions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/roles/{{role_id}}/actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "roles",
+                "{{role_id}}",
+                "actions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"update-permissions\",\n  \"permissions\": [\n    \"diagnostics:order:view\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Config (Templates & Machines)",
+      "item": [
+        {
+          "name": "List Report Templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/config",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "config"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List Machines",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/config",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "config"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "machines"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Template Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/config/{{template_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "config",
+                "{{template_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Machine Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/config/{{machine_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "config",
+                "{{machine_id}}"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "machines"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit & Compliance",
+      "item": [
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/audit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "audit"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List Compliance Violations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/audit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "compliance"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List System Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/audit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "events"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "List Waste Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/audit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "waste"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Get Audit Log Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Id",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/diagnostic-orders/audit/{{audit_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "diagnostic-orders",
+                "audit",
+                "{{audit_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    }
+  ]
+}

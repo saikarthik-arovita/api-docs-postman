@@ -1,0 +1,176 @@
+{
+  "info": {
+    "_postman_id": "8b7e289f-8a03-4bf0-b183-b7783dc9842a",
+    "name": "Receptionist Diagnostics API Collection",
+    "description": "Postman collection containing receptionist flow endpoints for walk-in/OPD registration, test lookup, patient lab history, reports dashboard, report viewer, and sharing notifications.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Search Tests Alphabetically",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "x-tenant-id", "value": "{{branch_id}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/diagnostic-orders/lab/tests?search=blood",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "diagnostic-orders", "lab", "tests" ],
+          "query": [
+            { "key": "search", "value": "blood", "description": "Case-insensitive test search query" }
+          ]
+        },
+        "description": "Searches for laboratory tests catalog alphabetically."
+      }
+    },
+    {
+      "name": "2. Create Walk-in or OPD Referral Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "x-tenant-id", "value": "{{branch_id}}", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"department_id\": \"{{department_id}}\",\n  \"branch_id\": \"{{branch_id}}\",\n  \"order_type\": \"LAB\",\n  \"priority\": \"ROUTINE\",\n  \"context_type\": \"OPD_VISIT\",\n  \"context_id\": \"{{branch_id}}\",\n  \"source_module\": \"OPD\",\n  \"encounter_type\": \"CONSULTATION\",\n  \"visit_number\": \"OPD-2026-00142\",\n  \"referral_code\": \"REF-2026-00891\",\n  \"lab_items\": [\n    {\n      \"test_id\": \"{{test_id}}\",\n      \"fasting_required\": true,\n      \"sample_type\": \"Blood\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/diagnostic-orders",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "diagnostic-orders" ]
+        },
+        "description": "Registers a laboratory order containing token sequences, barcodes, and referral tracking variables."
+      }
+    },
+    {
+      "name": "3. Get Lab Order Details",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "x-tenant-id", "value": "{{branch_id}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/diagnostic-orders/lab/:order_id",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "diagnostic-orders", "lab", ":order_id" ],
+          "variable": [
+            { "key": "order_id", "value": "{{order_id}}", "description": "The diagnostic order UUID" }
+          ]
+        },
+        "description": "Retrieves token numbers, barcode labels, and dynamically routed patient identifiers."
+      }
+    },
+    {
+      "name": "4. Get Patient Lab History",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "x-tenant-id", "value": "{{branch_id}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/diagnostic-orders/lab/patient/:patient_id/history",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "diagnostic-orders", "lab", "patient", ":patient_id", "history" ],
+          "variable": [
+            { "key": "patient_id", "value": "{{patient_id}}", "description": "Patient UUID to query history for" }
+          ]
+        },
+        "description": "Fetches a full list of patient's past test records, statuses, and validation report URLs."
+      }
+    },
+    {
+      "name": "5. Get Reports Dashboard Summary & List",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "x-tenant-id", "value": "{{branch_id}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/diagnostic-orders/reports?search=",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "diagnostic-orders", "reports" ],
+          "query": [
+            { "key": "search", "value": "", "description": "Optional search by patient name" }
+          ]
+        },
+        "description": "Retrieves total patients registered, samples collected, reports ready/pending counts, and reports listing table."
+      }
+    },
+    {
+      "name": "6. View Structured Report Details",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "x-tenant-id", "value": "{{branch_id}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/diagnostic-orders/reports/:order_id/view",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "diagnostic-orders", "reports", ":order_id", "view" ],
+          "variable": [
+            { "key": "order_id", "value": "{{order_id}}", "description": "The diagnostic order UUID" }
+          ]
+        },
+        "description": "Retrieves structured, compiled analyte metrics, units, ranges, and Flags (H, L, N, C)."
+      }
+    },
+    {
+      "name": "7. Share Report via WhatsApp/Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "x-tenant-id", "value": "{{branch_id}}", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"channel\": \"whatsapp\",\n  \"destination\": \"+919820147830\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/diagnostic-orders/reports/:order_id/share",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "diagnostic-orders", "reports", ":order_id", "share" ],
+          "variable": [
+            { "key": "order_id", "value": "{{order_id}}", "description": "The diagnostic order UUID" }
+          ]
+        },
+        "description": "Simulates sending PDF report URL notifications via Email or WhatsApp channels."
+      }
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [ "" ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [ "" ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000", "type": "string" },
+    { "key": "token", "value": "PLACEHOLDER_JWT_TOKEN", "type": "string" },
+    { "key": "branch_id", "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c", "type": "string" },
+    { "key": "patient_id", "value": "93643ddd-0d0d-491d-83d6-37f3bcde518d", "type": "string" },
+    { "key": "doctor_id", "value": "cab7cc4e-3ec7-49d9-a393-bbdb93bf58c2", "type": "string" },
+    { "key": "department_id", "value": "78ffea9d-2708-410a-bbff-19dfa42ba830", "type": "string" },
+    { "key": "test_id", "value": "16a43dca-eb71-4b85-ab0a-3b984816cadf", "type": "string" },
+    { "key": "order_id", "value": "3aff9d2f-415b-448b-8626-da238a6b5267", "type": "string" }
+  ]
+}
