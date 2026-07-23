@@ -95,7 +95,18 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
 ### 0. Main Dashboard Aggregator (Unified Screen Loader)
 * **Endpoint**: `GET /admin/dashboard/main`
 * **Query Parameters**: Shared Common Filters (Section 2)
-* **Description**: Returns all metric components required to populate the main admin dashboard screen design in a single HTTP request (aggregating overview cards, hospital performance trends, resource utilization, recent reports, stats/bar-charts, department financials, and report templates).
+* **Description**: Returns all metric components required to populate the main admin dashboard screen in a single HTTP request. Aggregated data includes:
+  - **`overview`**: Top KPI cards — `patients`, `new_registrations`, `admissions`, `discharges`, `emergency_cases`, `bed_occupancy`, `procedures`, `revenue`, `pending_payments`, `conversion_rate` — each with `value` and `change_pct` (% change vs. prior period).
+  - **`hospital_operations`**: Live operational snapshot — `bed_occupancy_pct`, `icu_occupancy_pct`, `ot_utilization_pct`, `emergency_queue_count`, `avg_waiting_time_mins`, `avg_consultation_time_mins`.
+  - **`financial_statistics`**: Financial snapshot — `today_revenue`, `monthly_revenue`, `outstanding_payments`, `insurance_claims`.
+  - **`bed_occupancy_by_ward`**: Array of `{ ward_name, occupancy_pct }` per ward type.
+  - **`icu_utilization`**: ICU-specific — `occupancy_pct`, `total_beds`, `occupied_beds`, `available_beds`.
+  - **`hospital_performance`**: Time-series charts — `operations_overview` (OPD/IPD/Emergency/OT counts by date) and `revenue_overview` (revenue/expenses by date).
+  - **`resource_utilization`**: Percentage utilization of staff, beds, wards, and ambulances.
+  - **`statistics`**: Donut/pie chart data — `hospital_occupancy` (by ward type) and `expense_breakdown`.
+  - **`department_performance`**: Per-department revenue, expenses, net profit, and margin.
+  - **`recent_reports`**: Paginated list of recently generated reports with metadata.
+  - **`report_library`**: Available report templates with category and supported export formats.
 * **Sample Response**:
 ```json
 {
@@ -104,20 +115,32 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
     "data": {
         "overview": {
             "patients": {
-                "value": "2003",
-                "change_pct": "3414.0"
+                "value": "2062",
+                "change_pct": "3517.5"
+            },
+            "new_registrations": {
+                "value": "312",
+                "change_pct": "12.5"
+            },
+            "admissions": {
+                "value": "142",
+                "change_pct": "8.2"
+            },
+            "discharges": {
+                "value": "128",
+                "change_pct": "-3.1"
             },
             "emergency_cases": {
-                "value": "6",
+                "value": "48",
                 "change_pct": "100.0"
             },
             "bed_occupancy": {
-                "value": "9.8",
-                "change_pct": "0.0"
+                "value": "82.0",
+                "change_pct": "5.1"
             },
             "procedures": {
-                "value": "2",
-                "change_pct": "-66.7"
+                "value": "14",
+                "change_pct": "-10.5"
             },
             "revenue": {
                 "value": "197528.50",
@@ -132,269 +155,43 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
                 "change_pct": "-94.6"
             }
         },
+        "hospital_operations": {
+            "bed_occupancy_pct": 82.0,
+            "icu_occupancy_pct": 91.0,
+            "ot_utilization_pct": 64.0,
+            "emergency_queue_count": 16,
+            "avg_waiting_time_mins": 18.0,
+            "avg_consultation_time_mins": 13.0
+        },
+        "financial_statistics": {
+            "today_revenue": "42850.00",
+            "monthly_revenue": "1280400.00",
+            "outstanding_payments": "189200.00",
+            "insurance_claims": "380450.00"
+        },
+        "bed_occupancy_by_ward": [
+            { "ward_name": "General Medicine", "occupancy_pct": 88.0 },
+            { "ward_name": "Intensive Care (ICU)", "occupancy_pct": 91.0 },
+            { "ward_name": "Pediatrics", "occupancy_pct": 45.0 },
+            { "ward_name": "Maternity", "occupancy_pct": 32.0 },
+            { "ward_name": "Orthopedics", "occupancy_pct": 70.0 }
+        ],
+        "icu_utilization": {
+            "occupancy_pct": 91.0,
+            "total_beds": 22,
+            "occupied_beds": 20,
+            "available_beds": 2
+        },
         "hospital_performance": {
             "operations_overview": [
-                {
-                    "label": "23 Jun 2026",
-                    "opd": 3,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "25 Jun 2026",
-                    "opd": 0,
-                    "ipd": 11,
-                    "emergency": 0,
-                    "ot": 9
-                },
-                {
-                    "label": "26 Jun 2026",
-                    "opd": 3,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "27 Jun 2026",
-                    "opd": 1,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "29 Jun 2026",
-                    "opd": 5,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "30 Jun 2026",
-                    "opd": 0,
-                    "ipd": 0,
-                    "emergency": 1,
-                    "ot": 0
-                },
-                {
-                    "label": "01 Jul 2026",
-                    "opd": 4,
-                    "ipd": 0,
-                    "emergency": 1,
-                    "ot": 0
-                },
-                {
-                    "label": "02 Jul 2026",
-                    "opd": 3,
-                    "ipd": 0,
-                    "emergency": 1,
-                    "ot": 0
-                },
-                {
-                    "label": "03 Jul 2026",
-                    "opd": 16,
-                    "ipd": 15,
-                    "emergency": 1,
-                    "ot": 14
-                },
-                {
-                    "label": "04 Jul 2026",
-                    "opd": 2,
-                    "ipd": 4,
-                    "emergency": 0,
-                    "ot": 5
-                },
-                {
-                    "label": "06 Jul 2026",
-                    "opd": 6,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "08 Jul 2026",
-                    "opd": 1,
-                    "ipd": 1,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "09 Jul 2026",
-                    "opd": 1806,
-                    "ipd": 3,
-                    "emergency": 0,
-                    "ot": 4
-                },
-                {
-                    "label": "10 Jul 2026",
-                    "opd": 1,
-                    "ipd": 1,
-                    "emergency": 0,
-                    "ot": 1
-                },
-                {
-                    "label": "13 Jul 2026",
-                    "opd": 1,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "17 Jul 2026",
-                    "opd": 1,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "18 Jul 2026",
-                    "opd": 1,
-                    "ipd": 2,
-                    "emergency": 0,
-                    "ot": 4
-                },
-                {
-                    "label": "19 Jul 2026",
-                    "opd": 0,
-                    "ipd": 0,
-                    "emergency": 1,
-                    "ot": 1
-                },
-                {
-                    "label": "20 Jul 2026",
-                    "opd": 0,
-                    "ipd": 1,
-                    "emergency": 1,
-                    "ot": 3
-                },
-                {
-                    "label": "21 Jul 2026",
-                    "opd": 3,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                },
-                {
-                    "label": "22 Jul 2026",
-                    "opd": 1,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 4
-                },
-                {
-                    "label": "23 Jul 2026",
-                    "opd": 2,
-                    "ipd": 0,
-                    "emergency": 0,
-                    "ot": 0
-                }
+                { "label": "23 Jun 2026", "opd": 3, "ipd": 0, "emergency": 0, "ot": 0 },
+                { "label": "03 Jul 2026", "opd": 16, "ipd": 15, "emergency": 1, "ot": 14 },
+                { "label": "23 Jul 2026", "opd": 2, "ipd": 0, "emergency": 0, "ot": 0 }
             ],
             "revenue_overview": [
-                {
-                    "label": "23 Jun 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "26 Jun 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "27 Jun 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "29 Jun 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "01 Jul 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "02 Jul 2026",
-                    "revenue": "11200.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "03 Jul 2026",
-                    "revenue": "158750.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "04 Jul 2026",
-                    "revenue": "500.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "06 Jul 2026",
-                    "revenue": "500.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "08 Jul 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "09 Jul 2026",
-                    "revenue": "500.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "10 Jul 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "11 Jul 2026",
-                    "revenue": "100.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "13 Jul 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "16 Jul 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "17 Jul 2026",
-                    "revenue": "16056.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "18 Jul 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "20 Jul 2026",
-                    "revenue": "5880.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "21 Jul 2026",
-                    "revenue": "4042.50",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "22 Jul 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                },
-                {
-                    "label": "23 Jul 2026",
-                    "revenue": "0.00",
-                    "expenses": "0.0"
-                }
+                { "label": "02 Jul 2026", "revenue": "11200.00", "expenses": "0.0" },
+                { "label": "03 Jul 2026", "revenue": "158750.00", "expenses": "0.0" },
+                { "label": "23 Jul 2026", "revenue": "0.00", "expenses": "0.0" }
             ]
         },
         "resource_utilization": {
@@ -402,6 +199,26 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
             "bed_utilization": "9.8",
             "ward_utilization": "9.3",
             "ambulance_utilization": "0.0"
+        },
+        "statistics": {
+            "hospital_occupancy": [
+                { "name": "ISOLATION", "value": "7.1" },
+                { "name": "GENERAL", "value": "27.4" },
+                { "name": "ICU", "value": "5.0" },
+                { "name": "EMERGENCY", "value": "3.7" }
+            ],
+            "expense_breakdown": [
+                { "name": "Salaries & Wages", "value": "0.0" },
+                { "name": "Maintenance & Ops", "value": "0.0" },
+                { "name": "Medicines & Pharmacy", "value": "0.0" }
+            ]
+        },
+        "department_performance": {
+            "departments": [
+                { "department_name": "OPD", "revenue": "112850.0", "expenses": "0.0", "net_profit": "112850.0", "margin_pct": "100.0" },
+                { "department_name": "ICU", "revenue": "58700.0", "expenses": "0.0", "net_profit": "58700.0", "margin_pct": "100.0" },
+                { "department_name": "Pharmacy", "revenue": "0.0", "expenses": "0.0", "net_profit": "0.0", "margin_pct": "0.0" }
+            ]
         },
         "recent_reports": {
             "items": [
@@ -411,238 +228,20 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
                     "department": "Surgery",
                     "reporting_period": "Jun 22 - Jul 22, 2026",
                     "generated_by": "Dr. Aarav Patel",
-                    "generated_on": "2026-07-22 15:57:56.305105+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-032",
-                    "report_name": "Orthopaedics Operational Analysis",
-                    "department": "Orthopaedics",
-                    "reporting_period": "Jun 22 - Jul 22, 2026",
-                    "generated_by": "Dr. Dev Verma",
-                    "generated_on": "2026-07-22 10:03:56.305168+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-992",
-                    "report_name": "Gynaecology Operational Analysis",
-                    "department": "Gynaecology",
-                    "reporting_period": "Jun 20 - Jul 20, 2026",
-                    "generated_by": "Dr. Anil Pillai",
-                    "generated_on": "2026-07-20 17:23:56.305187+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-156",
-                    "report_name": "Paediatrics Operational Analysis",
-                    "department": "Paediatrics",
-                    "reporting_period": "Jun 19 - Jul 19, 2026",
-                    "generated_by": "Meena Krishnan",
-                    "generated_on": "2026-07-19 13:19:56.305202+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-517",
-                    "report_name": "Ophthalmology Summary Report",
-                    "department": "Ophthalmology",
-                    "reporting_period": "Jun 19 - Jul 19, 2026",
-                    "generated_by": "Dr. Vikram Shah",
-                    "generated_on": "2026-07-19 04:58:56.305216+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-277",
-                    "report_name": "Psychiatry Summary Report",
-                    "department": "Psychiatry",
-                    "reporting_period": "Jun 18 - Jul 18, 2026",
-                    "generated_by": "Dr. Swati Mehta",
-                    "generated_on": "2026-07-18 04:58:56.305230+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-480",
-                    "report_name": "Anaesthesiology Operational Analysis",
-                    "department": "Anaesthesiology",
-                    "reporting_period": "Jun 17 - Jul 17, 2026",
-                    "generated_by": "Dr. Kiran Sharma",
-                    "generated_on": "2026-07-17 10:15:56.305243+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-829",
-                    "report_name": "Proctology Summary Report",
-                    "department": "Proctology",
-                    "reporting_period": "Jun 16 - Jul 16, 2026",
-                    "generated_by": "Dr. Anil Pandey",
-                    "generated_on": "2026-07-16 04:46:56.305255+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-556",
-                    "report_name": "ICU / Critical Care Operational Analysis",
-                    "department": "ICU / Critical Care",
-                    "reporting_period": "Jun 15 - Jul 15, 2026",
-                    "generated_by": "Meena Krishnan",
-                    "generated_on": "2026-07-15 05:59:56.305268+00:00",
-                    "status": "Ready"
-                },
-                {
-                    "id": "rep-287",
-                    "report_name": "Operation Theatre Performance Trends",
-                    "department": "Operation Theatre",
-                    "reporting_period": "Jun 13 - Jul 13, 2026",
-                    "generated_by": "Dr. Ananya Reddy",
-                    "generated_on": "2026-07-13 10:28:56.305280+00:00",
+                    "generated_on": "2026-07-22 15:57:56",
                     "status": "Ready"
                 }
             ],
-            "meta": {
-                "total": 50,
-                "page": 1,
-                "page_size": 10,
-                "total_pages": 5
-            }
-        },
-        "statistics": {
-            "hospital_occupancy": [
-                {
-                    "name": "ISOLATION",
-                    "value": "7.1"
-                },
-                {
-                    "name": "GENERAL",
-                    "value": "27.4"
-                },
-                {
-                    "name": "OT",
-                    "value": "11.8"
-                },
-                {
-                    "name": "HDU",
-                    "value": "0.0"
-                },
-                {
-                    "name": "ICU",
-                    "value": "5.0"
-                },
-                {
-                    "name": "EMERGENCY",
-                    "value": "3.7"
-                }
-            ],
-            "expense_breakdown": [
-                {
-                    "name": "Salaries & Wages",
-                    "value": "0.0"
-                },
-                {
-                    "name": "Maintenance & Ops",
-                    "value": "0.0"
-                },
-                {
-                    "name": "Medicines & Pharmacy",
-                    "value": "0.0"
-                },
-                {
-                    "name": "Utilities & Admin",
-                    "value": "0.0"
-                }
-            ]
-        },
-        "department_performance": {
-            "departments": [
-                {
-                    "department_name": "Pharmacy",
-                    "revenue": "0.0",
-                    "expenses": "0.0",
-                    "net_profit": "0.0",
-                    "margin_pct": "0.0"
-                },
-                {
-                    "department_name": "Laboratory",
-                    "revenue": "0.0",
-                    "expenses": "0.0",
-                    "net_profit": "0.0",
-                    "margin_pct": "0.0"
-                },
-                {
-                    "department_name": "OPD",
-                    "revenue": "112850.0",
-                    "expenses": "0.0",
-                    "net_profit": "112850.0",
-                    "margin_pct": "100.0"
-                },
-                {
-                    "department_name": "Emergency",
-                    "revenue": "0.0",
-                    "expenses": "0.0",
-                    "net_profit": "0.0",
-                    "margin_pct": "0.0"
-                },
-                {
-                    "department_name": "ICU",
-                    "revenue": "58700.0",
-                    "expenses": "0.0",
-                    "net_profit": "58700.0",
-                    "margin_pct": "100.0"
-                },
-                {
-                    "department_name": "OT / Surgery",
-                    "revenue": "0.0",
-                    "expenses": "0.0",
-                    "net_profit": "0.0",
-                    "margin_pct": "0.0"
-                }
-            ]
+            "meta": { "total": 50, "page": 1, "page_size": 10, "total_pages": 5 }
         },
         "report_library": {
             "templates": [
                 {
                     "report_type": "REVENUE_SUMMARY",
                     "name": "Revenue Summary Report",
-                    "description": "Aggregated daily/monthly billing revenues and transaction totals grouped by payment mode.",
+                    "description": "Aggregated daily/monthly billing revenues grouped by payment mode.",
                     "category": "FINANCE",
-                    "supported_formats": [
-                        "PDF",
-                        "CSV",
-                        "XLSX"
-                    ],
-                    "status": "Active"
-                },
-                {
-                    "report_type": "INVENTORY_VALUATION",
-                    "name": "Inventory Master & Valuation Report",
-                    "description": "Stock valuation breakdown, low stock counts, critical alerts, and near-expiry metrics.",
-                    "category": "INVENTORY",
-                    "supported_formats": [
-                        "PDF",
-                        "CSV",
-                        "XLSX"
-                    ],
-                    "status": "Active"
-                },
-                {
-                    "report_type": "CLINICAL_CENSUS",
-                    "name": "Hospital Clinical Census Report",
-                    "description": "Patient inflow counts, bed occupancy distributions, and emergency room statistics.",
-                    "category": "CLINICAL",
-                    "supported_formats": [
-                        "PDF",
-                        "CSV",
-                        "XLSX"
-                    ],
-                    "status": "Active"
-                },
-                {
-                    "report_type": "STAFF_COMPLIANCE",
-                    "name": "Workforce & Compliance Overview Report",
-                    "description": "Active staff roster ratios, leave backlogs, and regulatory document upload status.",
-                    "category": "WORKFORCE",
-                    "supported_formats": [
-                        "PDF",
-                        "CSV",
-                        "XLSX"
-                    ],
+                    "supported_formats": ["PDF", "CSV", "XLSX"],
                     "status": "Active"
                 }
             ],
@@ -650,7 +249,6 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
         }
     }
 }
-```
 
 ---
 
