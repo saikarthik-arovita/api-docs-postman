@@ -714,6 +714,25 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
   "data": {
     "patients": [
       {
+        "patient_id": "fbbd6afd-cb81-47a2-a782-9d3f42a2dfd9",
+        "uhid": "PAT-2026-4324",
+        "name": "ghshd sdf",
+        "age": 24,
+        "gender": "FEMALE",
+        "blood_group": "B+",
+        "phone": "+91 7906927827",
+        "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "registration_date": "2026-07-23 16:23:28.438140+05:30",
+        "status": "Active",
+        "patient_type": "OPD",
+        "ward": "UNKNOWN",
+        "bed": "UNKNOWN",
+        "admitted_on": "UNKNOWN",
+        "attending_doctor": "UNKNOWN",
+        "diagnosis": "UNKNOWN",
+        "last_visit_date": "UNKNOWN"
+      },
+      {
         "patient_id": "536a6d42-c438-45ca-9ad2-204ea15af642",
         "uhid": "PAT-2026-4323",
         "name": "Test5 sd",
@@ -722,20 +741,15 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
         "blood_group": "A+",
         "phone": "+91 9410452083",
         "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
-        "registration_date": "2026-07-23T10:35:28.466594Z",
-        "status": "Active"
-      },
-      {
-        "patient_id": "089bf29c-8e16-4a2f-a718-32bf0a5cf5c6",
-        "uhid": "PAT-2026-4322",
-        "name": "Test2 df",
-        "age": 22,
-        "gender": "FEMALE",
-        "blood_group": "O+",
-        "phone": "+91 7906927823",
-        "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
-        "registration_date": "2026-07-23T05:43:13.106275Z",
-        "status": "Active"
+        "registration_date": "2026-07-23 16:05:28.466594+05:30",
+        "status": "Active",
+        "patient_type": "OPD",
+        "ward": "UNKNOWN",
+        "bed": "UNKNOWN",
+        "admitted_on": "UNKNOWN",
+        "attending_doctor": "UNKNOWN",
+        "diagnosis": "UNKNOWN",
+        "last_visit_date": "2026-07-23 00:00:00"
       }
     ],
     "gender_stats": {
@@ -851,7 +865,9 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
 
 ### 4. IPD Management
 * **Endpoint**: `GET /admin/dashboard/ipd`
-* **Query Parameters**: Shared Common Filters (Section 2)
+* **Query Parameters**: Shared Common Filters (Section 2) + the following:
+  * `ward_type` (String, optional): Filter wards by type (e.g., `ICU`, `GENERAL`, `HDU`, `EMERGENCY`).
+  * `load_status` (String, optional): Filter wards by current patient occupancy status (e.g., `High Load`, `Normal`, `Delayed`).
 * **Sample Response**:
 ```json
 {
@@ -860,22 +876,58 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
   "data": {
     "ward_overview": [
       {
-        "ward_name": "General Ward A",
+        "ward_id": "995a1615-cb03-4605-8ec8-bd60bfd48e66",
+        "ward_name": "General Ward - A",
         "ward_type": "GENERAL",
-        "capacity": 20,
-        "occupied": 15,
-        "available": 5,
-        "utilization_pct": 75.0
+        "capacity": 80,
+        "occupied": 66,
+        "available": 14,
+        "utilization_pct": 82.5,
+        "floor": "2nd Floor",
+        "building": "Block A",
+        "head_nurse": "Dr. Sarah Mitchell",
+        "contact": "+1 (555) 234-5678",
+        "load_status": "High Load"
       }
     ],
     "length_of_stay": [
       {
         "department_name": "General Medicine",
-        "avg_days": 4.5
+        "avg_days": 17.2
       }
     ],
-    "total_admissions": 15,
-    "bed_occupancy_pct": 75.0
+    "total_admissions": 27,
+    "bed_occupancy_pct": 9.8
+  }
+}
+```
+
+---
+
+### 4.1. Override Ward Details
+* **Endpoint**: `PUT /admin/dashboard/ipd/ward`
+* **Request Headers**:
+  * `Authorization: Bearer <jwt_access_token>`
+  * `Content-Type: application/json`
+* **Request Body**:
+```json
+{
+  "ward_id": "995a1615-cb03-4605-8ec8-bd60bfd48e66",
+  "ward_type": "GENERAL",
+  "floor": "2nd Floor",
+  "building": "Block A",
+  "head_nurse": "Dr. Sarah Mitchell",
+  "contact": "+1 (555) 234-5678",
+  "load_status": "High Load"
+}
+```
+* **Sample Response**:
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "message": "Ward details updated successfully."
   }
 }
 ```
