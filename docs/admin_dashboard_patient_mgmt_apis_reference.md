@@ -797,7 +797,8 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
 ### 3. OPD Management
 * **Endpoint**: `GET /admin/dashboard/opd`
 * **Query Parameters**: Shared Common Filters (Section 2) + the following:
-  * `department_id` (String (UUID), optional): Scope response to a single department (returns filtered stats and on-duty doctors).
+  * `department_id` (String (UUID), optional): Scope response to a single department by ID.
+  * `department_name` (String, optional): Scope response to a single department by name (case-insensitive lookup).
 * **Sample Response**:
 ```json
 {
@@ -936,7 +937,10 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
 
 ### 5. Emergency Management
 * **Endpoint**: `GET /admin/dashboard/emergency`
-* **Query Parameters**: Shared Common Filters (Section 2)
+* **Query Parameters**: Shared Common Filters (Section 2) + the following:
+  * `status` (String, optional): Filter cases by status (e.g., `Awaiting OT`, `In Treatment`, `ICU Transfer`, `Triage Done`).
+  * `triage_level` (String, optional): Filter cases by triage priority (e.g., `RED`, `YELLOW`, `GREEN`, `ORANGE`).
+  * `search` (String, optional): Case-insensitive search on patient name, phone, UHID, or MRN.
 * **Sample Response**:
 ```json
 {
@@ -945,17 +949,27 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
   "data": {
     "cases": [
       {
-        "case_id": "e210-4f8e-8e9a-0123456789ab",
-        "patient_name": "Rohan Gupta",
+        "case_id": "58169a2e-d2bc-4d0d-8381-57559be735b8",
+        "patient_name": "Rajesh Sharma",
         "triage_level": "RED",
-        "arrival_time": "2026-07-23T11:15:30.000Z",
-        "department_name": "Cardiology",
-        "status": "ACTIVE"
+        "arrival_time": "2026-07-23 10:34:00",
+        "department_name": "Emergency",
+        "status": "Awaiting OT",
+        "uhid": "UHID-9821",
+        "age": 42,
+        "gender": "MALE",
+        "blood_group": "B+",
+        "phone": "+91 98765 43210",
+        "arrival_mode": "Ambulance",
+        "assigned_doctor": "Dr. Priya Mehta",
+        "bed_number": "E-12",
+        "chief_complaint": "Chest pain, shortness of breath",
+        "vitals": "BP: 130/85 | HR: 112 | SpO2: 94%"
       }
     ],
     "department_split": [
       {
-        "department_name": "Cardiology",
+        "department_name": "Emergency",
         "count": 1
       }
     ],
@@ -968,9 +982,44 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
 
 ---
 
-### 6. OT Management
+### 5.1. Override Emergency Case Details
+* **Endpoint**: `PUT /admin/dashboard/emergency/case`
+* **Request Headers**:
+  * `Authorization: Bearer <jwt_access_token>`
+  * `Content-Type: application/json`
+* **Request Body**:
+```json
+{
+  "case_id": "58169a2e-d2bc-4d0d-8381-57559be735b8",
+  "triage_level": "RED",
+  "status": "Awaiting OT",
+  "arrival_mode": "Ambulance",
+  "assigned_doctor_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
+  "assigned_bed_id": "3bd15010-f3ec-4343-a241-96afb54ec6db",
+  "chief_complaint": "Chest pain, shortness of breath",
+  "vitals": "BP: 130/85 | HR: 112 | SpO2: 94%"
+}
+```
+* **Sample Response**:
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "message": "Emergency case details updated successfully."
+  }
+}
+```
+
+---
+
+### 6. OT Management (Procedures / OT)
 * **Endpoint**: `GET /admin/dashboard/ot`
-* **Query Parameters**: Shared Common Filters (Section 2)
+* **Query Parameters**: Shared Common Filters (Section 2) + the following:
+  * `status` (String, optional): Filter procedures by status (e.g., `Delayed`, `In Progress`, `Scheduled`, `Completed`).
+  * `surgeon_id` (String (UUID), optional): Filter procedures by lead surgeon.
+  * `ot_number` (String, optional): Filter procedures by specific OT room name/number (e.g. `OT-1`).
+  * `search` (String, optional): Search by patient name, surgeon name, or procedure name.
 * **Sample Response**:
 ```json
 {
@@ -980,12 +1029,39 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
     "today_procedures": [
       {
         "procedure_id": "ba679aec-1dc2-455e-ab58-58147f396d74",
-        "patient_name": "Suresh Patel",
-        "procedure_name": "Knee Arthroplasty",
-        "theater_name": "OT Complex 1",
-        "surgeon_name": "Dr. Priya Sharma",
-        "scheduled_start": "2026-07-23T09:00:00.000Z",
-        "status": "COMPLETED"
+        "patient_name": "Ramesh D.",
+        "procedure_name": "Coronary Bypass",
+        "theater_name": "OT-1",
+        "surgeon_name": "Dr. Kapoor",
+        "surgeon_id": "97d2a10d-1b8a-40b4-a37a-5daf4e35f630",
+        "scheduled_start": "2026-07-23 08:00:00",
+        "status": "Delayed",
+        "tracker_stages": [
+          {
+            "stage_name": "Theatre Preparation",
+            "status": "COMPLETED",
+            "time": "07:30 AM",
+            "notes": "Theatre prepared, sterilised & surgical tray configured. Checked by Lead Nurse"
+          },
+          {
+            "stage_name": "Anesthesia Induction",
+            "status": "COMPLETED",
+            "time": "07:50 AM",
+            "notes": "Patient administered general anaesthesia. Vital stable and continuously monitored."
+          },
+          {
+            "stage_name": "Surgery In Progress",
+            "status": "IN_PROGRESS",
+            "time": "08:15 AM",
+            "notes": "Coronary artery bypass graft surgery underway. Estimated duration: 3.5 hours."
+          },
+          {
+            "stage_name": "Post-Op Recovery (PACU)",
+            "status": "PENDING",
+            "time": "Est. 11:50 AM",
+            "notes": "Patient will be shifted to recovery wing for intensive post-op monitoring."
+          }
+        ]
       }
     ],
     "completion_report": {
@@ -1001,6 +1077,41 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
         "value": 1
       }
     ]
+  }
+}
+```
+
+---
+
+### 6.1. Override OT Session Details
+* **Endpoint**: `PUT /admin/dashboard/ot/session`
+* **Request Headers**:
+  * `Authorization: Bearer <jwt_access_token>`
+  * `Content-Type: application/json`
+* **Request Body**:
+```json
+{
+  "procedure_id": "ba679aec-1dc2-455e-ab58-58147f396d74",
+  "status": "In Progress",
+  "procedure_name": "Coronary Bypass Extra",
+  "theater_name": "OT-Room-3",
+  "tracker_stages": [
+    {
+      "stage_name": "Theatre Preparation",
+      "status": "COMPLETED",
+      "time": "08:00 AM",
+      "notes": "Completed and sterile"
+    }
+  ]
+}
+```
+* **Sample Response**:
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "message": "OT session details updated successfully."
   }
 }
 ```
