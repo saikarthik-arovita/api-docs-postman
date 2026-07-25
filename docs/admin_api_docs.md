@@ -1875,4 +1875,265 @@ All endpoints require `Authorization: Bearer <access_token>`.
   "message": "Draft permission modifications discarded."
 }
 ```
+
+---
+
+## 10. Specialty Services (Pharmacy, Radiology, Laboratory)
+
+These endpoints manage diagnostic schedules, laboratory tracking, and pharmacy purchase workflows.
+
+### 10.1 GET Pharmacy Overview Summary
+Retrieve aggregated inventory counts, low stock indicators, and pending purchase orders.
+
+* **Endpoint:** `GET /admin/pharmacy-overview/summary`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "total_items": 214,
+    "pending_orders": 18,
+    "critical_stock_pct": 18.0,
+    "avg_lead_time_days": 4.2
+  }
+}
+```
+
+### 10.2 GET List Purchase Orders
+Retrieve a paginated list of purchase orders.
+
+* **Endpoint:** `GET /admin/pharmacy-overview/purchase-orders?supplier=MedLife&approval_status=Approved&page=1&page_size=10`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "po_id": "PO-2026-0001",
+        "supplier": "MedLife Pharmacies",
+        "order_date": "2026-07-24",
+        "items_count": 8,
+        "amount": 14250.00,
+        "approval_status": "Approved",
+        "delivery_status": "Delivered"
+      }
+    ],
+    "meta": {
+      "total": 128,
+      "page": 1,
+      "page_size": 10,
+      "total_pages": 13
+    }
+  }
+}
+```
+
+### 10.3 POST Create Purchase Order
+Create a new purchase order draft or request.
+
+* **Endpoint:** `POST /admin/pharmacy-overview/purchase-orders`
+* **Request Body:**
+```json
+{
+  "supplier": "MedLife Pharmacies",
+  "items": [
+    {
+      "item_id": "MED-402",
+      "quantity": 1000,
+      "unit_price": 2.50
+    }
+  ]
+}
+```
+* **Success Response (201 Created):**
+```json
+{
+  "success": true,
+  "code": 201,
+  "data": {
+    "po_id": "PO-2026-0182",
+    "supplier": "MedLife Pharmacies",
+    "approval_status": "Pending",
+    "delivery_status": "Pending"
+  }
+}
+```
+
+### 10.4 PATCH Update Purchase Order
+Modify approval status or delivery progress of a purchase order.
+
+* **Endpoint:** `PATCH /admin/pharmacy-overview/purchase-orders/{po_id}`
+* **Request Body:**
+```json
+{
+  "approval_status": "Approved",
+  "delivery_status": "Shipped"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "po_id": "PO-2026-0001",
+    "approval_status": "Approved",
+    "delivery_status": "Shipped"
+  }
+}
+```
+
+### 10.5 GET Radiology Overview Summary
+Retrieve diagnostic equipment utilization metrics.
+
+* **Endpoint:** `GET /admin/radiology-overview/summary`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "mri_utilization": 92.0,
+    "ct_utilization": 78.0,
+    "xray_utilization": 64.0,
+    "ultrasound_utilization": 0.0
+  }
+}
+```
+
+### 10.6 GET List Radiology Schedule
+Retrieve active scan board appointments list.
+
+* **Endpoint:** `GET /admin/radiology-overview/schedule?modality=MRI&status=In%20Progress&page=1&page_size=10`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "appointment_id": "IMG-2026-789",
+        "patient_name": "Rohan Gupta",
+        "scan_type": "MRI Brain Contrast",
+        "modality": "MRI",
+        "time_slot": "10:30 AM - 11:15 AM",
+        "status": "In Progress"
+      }
+    ],
+    "meta": {
+      "total": 48,
+      "page": 1,
+      "page_size": 10,
+      "total_pages": 5
+    }
+  }
+}
+```
+
+### 10.7 POST Create Radiology Schedule
+Book/schedule a scan for a patient.
+
+* **Endpoint:** `POST /admin/radiology-overview/schedule`
+* **Request Body:**
+```json
+{
+  "patient_name": "Rohan Gupta",
+  "modality": "MRI",
+  "scheduled_start": "2026-07-25T10:30:00Z",
+  "notes": "Patient has claustrophobia, monitor closely."
+}
+```
+* **Success Response (201 Created):**
+```json
+{
+  "success": true,
+  "code": 201,
+  "data": {
+    "appointment_id": "IMG-2026-892",
+    "patient_name": "Rohan Gupta",
+    "modality": "MRI",
+    "status": "Scheduled"
+  }
+}
+```
+
+### 10.8 GET Laboratory Overview Summary
+Retrieve counts of tests and alerts in lab queues.
+
+* **Endpoint:** `GET /admin/laboratory-overview/summary`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "total_tests": 428,
+    "completed_tests": 332,
+    "pending_tests": 46,
+    "critical_alerts": 64,
+    "avg_turnaround_time_mins": 86
+  }
+}
+```
+
+### 10.9 GET List Laboratory Tests
+Retrieve paginated laboratory sample scanning logs.
+
+* **Endpoint:** `GET /admin/laboratory-overview/tests?status=Processing&page=1&page_size=10`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "test_id": "LAB-2026-4402",
+        "patient_name": "Rohan Gupta",
+        "test_type": "Complete Blood Count (CBC)",
+        "urgency": "Routine",
+        "status": "Processing",
+        "received_at": "2026-07-25T11:00:00Z"
+      }
+    ],
+    "meta": {
+      "total": 46,
+      "page": 1,
+      "page_size": 10,
+      "total_pages": 5
+    }
+  }
+}
+```
+
+### 10.10 POST Create Laboratory Test
+Register a new lab sample test order.
+
+* **Endpoint:** `POST /admin/laboratory-overview/tests`
+* **Request Body:**
+```json
+{
+  "patient_name": "Rohan Gupta",
+  "test_type": "Complete Blood Count (CBC)",
+  "sample_type": "Whole Blood (EDTA)",
+  "urgency": "Routine",
+  "notes": "Prioritize reporting."
+}
+```
+* **Success Response (201 Created):**
+```json
+{
+  "success": true,
+  "code": 201,
+  "data": {
+    "test_id": "LAB-2026-4589",
+    "patient_name": "Rohan Gupta",
+    "test_type": "Complete Blood Count (CBC)",
+    "status": "Pending"
+  }
+}
 ```
