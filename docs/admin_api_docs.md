@@ -722,6 +722,9 @@ Allows managers to assign or revoke individual permissions directly on a user wi
   * `sort_by` (string, optional, default: `department_name`): Whitelisted sort fields: `department_name`, `status`, `created_at`.
   * `sort_order` (string, optional, default: `asc`): Sorting direction (`asc` or `desc`).
   * `include_inactive` (boolean, optional, default: false): Include inactive departments.
+  * `staff_search` (string, optional): Filter nested staff list by name/role/email search query.
+  * `staff_shift` (string, optional): Filter nested staff by shift type (`'Day'`, `'Night'`).
+  * `staff_status` (string, optional): Filter nested staff by status (`'Active'`, `'On Call'`, `'On Leave'`).
 * **Success Response (200 OK):**
 ```json
 {
@@ -752,7 +755,17 @@ Allows managers to assign or revoke individual permissions directly on a user wi
         "operating_hours": "09:00 AM - 06:00 PM",
         "status": "Active",
         "is_active": true,
-        "created_at": "2026-01-15T00:00:00Z"
+        "created_at": "2026-01-15T00:00:00Z",
+        "staffs": [
+          {
+            "name": "Dr. Sarah Jenkins",
+            "email": "sarah.jenkins@arovita.com",
+            "role": "HEAD_NURSE",
+            "specialization": "General Cardiology",
+            "shift": "Day (08:00 - 16:00)",
+            "status": "Active"
+          }
+        ]
       }
     ],
     "pagination": {

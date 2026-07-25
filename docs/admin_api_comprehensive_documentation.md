@@ -764,6 +764,9 @@ Lists departments with staff counts, location, and operational status.
   * `status` (*Optional*): Filter by status (`Active`, `Under Maintenance`, `Inactive`).
   * `page` (*Optional*, Default: `1`): Page number.
   * `page_size` (*Optional*, Default: `10`): Items limit.
+  * `staff_search` (*Optional*): Search query to filter staff members within departments by name/email/role.
+  * `staff_shift` (*Optional*): Filter nested staff by shift type (`'Day'`, `'Night'`).
+  * `staff_status` (*Optional*): Filter nested staff by status (`'Active'`, `'On Call'`, `'On Leave'`).
 
 #### Response (`200 OK`)
 ```json
@@ -795,7 +798,17 @@ Lists departments with staff counts, location, and operational status.
         "operating_hours": "09:00 AM - 06:00 PM",
         "status": "Active",
         "is_active": true,
-        "created_at": "2026-01-15T00:00:00Z"
+        "created_at": "2026-01-15T00:00:00Z",
+        "staffs": [
+          {
+            "name": "Dr. Sarah Jenkins",
+            "email": "sarah.jenkins@arovita.com",
+            "role": "HEAD_NURSE",
+            "specialization": "General Cardiology",
+            "shift": "Day (08:00 - 16:00)",
+            "status": "Active"
+          }
+        ]
       }
     ],
     "pagination": {
