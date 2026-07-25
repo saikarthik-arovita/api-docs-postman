@@ -714,9 +714,9 @@ Allows managers to assign or revoke individual permissions directly on a user wi
 * **Query Parameters:**
   * `page` (integer, optional, default: 1): Page number.
   * `page_size` (integer, optional, default: 10): Page size.
-  * `search` (string, optional): Case-insensitive search on department name.
-  * `status` (string, optional): Filter by occupancy status (`Healthy`, `Moderate`, `Critical`).
-  * `sort_by` (string, optional, default: `department_name`): Whitelisted sort fields: `department_name`, `total_staff`, `capacity_beds`, `occupied_beds`, `available_beds`, `status`, `updated_at`.
+  * `search` (string, optional): Case-insensitive search matching department name or code.
+  * `status` (string, optional): Filter by status (`Active`, `Under Maintenance`, `Inactive`).
+  * `sort_by` (string, optional, default: `department_name`): Whitelisted sort fields: `department_name`, `status`, `created_at`.
   * `sort_order` (string, optional, default: `asc`): Sorting direction (`asc` or `desc`).
   * `include_inactive` (boolean, optional, default: false): Include inactive departments.
 * **Success Response (200 OK):**
@@ -727,21 +727,29 @@ Allows managers to assign or revoke individual permissions directly on a user wi
   "data": {
     "items": [
       {
-        "department_id": "47832613-a7dc-4584-bec6-79725bf33a21",
-        "department_name": "Emergency",
+        "department_id": "0fbfdbef-9873-4824-b1fd-6fb827d3ba57",
+        "department_name": "Cardiology",
+        "code": "CARD-001",
+        "department_type": "Clinical",
+        "head_of_department": {
+          "doctor_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Dr. Arjun Nair",
+          "title": "Chief of Cardiology"
+        },
+        "building_block": "A Block",
+        "floor": "2nd Floor",
+        "wing": "East Wing",
+        "rooms": "Rooms 201-210",
+        "staff_breakdown": {
+          "doctors_count": 12,
+          "nurses_count": 18,
+          "support_staff_count": 6,
+          "rooms_count": 10
+        },
+        "operating_hours": "09:00 AM - 06:00 PM",
+        "status": "Active",
         "is_active": true,
-        "created_at": "2026-06-15T12:48:05.606200+05:30",
-        "updated_at": "2026-06-15T12:48:50.764601+05:30",
-        "block": "Block A",
-        "floor": "Ground Floor",
-        "doctor_id": "662dde10-b6e9-4d06-b27e-1972b778f72d",
-        "doctor_name": "Dr. Anil Pandey",
-        "avatar_initial": "A",
-        "total_staff": 3,
-        "capacity_beds": 20,
-        "occupied_beds": 0,
-        "available_beds": 19,
-        "status": "Healthy"
+        "created_at": "2026-01-15T00:00:00Z"
       }
     ],
     "pagination": {

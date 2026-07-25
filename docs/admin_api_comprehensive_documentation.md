@@ -1,6 +1,6 @@
-# HMS Admin Service: Comprehensive API Catalog & Reference
+# HMS Admin Service: Universal API Documentation Reference
 
-This document lists and defines **every** single REST API endpoint exposed by the `hms-admin` microservice. It aggregates all base routes from [router.py](file:///c:/Users/saika/OneDrive/Desktop/Arovita/ops-hms-ljb/services/admin/app/routes/router.py) and extended routes from [admin_router_ext.py](file:///c:/Users/saika/OneDrive/Desktop/Arovita/ops-hms-ljb/services/admin/app/routes/admin_router_ext.py).
+This document provides exhaustive, production-grade API specifications for the entire `hms-admin` microservice. It covers every endpoint, HTTP method, query filter parameter, request body, and JSON response payload.
 
 ---
 
@@ -11,318 +11,1070 @@ This document lists and defines **every** single REST API endpoint exposed by th
 
 ---
 
-## 1. Hospital Profile & System Settings
+## 1. Hospital Profile & Settings APIs
 
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/hospital-profile` | Retrieve the active branch and organization profile details. | `SYSTEM_SETTING_VIEW` |
-| `POST` | `/admin/hospital-profile` | Initialize organization profile details. | `SYSTEM_SETTING_EDIT` |
-| `PATCH` | `/admin/hospital-profile/{profile_id}` | Modify profile parameters (e.g. contact email, GSTIN, NABH number). | `SYSTEM_SETTING_EDIT` |
-| `DELETE` | `/admin/hospital-profile/{profile_id}` | Hard delete organization/facility profile record. | `SYSTEM_SETTING_EDIT` |
-| `GET` | `/admin/settings` | Retrieve system settings (key-value configs) for the branch. | `SYSTEM_SETTING_VIEW` |
-| `POST` | `/admin/settings` | Set or update a single configuration setting. | `SYSTEM_SETTING_EDIT` |
-| `DELETE` | `/admin/settings` | Remove a setting configuration key. | `SYSTEM_SETTING_EDIT` |
-| `POST` | `/admin/settings/bulk` | Bulk upsert configuration settings array. | `SYSTEM_SETTING_EDIT` |
-| `GET` | `/admin/settings/security` | Retrieve session security, password complexity, and MFA rules. | `SECURITY_SETTING_VIEW` |
-| `PATCH` | `/admin/settings/security` | Update password policy or MFA requirements. | `SECURITY_SETTING_EDIT` |
+### 1.1 GET Hospital Profile
+Retrieve the facility profile configuration details.
+
+* **Method**: `GET`
+* **URL**: `/admin/hospital-profile`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "id": "589b018a-f8ed-4388-b49e-cfe46fb2d3f8",
+    "organization_name": "Sai LJB Healthcare",
+    "hospital_code": "SAI-LJB",
+    "official_email": "admin@sailjbcare.com",
+    "primary_phone": "+91 98765 43210",
+    "address_line1": "123, Hospital Road, Sector 18",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "country": "India",
+    "postal_code": "110001",
+    "time_zone": "Asia/Kolkata",
+    "currency": "INR (₹)",
+    "is_active": true
+  }
+}
+```
+
+---
+
+### 1.2 POST Create Hospital Profile
+Initialize hospital profile specifications.
+
+* **Method**: `POST`
+* **URL**: `/admin/hospital-profile`
+
+#### Request Body (`HospitalProfileCreateRequest`)
+```json
+{
+  "organization_name": "Sai LJB Healthcare",
+  "hospital_code": "SAI-LJB",
+  "official_email": "admin@sailjbcare.com",
+  "primary_phone": "+91 98765 43210",
+  "address_line1": "123, Hospital Road",
+  "city": "New Delhi",
+  "state": "Delhi",
+  "country": "India",
+  "postal_code": "110001"
+}
+```
+
+#### Response (`201 Created`)
+*Matches GET structure with a success code of `201`.*
+
+---
+
+### 1.3 GET List Settings
+List configuration settings.
+
+* **Method**: `GET`
+* **URL**: `/admin/settings`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    { "id": "s1-aa30b4b7", "category": "GENERAL", "setting_key": "enable_mfa", "setting_value": "true" }
+  ]
+}
+```
+
+---
+
+### 1.4 POST Upsert Setting
+Add or update a configuration key-value pair.
+
+* **Method**: `POST`
+* **URL**: `/admin/settings`
+
+#### Request Body (`SettingUpsertRequest`)
+```json
+{
+  "category": "GENERAL",
+  "setting_key": "enable_mfa",
+  "setting_value": "true"
+}
+```
+
+#### Response (`200 OK`)
+*Returns the updated SettingItem object.*
 
 ---
 
 ## 2. Dashboard & Performance Analytics
 
-### 2.1 Summary KPIs & Statistics
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/dashboard/summary` | Retrieve high-level counts (total staff, patients, departments). | `DASHBOARD_VIEW` |
-| `GET` | `/admin/dashboard/overview` | Retrieve chronological aggregations of inpatient vs outpatient counts. | `DASHBOARD_VIEW` |
-| `GET` | `/admin/dashboard/hospital-performance` | Fetch revenue growth, OPD consultation conversion, and IPD discharges. | `DASHBOARD_VIEW` |
-| `GET` | `/admin/dashboard/resource-utilization` | Retrieve operating room, diagnostics (MRI/CT), and ICU utilization. | `DASHBOARD_VIEW` |
-| `GET` | `/admin/dashboard/reports` | Retrieve list of recently generated clinical/financial reports. | `DASHBOARD_VIEW` |
-| `GET` | `/admin/dashboard/statistics` | Retrieve daily, weekly, or custom statistics overview. | `DASHBOARD_VIEW` |
-| `GET` | `/admin/dashboard/department-performance` | Retrieve performance metrics (average length of stay, revenue) per dept. | `DASHBOARD_VIEW` |
-| `GET` | `/admin/dashboard/report-library` | List pre-configured report templates available to trigger. | `DASHBOARD_VIEW` |
-| `GET` | `/admin/dashboard` | General administrative aggregate landing view data. | `DASHBOARD_VIEW` |
+### Global Query Filter Parameters (Dashboard & Analytics)
+* `hospitalId` (UUID, Optional) — Filter metrics by specific hospital.
+* `branchId` (UUID, Optional) — Filter metrics by branch.
+* `departmentId` (UUID, Optional) — Filter metrics by clinical department.
+* `fromDate` / `toDate` (String: `YYYY-MM-DD`, Optional) — Filter by custom date ranges.
+* `timeRange` (String, Optional) — Pre-defined filter ranges (`"today"`, `"this-week"`, etc.).
 
-### 2.2 Deep Analytics Tabs
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/dashboard/analytics/patient` | Demographic analytics (gender split, age groups, patient retention). | `ANALYTICS_VIEW` |
-| `GET` | `/admin/dashboard/analytics/opd` | OPD metrics (average wait time, consultation volumes by doctor). | `ANALYTICS_VIEW` |
-| `GET` | `/admin/dashboard/analytics/ipd` | Inpatient trends (admissions, discharge rates, average bed occupancy). | `ANALYTICS_VIEW` |
-| `GET` | `/admin/dashboard/analytics/operations` | Surgical volume analysis, surgery types, and theatre utilization. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/dashboard/analytics/financial` | Billing KPIs, outstanding balances, claim settlements, and cash flows. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/dashboard/analytics/department` | Comparative analysis of departments by volume, margin, and staff counts. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/dashboard/analytics/doctor` | Consultation load, clinical conversion, and patient feedback index. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/dashboard/analytics/master-summary` | Aggregated executive KPIs for all branches under the organization. | `ANALYTICS_VIEW` |
+---
 
-### 2.3 Standalone Analytics Metrics
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/analytics/kpi` | High-level analytical metrics (Average Revenue per Occupied Bed, etc.). | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/patient-inflow` | Timeline graph data for patient visit volumes. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/revenue` | Revenue trend graphs grouped by department or payment mode. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/opd-ipd-conversion` | Ratio analysis of outpatient visits converted to admissions. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/doctor-performance` | Timeline comparison profiles for doctor consultation outcomes. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/emergency` | Emergency room traffic, triage distribution, and ambulance log counts. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/bed-occupancy` | Real-time and historic bed occupancy percentages by ward type. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/ot` | Operation theatre utilization metrics and surgical delays analysis. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/lab-tat` | Laboratory Turnaround Time (TAT) compliance rates. | `ANALYTICS_VIEW` |
-| `GET` | `/admin/analytics/billing` | Claims rejection rate and collection period analysis. | `ANALYTICS_VIEW` |
+### 2.1 GET Dashboard Summary
+Retrieve high-level counts.
+
+* **Method**: `GET`
+* **URL**: `/admin/dashboard/summary`
+* **Query Parameters**: *Global query filters*
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "total_staff": 150,
+    "active_staff": 145,
+    "inactive_staff": 5,
+    "total_patients": 10500,
+    "total_departments": 26,
+    "total_roles": 12,
+    "recent_audit_events": 45
+  }
+}
+```
+
+---
+
+### 2.2 GET Dashboard Overview
+Outpatient vs inpatient daily flow counts.
+
+* **Method**: `GET`
+* **URL**: `/admin/dashboard/overview`
+* **Query Parameters**: *Global query filters*
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "total_patients": 214,
+    "growth_rate_pct": 10.0,
+    "outpatient_count": 150,
+    "inpatient_count": 64
+  }
+}
+```
+
+---
+
+### 2.3 GET Hospital Performance
+Retrieve operational metrics.
+
+* **Method**: `GET`
+* **URL**: `/admin/dashboard/hospital-performance`
+* **Query Parameters**: *Global query filters*
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "occupancy_rate_pct": 82.5,
+    "average_length_of_stay_days": 4.5,
+    "inpatient_admissions_count": 64,
+    "outpatient_consultations_count": 150
+  }
+}
+```
+
+---
+
+### 2.4 GET Resource Utilization
+Retrieve active usage metrics for Operating Theatres and ICU Beds.
+
+* **Method**: `GET`
+* **URL**: `/admin/dashboard/resource-utilization`
+* **Query Parameters**: *Global query filters*
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "operating_theatres_utilization_pct": 74.2,
+    "icu_beds_utilization_pct": 85.0,
+    "ventilators_utilization_pct": 40.0
+  }
+}
+```
+
+---
+
+### 2.5 GET Dashboard Reports list
+Retrieve recently generated clinical or inventory reports metadata.
+
+* **Method**: `GET`
+* **URL**: `/admin/dashboard/reports`
+* **Query Parameters**:
+  * `page` (*Optional*, Default: `1`): Current page integer.
+  * `page_size` (*Optional*, Default: `10`): Items limit.
+  * `search` (*Optional*): Filter by report name.
+  * `status` (*Optional*): Filter by status (`SUCCESS`, `PENDING`, `FAILED`).
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "report_id": "r1-93920321-63e8-4646-ba4f-dc976ec6dfda",
+        "report_name": "Monthly Revenue Report - June 2026",
+        "generated_at": "2026-07-01T10:00:00.000Z",
+        "generated_by": "System Administrator",
+        "status": "SUCCESS"
+      }
+    ],
+    "total": 45
+  }
+}
+```
 
 ---
 
 ## 3. Staff Profile & Permissions Management
 
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/staff/me` | Retrieve the active caller's staff profile and role setup. | *None* (Self) |
-| `GET` | `/admin/staff` | List or search all staff profiles (doctors, nurses, admin, support). | `STAFF_VIEW` |
-| `PATCH` | `/admin/staff/{user_id}/fee` | Update consultation fee details for a doctor. | `STAFF_EDIT` |
-| `PATCH` | `/admin/staff/{user_id}/role` | Assign a new system role to a staff member. | `STAFF_EDIT` |
-| `GET` | `/admin/staff/{user_id}/permissions` | List custom permissions explicitly assigned to this staff user. | `STAFF_VIEW` |
-| `POST` | `/admin/staff/{user_id}/permissions` | Assign custom permission overrides to this user. | `STAFF_EDIT` |
-| `DELETE` | `/admin/staff/{user_id}/permissions` | Revoke custom permission overrides. | `STAFF_EDIT` |
-| `GET` | `/admin/roles` | List all available Roles (`SYSTEM_ADMINISTRATOR`, `DOCTOR`, `NURSE`, etc.). | `ROLE_VIEW` |
-| `GET` | `/admin/permissions` | Retrieve the master list of all individual security permissions. | `ROLE_VIEW` |
-| `GET` | `/admin/roles/{role_id}/permissions` | List permissions associated with a specific role. | `ROLE_VIEW` |
-| `POST` | `/admin/roles/{role_id}/permissions` | Assign new permissions to a role. | `ROLE_EDIT` |
-| `DELETE` | `/admin/roles/{role_id}/permissions` | Revoke permissions from a role. | `ROLE_EDIT` |
+### 3.1 GET List Staff
+Retrieve a list of all active staff members registered at the branch.
+
+* **Method**: `GET`
+* **URL**: `/admin/staff`
+* **Query Parameters**:
+  * `page` (*Optional*, Default: `1`): Current page offset.
+  * `page_size` (*Optional*, Default: `10`): Items limit.
+  * `role_name` (*Optional*): Filter by specific role (e.g. `'DOCTOR'`, `'NURSE'`, `'PHARMACIST'`).
+  * `search` (*Optional*): Search query matching staff name or email.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "ffeee23d-9a29-454f-9f46-192f1aaab285",
+        "email": "doctor@sailjb.com",
+        "full_name": "Dr. Arjun Mehta",
+        "role_name": "DOCTOR",
+        "department_id": "0fbfdbef-9873-4824-b1fd-6fb827d3ba57",
+        "department_name": "Cardiology",
+        "is_active": true,
+        "created_at": "2026-06-15T12:00:00.000Z"
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+---
+
+### 3.2 PATCH Update Staff Fee
+Set consultation fees for a doctor.
+
+* **Method**: `PATCH`
+* **URL**: `/admin/staff/{user_id}/fee`
+* **Path Parameters**:
+  * `user_id`: UUID of the staff user.
+
+#### Request Body (`UpdateConsultationFeeRequest`)
+```json
+{
+  "consultation_fee": 500.00,
+  "follow_up_fee": 300.00,
+  "validity_days": 10
+}
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Consultation fees updated successfully"
+}
+```
+
+---
+
+### 3.3 GET Custom User Permissions
+List specific permission overrides granted to a user.
+
+* **Method**: `GET`
+* **URL**: `/admin/staff/{user_id}/permissions`
+* **Path Parameters**:
+  * `user_id`: UUID of the staff user.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "user_id": "ffeee23d-9a29-454f-9f46-192f1aaab285",
+    "permissions": ["PATIENT_DELETE", "PROCUREMENT_ORDER_APPROVE"]
+  }
+}
+```
+
+---
+
+### 3.4 POST Assign Custom Permissions
+Apply overriding permission privileges to a staff user.
+
+* **Method**: `POST`
+* **URL**: `/admin/staff/{user_id}/permissions`
+* **Path Parameters**:
+  * `user_id`: UUID of the staff user.
+
+#### Request Body (`AssignStaffPermissionsRequest`)
+```json
+{
+  "permissions": ["PATIENT_DELETE", "PROCUREMENT_ORDER_APPROVE"]
+}
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Custom user permissions assigned successfully"
+}
+```
 
 ---
 
 ## 4. Attendance & Leaves Management
 
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/staff/me/attendance` | Retrieve the active caller's attendance logs. | *None* (Self) |
-| `GET` | `/admin/staff/me/leaves` | List active caller's applied leave history. | *None* (Self) |
-| `GET` | `/admin/staff/me/leaves/balance` | Fetch active caller's remaining leave counts (Casual, Sick, etc.). | *None* (Self) |
-| `POST` | `/admin/staff/me/leaves/apply` | File a new leave application request. | *None* (Self) |
-| `DELETE` | `/admin/staff/me/leaves/{leave_id}` | Cancel/withdraw a pending leave request. | *None* (Self) |
-| `GET` | `/admin/staff/leaves/pending` | List all pending leave requests requiring admin approval. | `LEAVE_APPROVE` |
-| `PATCH` | `/admin/staff/leaves/{leave_id}/approve` | Approve a staff member's leave request. | `LEAVE_APPROVE` |
-| `PATCH` | `/admin/staff/leaves/{leave_id}/reject` | Reject a staff member's leave request. | `LEAVE_APPROVE` |
-| `GET` | `/admin/staff/leaves/summary` | Retrieve leave summary counts for all active staff. | `LEAVE_APPROVE` |
-| `GET` | `/admin/leaves/pending` | Alternate path to list all pending leave requests. | `LEAVE_APPROVE` |
-| `POST` | `/admin/leaves/{leave_id}/approve` | Alternate path to approve a leave request. | `LEAVE_APPROVE` |
-| `POST` | `/admin/leaves/{leave_id}/reject` | Alternate path to reject a leave request. | `LEAVE_APPROVE` |
+### 4.1 GET List Applied Leaves
+Retrieve leave requests applied by the active caller.
+
+* **Method**: `GET`
+* **URL**: `/admin/staff/me/leaves`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "id": "l1-ffeee23d-9a29",
+      "leave_type": "CASUAL",
+      "from_date": "2026-08-01",
+      "to_date": "2026-08-05",
+      "days": 4,
+      "reason": "Family vacation",
+      "status": "PENDING"
+    }
+  ]
+}
+```
 
 ---
 
-## 5. Facility Spatial Hierarchy (Floors, Blocks, Wards, Beds)
+### 4.2 POST Apply Leave Request
+Submit a new leave application.
 
-### 5.1 Floors & Blocks
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/floors` | List all floors. | `BED_VIEW` |
-| `POST` | `/admin/floors` | Create a new floor. | `BED_CREATE` |
-| `GET` | `/admin/floors/{floor_id}` | Retrieve details of a specific floor. | `BED_VIEW` |
-| `PATCH` | `/admin/floors/{floor_id}` | Update details of a floor. | `BED_EDIT` |
-| `GET` | `/admin/blocks` | List all blocks. | `BED_VIEW` |
-| `POST` | `/admin/blocks` | Create a new building block. | `BED_CREATE` |
-| `GET` | `/admin/blocks/{block_id}` | Retrieve details of a specific block. | `BED_VIEW` |
-| `PATCH` | `/admin/blocks/{block_id}` | Update details of a block. | `BED_EDIT` |
+* **Method**: `POST`
+* **URL**: `/admin/staff/me/leaves/apply`
 
-### 5.2 Wards, Units, & Beds
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/wards` | List all wards (with optional department, block, or floor filtering). | `BED_VIEW` |
-| `POST` | `/admin/wards` | Create a new ward. | `BED_CREATE` |
-| `GET` | `/admin/wards/{ward_id}` | Retrieve details of a specific ward. | `BED_VIEW` |
-| `PATCH` | `/admin/wards/{ward_id}` | Update details of a ward. | `BED_EDIT` |
-| `GET` | `/admin/wards/{ward_id}/units` | List units mapped to a specific ward. | `BED_VIEW` |
-| `GET` | `/admin/units` | List all units. | `BED_VIEW` |
-| `POST` | `/admin/units` | Create a new unit. | `BED_CREATE` |
-| `GET` | `/admin/beds/summary` | Retrieve high-level bed metrics (capacity, occupied, available, etc.). | `BED_VIEW` |
-| `GET` | `/admin/beds` | List all beds. | `BED_VIEW` |
-| `POST` | `/admin/beds` | Create a new bed record. | `BED_CREATE` |
-| `GET` | `/admin/beds/{bed_id}` | Retrieve details of a specific bed. | `BED_VIEW` |
-| `PATCH` | `/admin/beds/{bed_id}` | Update details of a bed. | `BED_EDIT` |
-| `PATCH` | `/admin/beds/{bed_id}/status` | Update operational status (e.g. `'AVAILABLE'`, `'OCCUPIED'`). | `BED_EDIT` |
+#### Request Body (`ApplyLeaveRequest`)
+```json
+{
+  "leave_type": "CASUAL",
+  "from_date": "2026-08-01",
+  "to_date": "2026-08-05",
+  "reason": "Family vacation"
+}
+```
+
+#### Response (`201 Created`)
+*Returns the applied LeaveResponse object.*
 
 ---
 
-## 6. Setup & Master Data (Departments & Services)
+### 4.3 GET List Pending Leaves
+List pending leave applications requiring approval.
 
-### 6.1 Departments & Specializations
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/departments` | List departments with staff counts, locations, and operating hours. | `STAFF_VIEW` |
-| `POST` | `/admin/departments` | Create a new department. | `STAFF_EDIT` |
-| `PATCH` | `/admin/departments/{department_id}` | Update department configuration. | `STAFF_EDIT` |
-| `GET` | `/admin/specializations` | List all specializations. | `STAFF_VIEW` |
-| `POST` | `/admin/specializations` | Create a new specialization. | `STAFF_EDIT` |
-| `PATCH` | `/admin/specializations/{specialization_id}` | Update specialization configuration. | `STAFF_EDIT` |
-| `GET` | `/admin/specialities/summary` | Retrieve aggregated staff and patient counts mapped by speciality. | `STAFF_VIEW` |
-| `GET` | `/admin/specialities` | List all specialities. | `STAFF_VIEW` |
-| `POST` | `/admin/specialities` | Create a new speciality. | `STAFF_EDIT` |
-| `GET` | `/admin/specialities/{speciality_id}` | Retrieve specific speciality details. | `STAFF_VIEW` |
-| `PATCH` | `/admin/specialities/{speciality_id}` | Modify speciality attributes. | `STAFF_EDIT` |
-| `DELETE` | `/admin/specialities/{speciality_id}` | Delete speciality master configuration. | `STAFF_EDIT` |
+* **Method**: `GET`
+* **URL**: `/admin/staff/leaves/pending`
+* **Query Parameters**:
+  * `page` (*Optional*, Default: `1`): Current page number.
+  * `page_size` (*Optional*, Default: `10`): Items limit.
 
-### 6.2 Services & Service Catalog
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/services/summary` | Retrieve count summaries of active clinical services. | `SERVICE_VIEW` |
-| `GET` | `/admin/services/staff-directory` | List all staff members mapped to active services. | `SERVICE_VIEW` |
-| `GET` | `/admin/services` | List all clinical services. | `SERVICE_VIEW` |
-| `POST` | `/admin/services` | Register a new clinical service. | `SERVICE_EDIT` |
-| `GET` | `/admin/services/{service_id}` | Retrieve details of a specific service. | `SERVICE_VIEW` |
-| `PATCH` | `/admin/services/{service_id}` | Update service configuration. | `SERVICE_EDIT` |
-| `DELETE` | `/admin/services/{service_id}` | Delete a clinical service. | `SERVICE_EDIT` |
-| `GET` | `/admin/service-catalogue/summary` | Retrieve summary of the organizational service catalogue. | `SERVICE_VIEW` |
-| `GET` | `/admin/service-catalogue/records` | List all catalogue records (rate cards, consultations). | `SERVICE_VIEW` |
-| `POST` | `/admin/service-catalogue/records` | Add a new record to the service catalogue. | `SERVICE_EDIT` |
-| `GET` | `/admin/service-catalogue/records/{record_id}` | Retrieve details of a service catalogue record. | `SERVICE_VIEW` |
-| `PATCH` | `/admin/service-catalogue/records/{record_id}` | Modify catalogue record pricing or rules. | `SERVICE_EDIT` |
-| `DELETE` | `/admin/service-catalogue/records/{record_id}` | Remove a record from the catalogue. | `SERVICE_EDIT` |
-
----
-
-## 7. Department Overview Setup (Pharmacy, Radiology, Lab)
-
-### 7.1 Pharmacy Overview
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/pharmacy-overview/summary` | Retrieve pharmacy sales, dispensing speed, and stock alerts. | `PHARMACY_VIEW` |
-| `GET` | `/admin/pharmacy-overview/purchase-orders` | List purchase orders initiated by the pharmacy. | `PROCUREMENT_ORDER_VIEW` |
-| `POST` | `/admin/pharmacy-overview/purchase-orders` | Create a new purchase order. | `PROCUREMENT_ORDER_EDIT` |
-| `GET` | `/admin/pharmacy-overview/purchase-orders/{po_id}` | Retrieve specific PO details. | `PROCUREMENT_ORDER_VIEW` |
-| `PATCH` | `/admin/pharmacy-overview/purchase-orders/{po_id}` | Update purchase order. | `PROCUREMENT_ORDER_EDIT` |
-| `DELETE` | `/admin/pharmacy-overview/purchase-orders/{po_id}` | Cancel/delete a purchase order. | `PROCUREMENT_ORDER_EDIT` |
-
-### 7.2 Radiology & Laboratory Overview
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/radiology-overview/summary` | Retrieve scanning statistics and device load factors. | `RADIOLOGY_VIEW` |
-| `GET` | `/admin/radiology-overview/schedule` | Retrieve radiology device scheduling slots. | `RADIOLOGY_VIEW` |
-| `POST` | `/admin/radiology-overview/schedule` | Book a radiology schedule slot. | `RADIOLOGY_EDIT` |
-| `GET` | `/admin/radiology-overview/schedule/{schedule_id}` | Retrieve specific slot details. | `RADIOLOGY_VIEW` |
-| `PATCH` | `/admin/radiology-overview/schedule/{schedule_id}` | Reschedule radiology scan. | `RADIOLOGY_EDIT` |
-| `DELETE` | `/admin/radiology-overview/schedule/{schedule_id}` | Cancel radiology scan slot. | `RADIOLOGY_EDIT` |
-| `GET` | `/admin/laboratory-overview/summary` | Retrieve test processing rates and critical values. | `LAB_VIEW` |
-| `GET` | `/admin/laboratory-overview/tests` | Retrieve list of configured lab tests. | `LAB_VIEW` |
-| `POST` | `/admin/laboratory-overview/tests` | Add a new test type to the lab. | `LAB_EDIT` |
-| `GET` | `/admin/laboratory-overview/tests/{test_id}` | Retrieve laboratory test configurations. | `LAB_VIEW` |
-| `PATCH` | `/admin/laboratory-overview/tests/{test_id}` | Modify lab test specs or normal ranges. | `LAB_EDIT` |
-| `DELETE` | `/admin/laboratory-overview/tests/{test_id}` | Remove a test type from the lab. | `LAB_EDIT` |
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "leave_id": "l1-ffeee23d-9a29",
+        "user_id": "8c59f032-47ef-4e1b-b46e-1d54238e4a90",
+        "full_name": "Nisha Verma",
+        "role_name": "NURSE",
+        "leave_type": "CASUAL",
+        "from_date": "2026-08-01",
+        "to_date": "2026-08-05",
+        "days": 4,
+        "reason": "Family vacation",
+        "status": "PENDING"
+      }
+    ],
+    "total": 1
+  }
+}
+```
 
 ---
 
-## 8. Inventory & Procurement Management
+### 4.4 PATCH Approve Leave Request
+Authorize a pending leave application.
 
-### 8.1 Inventory Items
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/inventory/medical` | List all medical inventory items (e.g. syringes, medicine batches). | `INVENTORY_VIEW` |
-| `POST` | `/admin/inventory/medical` | Add a new medical inventory item. | `INVENTORY_EDIT` |
-| `GET` | `/admin/inventory/medical/{item_id}` | Retrieve details of a specific medical item. | `INVENTORY_VIEW` |
-| `PATCH` | `/admin/inventory/medical/{item_id}` | Modify medical inventory parameters. | `INVENTORY_EDIT` |
-| `DELETE` | `/admin/inventory/medical/{item_id}` | Delete a medical item. | `INVENTORY_EDIT` |
-| `GET` | `/admin/inventory/non-medical` | List all non-medical assets (e.g. computers, surgical gowns). | `INVENTORY_VIEW` |
-| `POST` | `/admin/inventory/non-medical` | Register a new non-medical asset. | `INVENTORY_EDIT` |
-| `GET` | `/admin/inventory/non-medical/{item_id}` | Retrieve details of a specific non-medical asset. | `INVENTORY_VIEW` |
-| `PATCH` | `/admin/inventory/non-medical/{item_id}` | Modify non-medical asset parameters. | `INVENTORY_EDIT` |
-| `DELETE` | `/admin/inventory/non-medical/{item_id}` | Delete a non-medical asset. | `INVENTORY_EDIT` |
-| `GET` | `/admin/inventory/stock-alerts` | Retrieve items operating below their minimum safety thresholds. | `INVENTORY_VIEW` |
-| `GET` | `/admin/inventory/valuation` | Fetch total valuation of active stock using FIFO/Weighted Average. | `INVENTORY_VIEW` |
+* **Method**: `PATCH`
+* **URL**: `/admin/staff/leaves/{leave_id}/approve`
+* **Path Parameters**:
+  * `leave_id`: UUID of the leave.
 
-### 8.2 Stock Transfers
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/inventory/transfers` | List all inter-departmental or inter-branch stock transfers. | `INVENTORY_VIEW` |
-| `POST` | `/admin/inventory/transfers` | Request a new stock transfer. | `INVENTORY_EDIT` |
-| `GET` | `/admin/inventory/transfers/{transfer_id}` | Retrieve details of a transfer request. | `INVENTORY_VIEW` |
-| `PATCH` | `/admin/inventory/transfers/{transfer_id}` | Update transfer details. | `INVENTORY_EDIT` |
-| `DELETE` | `/admin/inventory/transfers/{transfer_id}` | Cancel a transfer request. | `INVENTORY_EDIT` |
-| `POST` | `/admin/inventory/transfers/{transfer_id}/approve` | Approve and commit stock deduct/add for a transfer. | `INVENTORY_APPROVE` |
-| `POST` | `/admin/inventory/transfers/{transfer_id}/reject` | Reject a stock transfer request. | `INVENTORY_APPROVE` |
-
-### 8.3 Suppliers & Procurement
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/inventory/suppliers` | List all active vendors/suppliers. | `INVENTORY_VIEW` |
-| `POST` | `/admin/inventory/suppliers` | Register a new vendor. | `INVENTORY_EDIT` |
-| `GET` | `/admin/inventory/suppliers/{supplier_id}` | Retrieve details of a supplier. | `INVENTORY_VIEW` |
-| `PATCH` | `/admin/inventory/suppliers/{supplier_id}` | Update supplier contact info or bank details. | `INVENTORY_EDIT` |
-| `DELETE` | `/admin/inventory/suppliers/{supplier_id}` | Deregister a supplier. | `INVENTORY_EDIT` |
-| `GET` | `/admin/procurement/requisitions` | List internal department purchase requisitions. | `PROCUREMENT_ORDER_VIEW` |
-| `POST` | `/admin/procurement/requisitions` | Create a new purchase requisition. | `PROCUREMENT_ORDER_EDIT` |
-| `GET` | `/admin/procurement/requisitions/{req_id}` | Retrieve details of a purchase requisition. | `PROCUREMENT_ORDER_VIEW` |
-| `PATCH` | `/admin/procurement/requisitions/{req_id}` | Update a requisition. | `PROCUREMENT_ORDER_EDIT` |
-| `DELETE` | `/admin/procurement/requisitions/{req_id}` | Cancel/delete a requisition. | `PROCUREMENT_ORDER_EDIT` |
-| `POST` | `/admin/procurement/requisitions/{req_id}/approve` | Approve a requisition (transitions it to PO eligibility). | `PROCUREMENT_ORDER_APPROVE` |
-| `POST` | `/admin/procurement/requisitions/{req_id}/reject` | Reject a purchase requisition. | `PROCUREMENT_ORDER_APPROVE` |
-| `GET` | `/admin/procurement/orders` | List purchase orders. | `PROCUREMENT_ORDER_VIEW` |
-| `POST` | `/admin/procurement/orders` | Generate a new PO. | `PROCUREMENT_ORDER_EDIT` |
-| `GET` | `/admin/procurement/orders/{po_id}` | Retrieve specific PO details. | `PROCUREMENT_ORDER_VIEW` |
-| `PATCH` | `/admin/procurement/orders/{po_id}` | Update details of a PO. | `PROCUREMENT_ORDER_EDIT` |
-| `DELETE` | `/admin/procurement/orders/{po_id}` | Cancel a PO. | `PROCUREMENT_ORDER_EDIT` |
-| `POST` | `/admin/procurement/orders/{po_id}/approve` | Approve a purchase order. | `PROCUREMENT_ORDER_APPROVE` |
-| `POST` | `/admin/procurement/orders/{po_id}/reject` | Reject a purchase order. | `PROCUREMENT_ORDER_APPROVE` |
-| `GET` | `/admin/procurement/orders/{po_id}/grns` | List Goods Received Notes (GRN) linked to a PO. | `PROCUREMENT_ORDER_VIEW` |
-| `POST` | `/admin/procurement/orders/{po_id}/grns` | Generate a new GRN (commit item stock to warehouse). | `PROCUREMENT_ORDER_EDIT` |
-| `GET` | `/admin/procurement/orders/{po_id}/grns/{grn_id}` | Retrieve details of a specific GRN. | `PROCUREMENT_ORDER_VIEW` |
-| `PATCH` | `/admin/procurement/orders/{po_id}/grns/{grn_id}` | Update a GRN. | `PROCUREMENT_ORDER_EDIT` |
-| `DELETE` | `/admin/procurement/orders/{po_id}/grns/{grn_id}` | Delete a GRN. | `PROCUREMENT_ORDER_EDIT` |
-| `POST` | `/admin/procurement/orders/{po_id}/grns/{grn_id}/verify` | Verify and authorize a GRN (locks quantities). | `PROCUREMENT_ORDER_APPROVE` |
-| `GET` | `/admin/procurement/orders/{po_id}/invoices` | List vendor invoices linked to a PO. | `PROCUREMENT_ORDER_VIEW` |
-| `POST` | `/admin/procurement/orders/{po_id}/invoices` | Create a vendor invoice. | `PROCUREMENT_ORDER_EDIT` |
-| `GET` | `/admin/procurement/orders/{po_id}/invoices/{inv_id}` | Retrieve details of a vendor invoice. | `PROCUREMENT_ORDER_VIEW` |
-| `PATCH` | `/admin/procurement/orders/{po_id}/invoices/{inv_id}` | Update a vendor invoice. | `PROCUREMENT_ORDER_EDIT` |
-| `DELETE` | `/admin/procurement/orders/{po_id}/invoices/{inv_id}` | Delete a vendor invoice. | `PROCUREMENT_ORDER_EDIT` |
-| `POST` | `/admin/procurement/orders/{po_id}/invoices/{inv_id}/reconcile`| Reconcile PO, GRN, and Invoice values (3-Way Match). | `PROCUREMENT_ORDER_APPROVE` |
-| `GET` | `/admin/procurement/analytics` | Requisitions vs PO and GRN fulfillment rate analytics. | `PROCUREMENT_ORDER_VIEW` |
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Leave application approved successfully",
+  "data": {
+    "leave_id": "l1-ffeee23d-9a29",
+    "status": "APPROVED"
+  }
+}
+```
 
 ---
 
-## 9. TPA & Insurance Claims Management
+## 5. Floors, Blocks, Wards, Units & Beds Setup
 
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/tpa/providers` | List all active Third Party Administrators (TPA) & Insurance partners. | `TPA_VIEW` |
-| `POST` | `/admin/tpa/providers` | Register a new TPA provider. | `TPA_EDIT` |
-| `GET` | `/admin/tpa/providers/{provider_id}` | Retrieve specific TPA details. | `TPA_VIEW` |
-| `PATCH` | `/admin/tpa/providers/{provider_id}` | Update TPA provider configuration. | `TPA_EDIT` |
-| `DELETE` | `/admin/tpa/providers/{provider_id}` | Delete a TPA provider. | `TPA_EDIT` |
-| `GET` | `/admin/tpa/providers/{provider_id}/schemes` | List insurance schemes offered by a TPA. | `TPA_VIEW` |
-| `POST` | `/admin/tpa/providers/{provider_id}/schemes` | Add a new insurance scheme. | `TPA_EDIT` |
-| `GET` | `/admin/tpa/providers/{provider_id}/schemes/{scheme_id}`| Retrieve specific scheme details. | `TPA_VIEW` |
-| `PATCH` | `/admin/tpa/providers/{provider_id}/schemes/{scheme_id}`| Modify scheme details (deductibles, co-pays). | `TPA_EDIT` |
-| `DELETE` | `/admin/tpa/providers/{provider_id}/schemes/{scheme_id}`| Remove an insurance scheme. | `TPA_EDIT` |
-| `GET` | `/admin/tpa/claims` | List all patients insurance claims. | `TPA_VIEW` |
-| `POST` | `/admin/tpa/claims` | File a new insurance claim. | `TPA_EDIT` |
-| `GET` | `/admin/tpa/claims/{claim_id}` | Retrieve details of a filed claim. | `TPA_VIEW` |
-| `PATCH` | `/admin/tpa/claims/{claim_id}` | Modify a claim's parameters. | `TPA_EDIT` |
-| `DELETE` | `/admin/tpa/claims/{claim_id}` | Cancel/delete a filed claim. | `TPA_EDIT` |
-| `POST` | `/admin/tpa/claims/{claim_id}/preauth` | Submit pre-authorization request to insurance portal. | `TPA_EDIT` |
-| `POST` | `/admin/tpa/claims/{claim_id}/verify` | Verify and check validation rules for claims documents. | `TPA_EDIT` |
-| `POST` | `/admin/tpa/claims/{claim_id}/settle` | Log an insurance settlement payment amount. | `TPA_EDIT` |
-| `POST` | `/admin/tpa/claims/{claim_id}/reject` | Log a claim rejection reason. | `TPA_EDIT` |
-| `GET` | `/admin/tpa/claims/analytics` | Rejections, delays, and average claim settlement duration analytics. | `TPA_VIEW` |
+### 5.1 GET List Floors
+Retrieve all registered floors.
+
+* **Method**: `GET`
+* **URL**: `/admin/floors`
+* **Query Parameters**:
+  * `include_inactive` (*Optional*, Default: `false`): Include inactive floors.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "93920321-63e8-4646-ba4f-dc976ec6dfda",
+        "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "floor_number": 1,
+        "floor_label": "Ground Floor",
+        "is_active": true,
+        "created_at": "2026-07-04T12:41:25.168100+05:30"
+      }
+    ],
+    "total": 1
+  }
+}
+```
 
 ---
 
-## 10. Audit Logging, Alerts & Compliance
+### 5.2 POST Create Floor
+Add a new floor.
 
-| Method | Endpoint | Purpose / Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/audit-logs` | Retrieve chronological administrative audit logs. | `AUDIT_LOG_VIEW` |
-| `GET` | `/admin/alerts` | List active administrative system alerts (e.g. stock low, critical lab). | `ALERT_VIEW` |
-| `POST` | `/admin/alerts` | Trigger a new administrative alert. | `ALERT_EDIT` |
-| `GET` | `/admin/alerts/{alert_id}` | Retrieve details of a specific alert. | `ALERT_VIEW` |
-| `PATCH` | `/admin/alerts/{alert_id}` | Modify alert properties. | `ALERT_EDIT` |
-| `DELETE` | `/admin/alerts/{alert_id}` | Delete an alert. | `ALERT_EDIT` |
-| `POST` | `/admin/alerts/{alert_id}/acknowledge` | Acknowledge an alert (assigns acknowledgment user context). | `ALERT_EDIT` |
-| `POST` | `/admin/alerts/{alert_id}/resolve` | Resolve an active system alert. | `ALERT_EDIT` |
-| `GET` | `/admin/compliance/audit-logs` | Fetch regulatory compliance audit trails (e.g. data downloads). | `COMPLIANCE_VIEW` |
-| `GET` | `/admin/compliance/retention-policies` | List active database retention and archival policies. | `COMPLIANCE_VIEW` |
-| `POST` | `/admin/compliance/retention-policies` | Create a new data retention policy. | `COMPLIANCE_EDIT` |
-| `GET` | `/admin/compliance/retention-policies/{policy_id}` | Retrieve retention policy details. | `COMPLIANCE_VIEW` |
-| `PATCH` | `/admin/compliance/retention-policies/{policy_id}` | Update data retention metrics. | `COMPLIANCE_EDIT` |
-| `DELETE` | `/admin/compliance/retention-policies/{policy_id}` | Remove a data retention policy. | `COMPLIANCE_EDIT` |
-| `GET` | `/admin/compliance/encryption-keys` | List active branch data-encryption keys. | `COMPLIANCE_VIEW` |
-| `POST` | `/admin/compliance/encryption-keys` | Register or generate a new encryption key. | `COMPLIANCE_EDIT` |
-| `GET` | `/admin/compliance/encryption-keys/{key_id}` | Retrieve specific key details. | `COMPLIANCE_VIEW` |
-| `PATCH` | `/admin/compliance/encryption-keys/{key_id}` | Rotate or disable a specific encryption key. | `COMPLIANCE_EDIT` |
-| `DELETE` | `/admin/compliance/encryption-keys/{key_id}` | Remove an encryption key catalog reference. | `COMPLIANCE_EDIT` |
+* **Method**: `POST`
+* **URL**: `/admin/floors`
+
+#### Request Body (`FloorCreateRequest`)
+```json
+{
+  "floor_number": 2,
+  "floor_label": "First Floor"
+}
+```
+
+#### Response (`201 Created`)
+*Returns the newly created FloorResponse details.*
+
+---
+
+### 5.3 GET List Blocks
+Retrieve all building blocks.
+
+* **Method**: `GET`
+* **URL**: `/admin/blocks`
+* **Query Parameters**:
+  * `floor_id` (*Optional*): Filter by specific floor (UUID).
+  * `include_inactive` (*Optional*): Include inactive blocks.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "8c59f032-47ef-4e1b-b46e-1d54238e4a90",
+        "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "floor_id": "93920321-63e8-4646-ba4f-dc976ec6dfda",
+        "name": "General Block A",
+        "code": "BLK-A",
+        "description": "Primary clinical inpatient tower block",
+        "is_active": true,
+        "created_at": "2026-07-04T12:45:00.000Z"
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+---
+
+### 5.4 GET List Wards
+List wards with active statistics.
+
+* **Method**: `GET`
+* **URL**: `/admin/wards`
+* **Query Parameters**:
+  * `include_inactive` (*Optional*): Include inactive records (Default: `false`).
+  * `floor` (*Optional*): Filter by floor string label.
+  * `ward_type` (*Optional*): Filter by `WardType` value.
+  * `work_area_id` (*Optional*): Filter by mapped work area ID (UUID).
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "673f8a09-7d8b-402a-a92c-7b2496a7d5ea",
+        "tenant_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "name": "Male Medical Ward",
+        "ward_type": "GENERAL",
+        "work_area_id": "aa30b4b7-0da8-4b9d-8643-4fdffefabe9d",
+        "floor": "Ground Floor",
+        "block_id": "8c59f032-47ef-4e1b-b46e-1d54238e4a90",
+        "capacity": 30,
+        "is_active": true,
+        "created_at": "2026-07-04T12:50:00.000Z",
+        "total_beds": 30,
+        "available_beds": 25,
+        "occupied_beds": 5
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+---
+
+### 5.5 POST Create Ward
+Create a new ward.
+
+* **Method**: `POST`
+* **URL**: `/admin/wards`
+
+#### Request Body (`WardCreateRequest`)
+```json
+{
+  "name": "Male Medical Ward",
+  "ward_type": "GENERAL",
+  "capacity": 30,
+  "floor": "Ground Floor",
+  "block_id": "8c59f032-47ef-4e1b-b46e-1d54238e4a90"
+}
+```
+
+#### Response (`201 Created`)
+*Returns the newly created WardResponse details.*
+
+---
+
+### 5.6 GET Beds Summary
+Retrieve aggregated bed counts and statuses.
+
+* **Method**: `GET`
+* **URL**: `/admin/beds/summary`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "total_beds": 100,
+    "available": 60,
+    "occupied": 30,
+    "reserved": 5,
+    "maintenance": 5,
+    "by_ward": [
+      {
+        "ward_id": "673f8a09-7d8b-402a-a92c-7b2496a7d5ea",
+        "ward_name": "Male Medical Ward",
+        "ward_type": "GENERAL",
+        "floor": "Ground Floor",
+        "capacity": 30,
+        "total_beds": 30,
+        "available": 25,
+        "occupied": 5,
+        "reserved": 0,
+        "maintenance": 0
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 5.7 GET List Beds
+Retrieve a paginated, filterable list of all beds.
+
+* **Method**: `GET`
+* **URL**: `/admin/beds`
+* **Query Parameters**:
+  * `page` (*Optional*, Default: `1`): Current page.
+  * `page_size` (*Optional*, Default: `20`): Page limit.
+  * `ward_id` (*Optional*): Filter by parent ward ID.
+  * `status` (*Optional*): Filter by `BedStatus` value.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "e3cd1405-c1d4-482a-a82f-b4de673ba51f",
+        "tenant_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "ward_id": "673f8a09-7d8b-402a-a92c-7b2496a7d5ea",
+        "ward_name": "Male Medical Ward",
+        "floor": "Ground Floor",
+        "bed_number": "B-101",
+        "bed_type": "STANDARD",
+        "status": "OCCUPIED",
+        "is_active": true,
+        "created_at": "2026-07-04T13:00:00.000Z"
+      }
+    ],
+    "meta": {
+      "total": 1,
+      "page": 1,
+      "page_size": 20,
+      "total_pages": 1
+    }
+  }
+}
+```
+
+---
+
+### 5.8 POST Create Bed
+Add a new physical bed.
+
+* **Method**: `POST`
+* **URL**: `/admin/beds`
+
+#### Request Body (`BedCreateRequest`)
+```json
+{
+  "ward_id": "673f8a09-7d8b-402a-a92c-7b2496a7d5ea",
+  "bed_number": "B-102",
+  "bed_type": "STANDARD"
+}
+```
+
+#### Response (`201 Created`)
+*Returns the newly created BedResponse details.*
+
+---
+
+### 5.9 PATCH Update Bed Status
+Update operational status of a bed.
+
+* **Method**: `PATCH`
+* **URL**: `/admin/beds/{bed_id}/status`
+* **Path Parameters**:
+  * `bed_id`: UUID of the bed.
+
+#### Request Body (`BedStatusUpdateRequest`)
+```json
+{
+  "status": "MAINTENANCE",
+  "reason": "Routine cleaning and minor repairs"
+}
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Bed status updated successfully"
+}
+```
+
+---
+
+## 6. Setup & Master Data (Departments & Specializations)
+
+### 6.1 GET List Departments
+Lists departments with staff counts, location, and operational status.
+
+* **Method**: `GET`
+* **URL**: `/admin/departments`
+* **Query Parameters**:
+  * `search` (*Optional*): Search term matching department name.
+  * `status` (*Optional*): Filter by status (`Active`, `Under Maintenance`, `Inactive`).
+  * `page` (*Optional*, Default: `1`): Page number.
+  * `page_size` (*Optional*, Default: `10`): Items limit.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "department_id": "0fbfdbef-9873-4824-b1fd-6fb827d3ba57",
+        "department_name": "Cardiology",
+        "code": "CARD-001",
+        "department_type": "Clinical",
+        "head_of_department": {
+          "doctor_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Dr. Arjun Nair",
+          "title": "Chief of Cardiology"
+        },
+        "building_block": "A Block",
+        "floor": "2nd Floor",
+        "wing": "East Wing",
+        "rooms": "Rooms 201-210",
+        "staff_breakdown": {
+          "doctors_count": 12,
+          "nurses_count": 18,
+          "support_staff_count": 6,
+          "rooms_count": 10
+        },
+        "operating_hours": "09:00 AM - 06:00 PM",
+        "status": "Active",
+        "is_active": true,
+        "created_at": "2026-01-15T00:00:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 10,
+      "total_records": 1,
+      "total_pages": 1
+    }
+  }
+}
+```
+
+---
+
+### 6.2 POST Create Department
+Create a new department.
+
+* **Method**: `POST`
+* **URL**: `/admin/departments`
+
+#### Request Body (`DepartmentCreateRequest`)
+```json
+{
+  "department_name": "Emergency & Critical Care",
+  "code": "EMER-001",
+  "department_type": "Clinical"
+}
+```
+
+#### Response (`201 Created`)
+*Returns created department fields.*
+
+---
+
+## 7. Inventory & Procurement Management
+
+### 7.1 GET List Medical Inventory
+Retrieve list of medical items in stock.
+
+* **Method**: `GET`
+* **URL**: `/admin/inventory/medical`
+* **Query Parameters**:
+  * `page` (*Optional*, Default: `1`): Page number.
+  * `page_size` (*Optional*, Default: `20`): Page size limit.
+  * `search` (*Optional*): Search name or code.
+  * `low_stock` (*Optional*): `true` to filter items below safety stock.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "aa30b4b7-0da8-4b9d-8643-4fdffefabe9a",
+        "name": "Paracetamol 500mg",
+        "sku_code": "MED-PAR-500",
+        "batch_count": 3,
+        "total_quantity": 450,
+        "safety_stock": 100,
+        "unit": "Tablet",
+        "is_active": true
+      }
+    ],
+    "total": 120
+  }
+}
+```
+
+---
+
+### 7.2 POST Add Medical Inventory
+Add a new item to the inventory.
+
+* **Method**: `POST`
+* **URL**: `/admin/inventory/medical`
+
+#### Request Body (`AddMedicalInventoryRequest`)
+```json
+{
+  "name": "Amoxicillin Capsule 250mg",
+  "sku_code": "MED-AMX-250",
+  "safety_stock": 150,
+  "unit": "Capsule",
+  "description": "Broad-spectrum antibiotic"
+}
+```
+
+#### Response (`201 Created`)
+*Returns the created item fields.*
+
+---
+
+### 7.3 GET List Stock Transfers
+Retrieve inter-departmental transfers.
+
+* **Method**: `GET`
+* **URL**: `/admin/inventory/transfers`
+* **Query Parameters**:
+  * `status` (*Optional*): Filter by status (`PENDING`, `APPROVED`, `REJECTED`).
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "t1-aa30b4b7",
+        "source_department_name": "Main Store",
+        "destination_department_name": "Emergency Ward",
+        "item_name": "Paracetamol 500mg",
+        "quantity": 100,
+        "status": "PENDING"
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+---
+
+### 7.4 POST Approve Stock Transfer
+Commit transfer adjustments to database inventory balances.
+
+* **Method**: `POST`
+* **URL**: `/admin/inventory/transfers/{transfer_id}/approve`
+* **Path Parameters**:
+  * `transfer_id`: UUID of transfer.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Stock transfer approved successfully"
+}
+```
+
+---
+
+## 8. TPA & Insurance Claims Management
+
+### 8.1 GET List TPA Providers
+List active TPAs.
+
+* **Method**: `GET`
+* **URL**: `/admin/tpa/providers`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    { "id": "tpa-1", "name": "Star Health Insurance", "is_active": true }
+  ]
+}
+```
+
+---
+
+### 8.2 POST Create TPA Provider
+Add a new TPA provider.
+
+* **Method**: `POST`
+* **URL**: `/admin/tpa/providers`
+
+#### Request Body (`TPAProviderCreateRequest`)
+```json
+{
+  "name": "Star Health Insurance",
+  "contact_person": "Mr. Amit Shah",
+  "email": "claims@starhealth.com",
+  "phone": "+91 22 2345 6789"
+}
+```
+
+#### Response (`201 Created`)
+*Returns created provider details.*
+
+---
+
+## 9. Audit, Alerts & Compliance
+
+### 9.1 GET List System Alerts
+List system alerts.
+
+* **Method**: `GET`
+* **URL**: `/admin/alerts`
+* **Query Parameters**:
+  * `is_resolved` (*Optional*): Filter by resolved status (`true` / `false`).
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "alert-1",
+        "alert_type": "STOCK_LOW",
+        "severity": "HIGH",
+        "title": "Low Stock: Paracetamol 500mg",
+        "message": "Current inventory count is below safety stock limit.",
+        "is_acknowledged": false,
+        "is_resolved": false
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+---
+
+### 9.2 POST Resolve Alert
+Mark an active system alert resolved.
+
+* **Method**: `POST`
+* **URL**: `/admin/alerts/{alert_id}/resolve`
+* **Path Parameters**:
+  * `alert_id`: UUID of alert.
+
+#### Request Body (`AlertResolveRequest`)
+```json
+{
+  "resolution_notes": "Stock replenished via purchase order PO-2026-0001."
+}
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Alert marked resolved successfully"
+}
+```
+
+---
+
+### 9.3 GET List System Audit Logs
+Retrieve the branch administrative audit logs list.
+
+* **Method**: `GET`
+* **URL**: `/admin/audit-logs`
+* **Query Parameters**:
+  * `page` (*Optional*, Default: `1`): Page number.
+  * `page_size` (*Optional*, Default: `20`): Page size limit.
+  * `user_id` (*Optional*): Filter logs by operator user ID (UUID).
+  * `action` (*Optional*): Filter by specific event type.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "a901f41b-4fef-48a1-b84e-8664fd37a912",
+        "user_id": "ffeee23d-9a29-454f-9f46-192f1aaab285",
+        "action": "bed.status_update",
+        "entity": "bed",
+        "entity_id": "f89b018a-f8ed-4388-b49e-cfe46fb2d3f9",
+        "status": "success",
+        "ip_address": "192.168.1.15",
+        "metadata": {
+          "bed_number": "B-102-Mod",
+          "status": "MAINTENANCE"
+        },
+        "created_at": "2026-07-25T11:42:00.000Z"
+      }
+    ],
+    "meta": {
+      "total": 1450,
+      "page": 1,
+      "page_size": 20,
+      "total_pages": 73
+    }
+  }
+}
+```
