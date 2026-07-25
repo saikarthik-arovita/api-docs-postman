@@ -98,13 +98,13 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
 * **Description**: Returns all metric components required to populate the main admin dashboard screen in a single HTTP request. Aggregated data includes:
   - **`overview`**: Top KPI cards — `patients`, `new_registrations`, `admissions`, `discharges`, `emergency_cases`, `bed_occupancy`, `procedures`, `revenue`, `pending_payments`, `conversion_rate` — each with `value` and `change_pct` (% change vs. prior period).
   - **`hospital_operations`**: Live operational snapshot — `bed_occupancy_pct`, `icu_occupancy_pct`, `ot_utilization_pct`, `emergency_queue_count`, `avg_waiting_time_mins`, `avg_consultation_time_mins`.
-  - **`financial_statistics`**: Financial snapshot — `today_revenue`, `monthly_revenue`, `outstanding_payments`, `insurance_claims`.
+  - **`financial_statistics`**: Financial snapshot — `today_revenue`, `monthly_revenue`, `outstanding_payments`, `insurance_claims`, and **`payment_method_distribution`** (UPI, Card, Insurance, Cash percentages).
   - **`bed_occupancy_by_ward`**: Array of `{ ward_name, occupancy_pct }` per ward type.
   - **`icu_utilization`**: ICU-specific — `occupancy_pct`, `total_beds`, `occupied_beds`, `available_beds`.
-  - **`hospital_performance`**: Time-series charts — `operations_overview` (OPD/IPD/Emergency/OT counts by date) and `revenue_overview` (revenue/expenses by date).
+  - **`hospital_performance`**: Time-series charts — `operations_overview` (OPD/IPD/Emergency/OT counts by date), `revenue_overview` (revenue/expenses by date), and **`department_growth_series`** (7-day daily patient counts per department).
   - **`resource_utilization`**: Percentage utilization of staff, beds, wards, and ambulances.
-  - **`statistics`**: Donut/pie chart data — `hospital_occupancy` (by ward type) and `expense_breakdown`.
-  - **`department_performance`**: Per-department revenue, expenses, net profit, and margin.
+  - **`statistics`**: Donut/pie chart data — `hospital_occupancy` (by ward type), `expense_breakdown`, and **`patient_categories`** (Walk-in, Appointment, Emergency, Referral split).
+  - **`department_performance`**: Per-department revenue, expenses, net profit, margin, and **`patient_count`** (headcount volume).
   - **`recent_reports`**: Paginated list of recently generated reports with metadata.
   - **`report_library`**: Available report templates with category and supported export formats.
 * **Sample Response**:
@@ -167,7 +167,13 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
             "today_revenue": "42850.00",
             "monthly_revenue": "1280400.00",
             "outstanding_payments": "189200.00",
-            "insurance_claims": "380450.00"
+            "insurance_claims": "380450.00",
+            "payment_method_distribution": [
+                { "name": "UPI", "value": 45.0 },
+                { "name": "Credit/Debit Card", "value": 25.0 },
+                { "name": "Insurance Claims", "value": 20.0 },
+                { "name": "Cash", "value": 10.0 }
+            ]
         },
         "bed_occupancy_by_ward": [
             { "ward_name": "General Medicine", "occupancy_pct": 88.0 },
@@ -192,6 +198,10 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
                 { "label": "02 Jul 2026", "revenue": "11200.00", "expenses": "0.0" },
                 { "label": "03 Jul 2026", "revenue": "158750.00", "expenses": "0.0" },
                 { "label": "23 Jul 2026", "revenue": "0.00", "expenses": "0.0" }
+            ],
+            "department_growth_series": [
+                { "date": "19 Jul", "Cardiology": 12, "Orthopedics": 8, "Pediatrics": 15, "General Medicine": 20, "ENT": 5 },
+                { "date": "20 Jul", "Cardiology": 14, "Orthopedics": 9, "Pediatrics": 18, "General Medicine": 24, "ENT": 6 }
             ]
         },
         "resource_utilization": {
@@ -211,13 +221,19 @@ Most of the time-range/date-based endpoints share a helper query parameter parse
                 { "name": "Salaries & Wages", "value": "0.0" },
                 { "name": "Maintenance & Ops", "value": "0.0" },
                 { "name": "Medicines & Pharmacy", "value": "0.0" }
+            ],
+            "patient_categories": [
+                { "name": "Walk-in", "value": 40.0 },
+                { "name": "Appointment", "value": 35.0 },
+                { "name": "Emergency", "value": 15.0 },
+                { "name": "Referral", "value": 10.0 }
             ]
         },
         "department_performance": {
             "departments": [
-                { "department_name": "OPD", "revenue": "112850.0", "expenses": "0.0", "net_profit": "112850.0", "margin_pct": "100.0" },
-                { "department_name": "ICU", "revenue": "58700.0", "expenses": "0.0", "net_profit": "58700.0", "margin_pct": "100.0" },
-                { "department_name": "Pharmacy", "revenue": "0.0", "expenses": "0.0", "net_profit": "0.0", "margin_pct": "0.0" }
+                { "department_name": "OPD", "revenue": "112850.0", "expenses": "0.0", "net_profit": "112850.0", "margin_pct": "100.0", "patient_count": 1240 },
+                { "department_name": "ICU", "revenue": "58700.0", "expenses": "0.0", "net_profit": "58700.0", "margin_pct": "100.0", "patient_count": 45 },
+                { "department_name": "Pharmacy", "revenue": "0.0", "expenses": "0.0", "net_profit": "0.0", "margin_pct": "0.0", "patient_count": 180 }
             ]
         },
         "recent_reports": {

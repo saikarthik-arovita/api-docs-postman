@@ -543,7 +543,7 @@ All analytics endpoints support query parameters `granularity` (`daily`, `weekly
 ### 4.1 Fetch Staff Directory (Admin View)
 Provides robust sorting, searching, and filter indicators for active directory views.
 
-* **Endpoint:** `GET /admin/staff?role_id=DOC-001&is_active=true&search=Priya&page=1&page_size=20`
+* **Endpoint:** `GET /admin/staff?role_id=DOC-001&is_active=true&search=Priya&page=1&page_size=20&department_id=61817d5e-49af-4b0c-b108-4691f450f9ba&shift=Day&status=Active`
 * **Success Response (200 OK):**
 ```json
 {
@@ -559,7 +559,10 @@ Provides robust sorting, searching, and filter indicators for active directory v
         "role_id": "DOC-001",
         "role_name": "DOCTOR",
         "is_active": true,
-        "created_at": "2026-06-13T11:15:00Z"
+        "created_at": "2026-06-13T11:15:00Z",
+        "specialization_name": "Interventional Cardiology",
+        "shift_label": "Day (08:00 - 16:00)",
+        "current_status": "Active"
       }
     ],
     "meta": {

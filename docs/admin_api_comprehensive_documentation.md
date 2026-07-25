@@ -257,8 +257,11 @@ Retrieve a list of all active staff members registered at the branch.
 * **Query Parameters**:
   * `page` (*Optional*, Default: `1`): Current page offset.
   * `page_size` (*Optional*, Default: `10`): Items limit.
-  * `role_name` (*Optional*): Filter by specific role (e.g. `'DOCTOR'`, `'NURSE'`, `'PHARMACIST'`).
+  * `role_name` (*Optional*): Filter by specific role (e.g. `'DOCTOR'`, `'NURSE'`).
   * `search` (*Optional*): Search query matching staff name or email.
+  * `department_id` (*Optional*): Filter by department UUID.
+  * `shift` (*Optional*): Filter by shift type (`'Day'`, `'Night'`).
+  * `status` (*Optional*): Filter by status (`'Active'`, `'On Call'`, `'On Leave'`).
 
 #### Response (`200 OK`)
 ```json
@@ -275,7 +278,10 @@ Retrieve a list of all active staff members registered at the branch.
         "department_id": "0fbfdbef-9873-4824-b1fd-6fb827d3ba57",
         "department_name": "Cardiology",
         "is_active": true,
-        "created_at": "2026-06-15T12:00:00.000Z"
+        "created_at": "2026-06-15T12:00:00.000Z",
+        "specialization_name": "Interventional Cardiology",
+        "shift_label": "Day (08:00 - 16:00)",
+        "current_status": "Active"
       }
     ],
     "total": 1
