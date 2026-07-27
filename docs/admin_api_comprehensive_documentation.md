@@ -2104,6 +2104,250 @@ Bypass surgical team warnings or conflicts during emergency situations.
 #### Response (`200 OK`)
 *Returns updated detailed session with `emergency_override` flagged as `true`.*
 
+---
+
+## 14. Security & RBAC (Role-Based Access Control) APIs
+
+### 14.1 GET List Grouped Permissions
+Fetch all available permissions grouped by their respective categories.
+
+* **Method**: `GET`
+* **URL**: `/admin/permissions`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "category": "Patient Management",
+      "category_key": "PATIENT_MANAGEMENT",
+      "permissions": [
+        {
+          "permission_id": "PAT-001",
+          "permission_key": "patients:create",
+          "display_name": "Create Patients",
+          "description": "Register new patients"
+        },
+        {
+          "permission_id": "PAT-002",
+          "permission_key": "patients:view",
+          "display_name": "View Patients",
+          "description": "View patient records"
+        }
+      ]
+    },
+    {
+      "category": "Billing",
+      "category_key": "BILLING",
+      "permissions": [
+        {
+          "permission_id": "BIL-001",
+          "permission_key": "billing:create",
+          "display_name": "Create Billing",
+          "description": "Generate bills"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### 14.2 GET List Roles
+Retrieve all roles (platform-seeded SYSTEM roles and hospital CUSTOM roles) with counts of active user assignments and permissions counts.
+
+* **Method**: `GET`
+* **URL**: `/admin/roles`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "role_id": "SYSTEM_ADMIN",
+      "role_name": "System Admin",
+      "role_type": "SYSTEM",
+      "description": "System administration permissions",
+      "status": "ACTIVE",
+      "user_count": 2,
+      "permission_count": 140,
+      "created_by": "",
+      "created_at": "2026-07-27 12:00:00+05:30",
+      "updated_at": "2026-07-27 12:00:00+05:30"
+    },
+    {
+      "role_id": "role_829fa8d8ab7d",
+      "role_name": "Billing Executive",
+      "role_type": "CUSTOM",
+      "description": "Responsible for billing operations",
+      "status": "ACTIVE",
+      "user_count": 0,
+      "permission_count": 4,
+      "created_by": "902d2bc4-f5ee-45df-98bd-674cd7bb0eef",
+      "created_at": "2026-07-27 15:45:00+05:30",
+      "updated_at": "2026-07-27 15:45:00+05:30"
+    }
+  ]
+}
+```
+
+---
+
+### 14.3 POST Create Custom Role
+Create a new custom hospital role, assigning normalized names and initial permissions.
+
+* **Method**: `POST`
+* **URL**: `/admin/roles`
+
+#### Request Body
+```json
+{
+  "role_name": "billing executive",
+  "description": "Responsible for billing operations",
+  "permission_ids": [
+    "PAT-001",
+    "PAT-002",
+    "BIL-001"
+  ]
+}
+```
+
+#### Response (`201 Created`)
+```json
+{
+  "success": true,
+  "code": 201,
+  "message": "Created successfully",
+  "data": {
+    "role_id": "role_829fa8d8ab7d",
+    "role_name": "Billing Executive",
+    "role_type": "CUSTOM",
+    "description": "Responsible for billing operations",
+    "status": "ACTIVE",
+    "user_count": 0,
+    "permission_count": 3,
+    "created_by": "902d2bc4-f5ee-45df-98bd-674cd7bb0eef",
+    "created_at": "2026-07-27 15:45:00+05:30",
+    "updated_at": "2026-07-27 15:45:00+05:30"
+  }
+}
+```
+
+---
+
+### 14.4 GET Role Details
+Get complete details of a single role including its assigned permissions grouped by module/category.
+
+* **Method**: `GET`
+* **URL**: `/admin/roles/{role_id}`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "role": {
+      "role_id": "role_829fa8d8ab7d",
+      "role_name": "Billing Executive",
+      "role_type": "CUSTOM",
+      "description": "Responsible for billing operations",
+      "status": "ACTIVE",
+      "user_count": 0,
+      "permission_count": 3,
+      "created_by": "902d2bc4-f5ee-45df-98bd-674cd7bb0eef",
+      "created_at": "2026-07-27 15:45:00+05:30",
+      "updated_at": "2026-07-27 15:45:00+05:30"
+    },
+    "permissions": [
+      {
+        "category": "Patient Management",
+        "category_key": "PATIENT_MANAGEMENT",
+        "permissions": [
+          {
+            "permission_id": "PAT-001",
+            "permission_key": "patients:create",
+            "display_name": "Create Patients",
+            "description": "Register new patients"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 14.5 GET Role Permissions (Copy Helper)
+Retrieve a flat array list of permission IDs assigned to a role, useful for copying/cloning permissions from an existing role.
+
+* **Method**: `GET`
+* **URL**: `/admin/roles/{role_id}/permissions`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    "PAT-001",
+    "PAT-002",
+    "BIL-001"
+  ]
+}
+```
+
+---
+
+### 14.6 PUT Update Custom Role
+Update role attributes and permission assignments for custom roles.
+
+* **Method**: `PUT`
+* **URL**: `/admin/roles/{role_id}`
+
+#### Request Body
+```json
+{
+  "role_name": "Billing Senior Executive",
+  "description": "Responsible for billing operations and supervisor actions",
+  "permission_ids": [
+    "PAT-001",
+    "PAT-002",
+    "BIL-001",
+    "BIL-002"
+  ]
+}
+```
+
+#### Response (`200 OK`)
+*Returns updated detailed role card.*
+
+---
+
+### 14.7 DELETE Role (Soft Delete)
+Soft-deletes a custom role, setting status to DELETED and updating deleted_at timestamp.
+
+* **Method**: `DELETE`
+* **URL**: `/admin/roles/{role_id}`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "message": "Role soft-deleted successfully"
+  }
+}
+```
+
+
 
 
 
