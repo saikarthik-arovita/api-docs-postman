@@ -1877,8 +1877,12 @@ Retrieve a list of booked patient appointments with filters.
 * **URL**: `/admin/scheduling/appointments`
 * **Query Parameters**:
   * `doctor_id` (optional, filter by doctor UUID)
-  * `date` (optional, filter by date YYYY-MM-DD)
+  * `date` (optional, filter by target date YYYY-MM-DD)
   * `status` (optional, filter by status e.g. SCHEDULED, COMPLETED, CANCELLED)
+  * `department_id` (optional, filter by department UUID)
+  * `appointment_type` or `type` (optional, filter by e.g. NEW, FOLLOW_UP)
+  * `start_date` (optional, filter by appointment date range start YYYY-MM-DD)
+  * `end_date` (optional, filter by appointment date range end YYYY-MM-DD)
 
 #### Response (`200 OK`)
 ```json
@@ -1890,8 +1894,12 @@ Retrieve a list of booked patient appointments with filters.
       "id": "586f1611-641a-4f97-bde3-e2a95d5c7b0a",
       "patient_id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
       "patient_name": "E2E Simulation Patient",
+      "patient_phone": "+919987721170",
+      "patient_email": "patient@mail.com",
       "doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
       "doctor_name": "Dr. Kiran Sharma",
+      "department_id": "222505d4-8680-40ba-9be4-bc9b50cca031",
+      "department_name": "Surgery / Operation Theatre",
       "appointment_time": "2026-08-05 09:00:00+05:30",
       "token_number": 3,
       "status": "SCHEDULED",
@@ -1943,6 +1951,159 @@ Reschedule, cancel, check-in, or complete an appointment booking.
   }
 }
 ```
+
+---
+
+## 13. OT (Operation Theatre) Scheduling APIs
+
+### 13.1 GET List OT Sessions
+Query Operation Theatre scheduled surgery slots, filters, room bookings, and statuses.
+
+* **Method**: `GET`
+* **URL**: `/admin/ot-scheduling/sessions`
+* **Query Parameters**:
+  * `date` (optional, filter by surgery date YYYY-MM-DD)
+  * `status` (optional, filter by session status: SCHEDULED, PRE_OP, IN_PROGRESS, COMPLETED, CANCELLED)
+  * `ot_room_id` (optional, filter by Operation Theatre ID)
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "id": "40b17c91-cf62-4214-a957-ea1bcbb2586a",
+      "ot_number": "OT-2026-0001",
+      "ot_room_id": "OT-2 (Cardiac)",
+      "scheduled_start": "2026-08-05T07:30:00+05:30",
+      "scheduled_end": "2026-08-05T11:00:00+05:30",
+      "patient_id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
+      "patient_name": "E2E Simulation Patient",
+      "status": "SCHEDULED",
+      "team": [
+        {
+          "user_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+          "name": "Dr. Kiran Sharma",
+          "role": "Lead Surgeon",
+          "status": "Available",
+          "conflict_message": null
+        }
+      ],
+      "checklist": {
+        "consent_form_signed": false,
+        "blood_reserve_complete": false,
+        "pre_op_diagnostics": false,
+        "anaesthesia_clearance": false,
+        "scrub_nurse_equipment": false,
+        "pac_clearance": "PENDING"
+      },
+      "cost_breakdown": {
+        "ot_room_charges": 50000.0,
+        "surgeon_fee": 120000.0,
+        "anaesthesia_fee": 45000.0,
+        "consumables_devices": 85000.0,
+        "basic_sterile_bundles": 0.0,
+        "subtotal": 300000.0
+      },
+      "approval_compliance": {
+        "insurance_pre_authorization": "PENDING",
+        "clinical_quality_approval": "PENDING",
+        "basic_sterile_bundle": "PENDING",
+        "pac_clearance_approval": "PENDING"
+      },
+      "warnings": [],
+      "emergency_override": false,
+      "override_reason": null,
+      "created_at": "2026-07-27T11:51:00.000000+05:30"
+    }
+  ]
+}
+```
+
+---
+
+### 13.2 POST Create OT Session
+Schedule a new surgical operation session slot, allocating resources and team members.
+
+* **Method**: `POST`
+* **URL**: `/admin/ot-scheduling/sessions`
+
+#### Request Body (`OTSessionCreateRequest`)
+```json
+{
+  "service_order_id": "8bb38f12-70ff-4c22-b5e1-da8bcfca29a0",
+  "admission_id": null,
+  "patient_id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
+  "surgeon_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+  "anaesthetist_id": "ffeee23d-9a29-454f-9f46-192f1aaab285",
+  "scrub_nurse_id": "e48fda57-af9a-4bb3-a80c-10395f0b5a8b",
+  "ot_room_id": "OT-2 (Cardiac)",
+  "scheduled_start": "2026-08-05T07:30:00+05:30",
+  "scheduled_end": "2026-08-05T11:00:00+05:30",
+  "pre_op_checklist": {
+    "consent_form_signed": false,
+    "blood_reserve_complete": false
+  }
+}
+```
+
+#### Response (`201 Created`)
+*Matches GET detailed response.*
+
+---
+
+### 13.3 GET OT Session Detail
+Retrieve clinical team parameters, checklists, and warning indicators for a single surgery.
+
+* **Method**: `GET`
+* **URL**: `/admin/ot-scheduling/sessions/{session_id}`
+
+#### Response (`200 OK`)
+*Matches GET detailed session structure with status code `200`.*
+
+---
+
+### 13.4 PATCH Update Pre-Op Checklist
+Sign off or toggle surgical safety checklists (consents, clearances, reserves).
+
+* **Method**: `PATCH`
+* **URL**: `/admin/ot-scheduling/sessions/{session_id}/checklist`
+
+#### Request Body
+```json
+{
+  "consent_form_signed": true,
+  "blood_reserve_complete": true,
+  "pre_op_diagnostics": true,
+  "anaesthesia_clearance": true,
+  "scrub_nurse_equipment": true,
+  "pac_clearance": "APPROVED"
+}
+```
+
+#### Response (`200 OK`)
+*Returns updated detailed session.*
+
+---
+
+### 13.5 POST Emergency Override
+Bypass surgical team warnings or conflicts during emergency situations.
+
+* **Method**: `POST`
+* **URL**: `/admin/ot-scheduling/sessions/{session_id}/override`
+
+#### Request Body
+```json
+{
+  "override_reason": "Acute cardiac failure, immediate intervention required.",
+  "override_doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7"
+}
+```
+
+#### Response (`200 OK`)
+*Returns updated detailed session with `emergency_override` flagged as `true`.*
+
 
 
 
