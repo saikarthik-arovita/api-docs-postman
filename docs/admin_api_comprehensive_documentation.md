@@ -1711,4 +1711,238 @@ Retrieve historical changes to this service's base fee tariff.
 }
 ```
 
+---
+
+## 12. Scheduling & Appointments APIs
+
+### 12.1 GET Scheduling Roster
+Retrieve the doctors' roster grid matrix representing shifts, clinical schedules, leaves, and OPD clinic room locations for a given date range.
+
+* **Method**: `GET`
+* **URL**: `/admin/scheduling/roster`
+* **Query Parameters**:
+  * `start_date` (optional, default: Monday of current week YYYY-MM-DD)
+  * `end_date` (optional, default: Sunday of current week YYYY-MM-DD)
+  * `department_id` (optional, filter by department UUID)
+  * `search` (optional, search by clinician name or employee code)
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+      "doctor_name": "Dr. Kiran Sharma",
+      "specialization": "Surgery Specialist",
+      "department": "Surgery / Operation Theatre",
+      "avatar_url": null,
+      "shifts": [
+        {
+          "date": "2026-08-04",
+          "shift_label": "Leave",
+          "start_time": null,
+          "end_time": null,
+          "room_info": null,
+          "status": "Annual Doctor Leave"
+        },
+        {
+          "date": "2026-08-05",
+          "shift_label": "Full Day",
+          "start_time": "09:00:00",
+          "end_time": "18:00:00",
+          "room_info": "Room 304, OPD Clinic",
+          "status": "Confirmed Shift"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### 12.2 POST Create Availability Override
+Configure a doctor's schedule override (such as booking leaves, blocks, or adding extra shifts) for a specific date.
+
+* **Method**: `POST`
+* **URL**: `/admin/scheduling/availability-overrides`
+
+#### Request Body (`AvailabilityOverrideCreateRequest`)
+```json
+{
+  "doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+  "override_date": "2026-08-04",
+  "override_type": "BLOCK",
+  "reason": "Annual Doctor Leave"
+}
+```
+
+#### Response (`201 Created`)
+```json
+{
+  "success": true,
+  "code": 201,
+  "message": "Created successfully",
+  "data": {
+    "id": "7512a1af-cec8-4e7f-ae77-bca0e712a01a",
+    "doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+    "override_date": "2026-08-04",
+    "override_type": "BLOCK",
+    "start_time": null,
+    "end_time": null,
+    "status": null,
+    "reason": "Annual Doctor Leave"
+  }
+}
+```
+
+---
+
+### 12.3 GET Doctor Free Slots
+Calculate and retrieve all open/available slot intervals (e.g. 15-minute slot times) for a doctor on a specific date, factoring in templates, overrides, and existing appointments.
+
+* **Method**: `GET`
+* **URL**: `/admin/scheduling/doctors/{doctor_id}/free-slots`
+* **Query Parameters**:
+  * `date` (required, target date YYYY-MM-DD)
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    "09:00",
+    "09:15",
+    "09:30",
+    "09:45"
+  ]
+}
+```
+
+---
+
+### 12.4 POST Book Appointment
+Book a consultation session slot for a patient with a designated doctor.
+
+* **Method**: `POST`
+* **URL**: `/admin/scheduling/appointments`
+
+#### Request Body (`AppointmentCreateRequest`)
+```json
+{
+  "patient_id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
+  "doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+  "appointment_time": "2026-08-05T09:00:00+05:30",
+  "appointment_type": "NEW",
+  "department_id": "222505d4-8680-40ba-9be4-bc9b50cca031",
+  "is_emergency": false,
+  "priority": 2,
+  "notes": "Routine physical checkup"
+}
+```
+
+#### Response (`201 Created`)
+```json
+{
+  "success": true,
+  "code": 201,
+  "message": "Created successfully",
+  "data": {
+    "id": "586f1611-641a-4f97-bde3-e2a95d5c7b0a",
+    "patient_id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
+    "patient_name": "E2E Simulation Patient",
+    "doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+    "doctor_name": "Dr. Kiran Sharma",
+    "appointment_time": "2026-08-05 09:00:00+05:30",
+    "token_number": 3,
+    "status": "SCHEDULED",
+    "appointment_type": "NEW",
+    "is_emergency": false,
+    "priority": 2,
+    "notes": "Routine physical checkup",
+    "created_at": "2026-07-27 11:47:40.677200+05:30"
+  }
+}
+```
+
+---
+
+### 12.5 GET List Appointments
+Retrieve a list of booked patient appointments with filters.
+
+* **Method**: `GET`
+* **URL**: `/admin/scheduling/appointments`
+* **Query Parameters**:
+  * `doctor_id` (optional, filter by doctor UUID)
+  * `date` (optional, filter by date YYYY-MM-DD)
+  * `status` (optional, filter by status e.g. SCHEDULED, COMPLETED, CANCELLED)
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "id": "586f1611-641a-4f97-bde3-e2a95d5c7b0a",
+      "patient_id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
+      "patient_name": "E2E Simulation Patient",
+      "doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+      "doctor_name": "Dr. Kiran Sharma",
+      "appointment_time": "2026-08-05 09:00:00+05:30",
+      "token_number": 3,
+      "status": "SCHEDULED",
+      "appointment_type": "NEW",
+      "is_emergency": false,
+      "priority": 2,
+      "notes": "Routine physical checkup",
+      "created_at": "2026-07-27 11:47:40.677200+05:30"
+    }
+  ]
+}
+```
+
+---
+
+### 12.6 PATCH Update Appointment Status
+Reschedule, cancel, check-in, or complete an appointment booking.
+
+* **Method**: `PATCH`
+* **URL**: `/admin/scheduling/appointments/{appointment_id}`
+
+#### Request Body
+```json
+{
+  "status": "CANCELLED",
+  "notes": "Patient rescheduled to next week"
+}
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "id": "586f1611-641a-4f97-bde3-e2a95d5c7b0a",
+    "patient_id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
+    "patient_name": "E2E Simulation Patient",
+    "doctor_id": "0d9fcf29-112a-43d2-a5cb-830f941596a7",
+    "doctor_name": "Dr. Kiran Sharma",
+    "appointment_time": "2026-08-05 09:00:00+05:30",
+    "token_number": 3,
+    "status": "CANCELLED",
+    "appointment_type": "NEW",
+    "is_emergency": false,
+    "priority": 2,
+    "notes": "Patient rescheduled to next week",
+    "created_at": "2026-07-27 11:47:40.677200+05:30"
+  }
+}
+```
+
+
 
