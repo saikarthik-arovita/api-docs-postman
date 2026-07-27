@@ -1420,3 +1420,295 @@ Register a new lab sample test order.
 }
 ```
 
+---
+
+## 11. Service Catalog Management APIs
+
+### 11.1 GET Service Catalogue Summary
+Retrieve hospital-wide metrics for the Service Catalog.
+
+* **Method**: `GET`
+* **URL**: `/admin/service-catalogue/summary`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "total_catalogue_items": 248,
+    "active_services": 215,
+    "speciality_packages": 142,
+    "diagnostic_tests": 108,
+    "total_monthly_revenue": "125000.00",
+    "services_by_category": [
+      {
+        "category": "PREVENTIVE",
+        "percentage": 12.0,
+        "count": 30
+      }
+    ],
+    "top_services_by_volume": [
+      {
+        "service": "Cardiology Consultation",
+        "count": 420
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 11.2 GET List Service Catalogue Records
+Retrieve a paginated, filterable list of clinical services.
+
+* **Method**: `GET`
+* **URL**: `/admin/service-catalogue/records`
+* **Query Parameters**:
+  * `category` (*Optional*): Filter by service category (`CLINICAL`, `DIAGNOSTIC`, `SURGICAL`, `PREVENTIVE`, `EMERGENCY`).
+  * `department_id` (*Optional*): Filter by department UUID.
+  * `status` (*Optional*): Filter by status (`ACTIVE`, `INACTIVE`, `SEASONAL`, `SUSPENDED`).
+  * `search` (*Optional*): Search query matching service name or code.
+  * `page` (*Optional*, Default: `1`): Page number.
+  * `page_size` (*Optional*, Default: `10`): Items limit.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "0b4c69fb-63d4-4f16-aa28-96f841d54485",
+        "service_name": "General Consultation",
+        "category": "PREVENTIVE",
+        "department_id": "46d19155-09a1-462e-b256-ce2a5741b091",
+        "department_name": "Surgery",
+        "service_code": "SERV-20260727",
+        "base_fee": "650.00",
+        "doctor_share_pct": "60.00",
+        "hospital_share_pct": "40.00",
+        "tax_rate_pct": "5.00",
+        "status": "Active",
+        "is_active": true,
+        "availability_status": "ACTIVE",
+        "description": "Standard general medical consultation",
+        "emergency_surcharge": "0.00",
+        "after_hours_surcharge": "0.00",
+        "avg_duration_minutes": 15,
+        "max_daily_capacity": 40,
+        "is_insurance_covered": true,
+        "tpa_approval_required": false
+      }
+    ],
+    "meta": {
+      "total": 1,
+      "page": 1,
+      "page_size": 10,
+      "total_pages": 1
+    }
+  }
+}
+```
+
+---
+
+### 11.3 POST Create Service Catalogue Record
+Create a new clinical service catalog entry.
+
+* **Method**: `POST`
+* **URL**: `/admin/service-catalogue/records`
+* **Request Body**:
+```json
+{
+  "service_name": "QA General Consultation",
+  "category": "PREVENTIVE",
+  "department_id": "46d19155-09a1-462e-b256-ce2a5741b091",
+  "base_fee": 650.00,
+  "doctor_share_pct": 60.00,
+  "hospital_share_pct": 40.00,
+  "tax_rate_pct": 5.00,
+  "availability_status": "ACTIVE",
+  "description": "Standard QA general medical consultation"
+}
+```
+
+#### Response (`201 Created`)
+```json
+{
+  "success": true,
+  "code": 201,
+  "data": {
+    "id": "0b4c69fb-63d4-4f16-aa28-96f841d54485",
+    "service_name": "QA General Consultation",
+    "service_code": "SERV-20260727",
+    "base_fee": "650.00",
+    "doctor_share_pct": "60.00",
+    "hospital_share_pct": "40.00",
+    "tax_rate_pct": "5.00",
+    "availability_status": "ACTIVE"
+  }
+}
+```
+
+---
+
+### 11.4 GET Single Service Catalogue Record
+Retrieve complete configuration details of a single service by its ID.
+
+* **Method**: `GET`
+* **URL**: `/admin/service-catalogue/records/{service_id}`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "id": "0b4c69fb-63d4-4f16-aa28-96f841d54485",
+    "service_name": "QA General Consultation",
+    "category": "PREVENTIVE",
+    "department_id": "46d19155-09a1-462e-b256-ce2a5741b091",
+    "department_name": "Surgery",
+    "service_code": "SERV-20260727",
+    "base_fee": "650.00",
+    "doctor_share_pct": "60.00",
+    "hospital_share_pct": "40.00",
+    "tax_rate_pct": "5.00",
+    "status": "Active",
+    "is_active": true,
+    "availability_status": "ACTIVE",
+    "description": "Standard QA general medical consultation",
+    "emergency_surcharge": "0.00",
+    "after_hours_surcharge": "0.00",
+    "avg_duration_minutes": 15,
+    "max_daily_capacity": 40,
+    "is_insurance_covered": true,
+    "tpa_approval_required": false
+  }
+}
+```
+
+---
+
+### 11.5 PATCH Update Service Catalogue Record
+Partially update service details. Modifying the `base_fee` will trigger pricing history log insertion.
+
+* **Method**: `PATCH`
+* **URL**: `/admin/service-catalogue/records/{service_id}`
+* **Request Body**:
+```json
+{
+  "base_fee": 700.00,
+  "change_reason": "Adjust fee for annual pricing review"
+}
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "id": "0b4c69fb-63d4-4f16-aa28-96f841d54485",
+    "service_name": "QA General Consultation",
+    "base_fee": "700.00",
+    "updated_at": "2026-07-27T11:21:36Z"
+  }
+}
+```
+
+---
+
+### 11.6 POST Configure Service Pricing Tiers
+Configure ward-specific or TPA-specific pricing overrides for a service.
+
+* **Method**: `POST`
+* **URL**: `/admin/service-catalogue/records/{service_id}/pricing-tiers`
+* **Request Body**:
+```json
+{
+  "tiers": [
+    {
+      "room_category": "ICU",
+      "custom_fee": 1200.00,
+      "tpa_id": null,
+      "is_active": true
+    }
+  ]
+}
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "success": true,
+    "message": "Pricing tiers applied successfully"
+  }
+}
+```
+
+---
+
+### 11.7 GET Service Audit Trail
+Fetch audit history tracking modifications to this service catalog record.
+
+* **Method**: `GET`
+* **URL**: `/admin/service-catalogue/records/{service_id}/audit-trail`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "id": "af9bed60-a8ba-4ed9-9787-c6bf2116262a",
+      "service_id": "0b4c69fb-63d4-4f16-aa28-96f841d54485",
+      "action_type": "UPDATED",
+      "old_data": {
+        "base_fee": "650.00"
+      },
+      "new_data": {
+        "base_fee": "700.00"
+      },
+      "performed_by": "902d2bc4-f5ee-45df-98bd-674cd7bb0eef",
+      "timestamp": "2026-07-27T11:21:36.727Z"
+    }
+  ]
+}
+```
+
+---
+
+### 11.8 GET Service Pricing History
+Retrieve historical changes to this service's base fee tariff.
+
+* **Method**: `GET`
+* **URL**: `/admin/service-catalogue/records/{service_id}/pricing-history`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "id": "20f39a9e-82ac-4e2c-b6fc-dabd261d0b75",
+      "service_id": "0b4c69fb-63d4-4f16-aa28-96f841d54485",
+      "old_base_fee": "650.00",
+      "new_base_fee": "700.00",
+      "change_reason": "Adjust fee for annual pricing review",
+      "changed_by": "902d2bc4-f5ee-45df-98bd-674cd7bb0eef",
+      "changed_at": "2026-07-27T11:21:36.727Z"
+    }
+  ]
+}
+```
+
+
