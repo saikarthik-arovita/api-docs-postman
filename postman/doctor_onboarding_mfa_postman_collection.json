@@ -1,0 +1,402 @@
+{
+  "info": {
+    "name": "HMS Doctor Onboarding & MFA Collection",
+    "description": "Complete Doctor Onboarding Collection with SYS-ADMIN01 MFA Login & S3 Presigned Document Upload.\n\nFlow:\n 1. Admin Login (SYS-ADMIN01) -> Returns MFA session\n 2. Admin Verify OTP -> Returns Admin access_token\n 3. Admin Create Doctor -> Returns doctor_user_id\n 4. Get Presigned S3 Upload URL -> Returns upload_url & file_key\n 5. Upload File to S3 Bucket (PUT upload_url)\n 6. Save Document Record in HMS DB (POST /documents with file_key)\n 7. Verify Doctor Document (POST /documents/{id}/verify)\n 8. Activate Doctor (POST /staff/{id}/activate)\n\nBase URL: {{auth_base_url}}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "hms-doctor-onboarding-mfa-2026"
+  },
+  "variable": [
+    {
+      "key": "auth_base_url",
+      "value": "https://your-api-gateway-url.amazonaws.com/prod",
+      "type": "string"
+    },
+    {
+      "key": "admin_username",
+      "value": "SYS-ADMIN01",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "ArovitaAdmin2026!",
+      "type": "string"
+    },
+    {
+      "key": "admin_otp",
+      "value": "123456",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "session_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doctor_user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "s3_upload_url",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "s3_file_key",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doc_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Admin Login (SYS-ADMIN01)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.success && jsonData.data && jsonData.data.session) {",
+              "        pm.collectionVariables.set('session_id', jsonData.data.session);",
+              "        console.log('MFA Session captured: ' + jsonData.data.session);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\",\n  \"device_info\": \"Postman Admin Client\"\n}"
+        },
+        "url": {
+          "raw": "{{auth_base_url}}/auth/login",
+          "host": [
+            "{{auth_base_url}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "02 - Admin MFA Verification",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.success && jsonData.data && jsonData.data.tokens) {",
+              "        pm.collectionVariables.set('access_token', jsonData.data.tokens.access_token);",
+              "        console.log('Admin access_token saved successfully!');",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"session\": \"{{session_id}}\",\n  \"otp\": \"{{admin_otp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{auth_base_url}}/auth/verify-otp",
+          "host": [
+            "{{auth_base_url}}"
+          ],
+          "path": [
+            "auth",
+            "verify-otp"
+          ]
+        }
+      }
+    },
+    {
+      "name": "03 - Admin Create Doctor Profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    var d = pm.response.json().data;",
+              "    if (d && d.user_id) {",
+              "        pm.collectionVariables.set('doctor_user_id', d.user_id);",
+              "        console.log('Doctor created with user_id: ' + d.user_id);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Dr. Ananya Sharma\",\n  \"email\": \"dr.ananya@arovita.com\",\n  \"phone\": \"9876543210\",\n  \"role\": \"DOCTOR\",\n  \"department_id\": null,\n  \"registration_number\": \"MCI/2026/88776\",\n  \"qualification\": \"MBBS, MD Cardiology\",\n  \"experience_years\": 10,\n  \"joining_date\": \"2026-08-01\",\n  \"gender\": \"FEMALE\",\n  \"date_of_birth\": \"1985-05-15\"\n}"
+        },
+        "url": {
+          "raw": "{{auth_base_url}}/auth/staff",
+          "host": [
+            "{{auth_base_url}}"
+          ],
+          "path": [
+            "auth",
+            "staff"
+          ]
+        }
+      }
+    },
+    {
+      "name": "04 - Get Presigned S3 Upload URL",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var d = pm.response.json().data;",
+              "    if (d && d.upload_url) {",
+              "        pm.collectionVariables.set('s3_upload_url', d.upload_url);",
+              "        pm.collectionVariables.set('s3_file_key', d.file_key);",
+              "        console.log('Presigned Upload URL and File Key saved successfully!');",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "url": {
+          "raw": "{{auth_base_url}}/hrms/staff/{{doctor_user_id}}/documents/presigned-upload?file_name=medical_license.pdf&file_type=application/pdf",
+          "host": [
+            "{{auth_base_url}}"
+          ],
+          "path": [
+            "hrms",
+            "staff",
+            "{{doctor_user_id}}",
+            "documents",
+            "presigned-upload"
+          ],
+          "query": [
+            {
+              "key": "file_name",
+              "value": "medical_license.pdf"
+            },
+            {
+              "key": "file_type",
+              "value": "application/pdf"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "05 - Upload File to S3 Bucket",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/pdf"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": ""
+          }
+        },
+        "url": {
+          "raw": "{{s3_upload_url}}",
+          "host": [
+            "{{s3_upload_url}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "06 - Save Document Record in HMS DB",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    var d = pm.response.json().data;",
+              "    if (d && d.id) {",
+              "        pm.collectionVariables.set('doc_id', d.id);",
+              "        console.log('doc_id saved: ' + d.id);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"document_type\": \"MEDICAL_LICENSE\",\n  \"document_name\": \"Medical Council License Certificate\",\n  \"document_id_number\": \"MCI/2026/88776\",\n  \"expiry_date\": \"2030-12-31\",\n  \"file_key\": \"{{s3_file_key}}\"\n}"
+        },
+        "url": {
+          "raw": "{{auth_base_url}}/hrms/staff/{{doctor_user_id}}/documents",
+          "host": [
+            "{{auth_base_url}}"
+          ],
+          "path": [
+            "hrms",
+            "staff",
+            "{{doctor_user_id}}",
+            "documents"
+          ]
+        }
+      }
+    },
+    {
+      "name": "07 - Verify Doctor Document",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "url": {
+          "raw": "{{auth_base_url}}/hrms/documents/{{doc_id}}/verify",
+          "host": [
+            "{{auth_base_url}}"
+          ],
+          "path": [
+            "hrms",
+            "documents",
+            "{{doc_id}}",
+            "verify"
+          ]
+        }
+      }
+    },
+    {
+      "name": "08 - Activate Doctor Profile",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "url": {
+          "raw": "{{auth_base_url}}/hrms/staff/{{doctor_user_id}}/activate",
+          "host": [
+            "{{auth_base_url}}"
+          ],
+          "path": [
+            "hrms",
+            "staff",
+            "{{doctor_user_id}}",
+            "activate"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1024,6 +1024,53 @@
           }
         },
         {
+          "name": "Get Presigned S3 Upload URL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var d = pm.response.json().data;",
+                  "    if (d && d.upload_url) {",
+                  "        pm.collectionVariables.set('s3_upload_url', d.upload_url);",
+                  "        pm.collectionVariables.set('s3_file_key', d.file_key);",
+                  "        console.log('s3_upload_url and s3_file_key captured successfully');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/documents/presigned-upload?file_name=pharmacy_license.pdf&file_type=application/pdf",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "hrms",
+                "staff",
+                "{{pharmacy_manager_user_id}}",
+                "documents",
+                "presigned-upload"
+              ],
+              "query": [
+                {
+                  "key": "file_name",
+                  "value": "pharmacy_license.pdf"
+                },
+                {
+                  "key": "file_type",
+                  "value": "application/pdf"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Upload Pharmacy License",
           "event": [
             {
@@ -1052,7 +1099,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"document_type\": \"PHARMACY_LICENSE\",\n  \"document_name\": \"Pharmacist Registration Certificate\",\n  \"document_id_number\": \"PHARM/2026/00789\",\n  \"expiry_date\": \"2028-06-30\"\n}"
+              "raw": "{\n  \"document_type\": \"PHARMACY_LICENSE\",\n  \"document_name\": \"Pharmacist Registration Certificate\",\n  \"document_id_number\": \"PHARM/2026/00789\",\n  \"expiry_date\": \"2028-06-30\",\n  \"file_key\": \"{{s3_file_key}}\"\n}"
             },
             "url": {
               "raw": "{{auth_base_url}}/hrms/staff/{{pharmacy_manager_user_id}}/documents",
