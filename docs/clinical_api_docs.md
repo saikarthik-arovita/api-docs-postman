@@ -116,7 +116,64 @@ Retrieves all forms recorded for a given consultation.
     ]
   }
 }
-```
+---
+
+### 2.4 Get Form Metadata & Specialty Schemas
+Fetches the dynamic form JSON Schemas and field option enums for all specialty forms (`CURRENT_SYMPTOMS`, `EXAMINATION_FINDINGS`, `ASSESSMENT_PLAN`, `SURGICAL_LOGISTICS`). Frontend dynamic form renderers use this endpoint to inspect valid fields, field titles, input types, `$defs`, and allowable enum choices per specialty.
+
+* **Endpoint:** `GET /clinical/forms/metadata`
+* **Required Permission:** `clinical:consultation:view`
+* **Query Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `specialty` | String | Optional | Filter by specialty key (e.g. `GYNECOLOGY`, `DENTAL`, `PEDIATRICS`, `PROCTOLOGY`, `GENERAL_MEDICINE`, `CARDIOLOGY`, `NEPHROLOGY`, `NEUROLOGY`, `ORTHOPEDICS`, `ENT`, `DERMATOLOGY`, `ANAESTHESIA`, `PATHOLOGY`, `OPHTHALMOLOGY`, `DEFAULT`). |
+  | `department_id` | UUID | Optional | Department UUID to resolve the associated specialty automatically. |
+
+* **Example Request:**
+  `GET /clinical/forms/metadata?specialty=GYNECOLOGY`
+
+* **Response Structure:**
+  `data` returns a nested map: `form_type -> specialty -> JSON Schema`:
+  ```json
+  {
+    "success": true,
+    "code": 200,
+    "data": {
+      "CURRENT_SYMPTOMS": {
+        "GYNECOLOGY": {
+          "$defs": {
+            "ObstetricHistoryGTPAL": {
+              "type": "object",
+              "properties": {
+                "g": { "type": ["integer", "null"], "title": "G" },
+                "p": { "type": ["integer", "null"], "title": "P" },
+                "t": { "type": ["integer", "null"], "title": "T" },
+                "a": { "type": ["integer", "null"], "title": "A" },
+                "l": { "type": ["integer", "null"], "title": "L" }
+              }
+            }
+          },
+          "properties": {
+            "primary_complaint": { "type": ["array", "null"], "items": { "type": "string" }, "title": "Primary Complaint" },
+            "duration_of_complaint": { "type": ["integer", "null"], "title": "Duration Of Complaint" },
+            "duration_unit": { "type": ["string", "null"], "enum": ["Days", "Weeks", "Months", "Years"], "title": "Duration Unit" },
+            "mode_of_onset": { "type": ["string", "null"], "enum": ["Acute / Sudden", "Gradual / Insidious", "Cyclical / Recurrent"], "title": "Mode Of Onset" },
+            "course_of_symptoms": { "type": ["string", "null"], "enum": ["Worsening", "Improving", "Static", "Fluctuating"], "title": "Course Of Symptoms" },
+            "menstrual_cycle_regularity": { "type": ["string", "null"], "enum": ["Regular", "Irregular", "Absent (Amenorrhoea)"], "title": "Menstrual Cycle Regularity" },
+            "menstrual_flow_amount": { "type": ["string", "null"], "enum": ["Scanty (Spotting only)", "Normal", "Heavy (Passing Clots / Flooding)", "Severe (Requires double protection)"], "title": "Menstrual Flow Amount" },
+            "dysmenorrhoea_severity": { "type": ["string", "null"], "enum": ["Absent", "Mild (Manageable without medication)", "Moderate (Requires oral analgesics)", "Severe (Incapacitating, limits daily activities)"], "title": "Dysmenorrhoea Severity" },
+            "mode_of_previous_deliveries": { "type": ["array", "null"], "items": { "enum": ["Normal Vaginal Delivery (NVD)", "Assisted Vaginal Delivery (Forceps / Ventouse)", "Lower Segment Caesarean Section (LSCS)"], "type": "string" } },
+            "lactation_status": { "type": ["string", "null"], "enum": ["Currently Lactating", "Non-Lactating"] },
+            "contraceptive_history": { "type": ["string", "null"], "enum": ["None", "Barrier Methods (Condoms)", "Oral Contraceptive Pills (OCPs)", "Intrauterine Contraceptive Device (IUCD - Cu-T)", "Injectable Contraceptives (DMPA)", "Permanent Sterilization (Tubectomy / Laparoscopic Ligation)"] },
+            "sexual_activity_status": { "type": ["string", "null"], "enum": ["Sexually Active", "Not Sexually Active", "Not Disclosed"] }
+          },
+          "title": "GynecologyCurrentSymptomsFormData",
+          "type": "object"
+        }
+      }
+    }
+  }
+  ```
 
 ---
 
