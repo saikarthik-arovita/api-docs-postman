@@ -1,8 +1,8 @@
-# Admin Inventory & Procurement API Specification (Frontend Integration Guide)
+# Master Admin Inventory & Procurement API Documentation (Frontend Integration Guide)
 
-This document is the **master integration reference guide for Frontend (FE) Developers** implementing the **Inventory & Supply Chain Dashboard** in the HMS application. 
+This document is the **master integration reference guide for Frontend (FE) Developers** implementing the **Inventory & Supply Chain Dashboard** in the HMS application.
 
-It covers all 4 primary sub-tabs (**Inventory Overview**, **Procurement**, **Vendor Management**, and **Asset Management**), as well as side drawers, modals, filter panels, document previews, and action workflows.
+It covers all 4 primary sub-tabs (**Inventory Overview**, **Procurement**, **Vendor Management**, and **Asset Management**), as well as header modal actions (`+ Create Item`, `+ Add Stock`, `+ Transfer Stock`, `+ Create PO`, `+ Create Vendor`), side drawers, modals, filter panels, document previews, and action workflows.
 
 ---
 
@@ -22,19 +22,117 @@ It covers all 4 primary sub-tabs (**Inventory Overview**, **Procurement**, **Ven
 
 ---
 
-## 2. Screen 1: Inventory Overview Tab
+## 2. Header Modal Actions (Top Bar Buttons)
 
-### 2.1 Overview KPI Summary Cards (`GET /admin/inventory/warehouse/overview`)
-Populates the 4 top summary cards on the Inventory Overview screen.
+### 2.1 `+ Add Item` / `+ Create Item` (`POST /admin/inventory/medical`)
+Creates a new medical or non-medical inventory master record.
 
+* **Method**: `POST`
+* **URL Path**: `/admin/inventory/medical`
+* **Handler**: `inventory_svc.create_medical_inventory()`
+
+#### Request Body Schema
+| Field | Type | Mandatory | Constraints | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `item_name` | `string` | Mandatory | Max 200 chars | Item commercial name (e.g. `Surgical Gloves`). |
+| `sku_code` | `string` | Mandatory | Max 60 chars | SKU Code (e.g. `SKU-012456`). |
+| `category` | `string` | Mandatory | Max 60 chars | Category (e.g. `OT Consumables`, `Pharmacy`). |
+| `medicine_type` | `string` | Optional | Max 60 chars | `TABLET`, `CAPSULE`, `INJECTION`, `CONSUMABLE`. |
+| `unit` | `string` | Mandatory | Max 20 chars | Unit of measure (`Units`, `Boxes`, `Pairs`, `Pcs`). |
+| `reorder_level` | `integer` | Mandatory | Min: 0 | Safety reorder threshold (e.g. `500`). |
+| `opening_balance` | `integer` | Optional | Min: 0 | Initial stock balance. |
+| `quantity_received` | `integer` | Optional | Min: 0 | Quantity received in initial batch. |
+| `batch_number` | `string` | Optional | Max 60 chars | Batch number (e.g. `BG-2026-12`). |
+| `expiry_date` | `string` | Optional | YYYY-MM-DD | Batch expiry date (e.g. `2028-01-31`). |
+
+```json
+{
+  "item_name": "Surgical Gloves",
+  "sku_code": "SKU-012456",
+  "category": "OT Consumables",
+  "medicine_type": "CONSUMABLE",
+  "unit": "Units",
+  "reorder_level": 500,
+  "opening_balance": 1000,
+  "quantity_received": 460,
+  "batch_number": "BG-2026-12",
+  "expiry_date": "2028-01-31"
+}
+```
+
+#### Response Body (`201 Created`)
+```json
+{
+  "success": true,
+  "code": 201,
+  "data": {
+    "id": "item-99281-a82",
+    "item_name": "Surgical Gloves",
+    "sku_code": "SKU-012456",
+    "category": "OT Consumables",
+    "unit": "Units",
+    "current_stock": 1460,
+    "reorder_level": 500,
+    "status_level": "HEALTHY",
+    "is_active": true,
+    "created_at": "2026-04-20T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 2.2 `+ Transfer Stock` / Department Requisition (`POST /admin/inventory/transfers`)
+Transfers stock between warehouses or departments (enforces FEFO logic).
+
+* **Method**: `POST`
+* **URL Path**: `/admin/inventory/transfers`
+* **Handler**: `inventory_svc.create_transfer()`
+
+#### Request Body Schema
+| Field | Type | Mandatory | Description |
+| :--- | :--- | :--- | :--- |
+| `item_id` | `string (UUID)` | Mandatory | Target item UUID. |
+| `batch_id` | `string (UUID)` | Optional | Specific batch UUID. |
+| `source_department_id` | `string (UUID)` | Mandatory | Source department/warehouse UUID. |
+| `destination_department_id` | `string (UUID)` | Mandatory | Destination department UUID. |
+| `quantity` | `integer` | Mandatory | Quantity to transfer (Min: 1). |
+| `transfer_reason` | `string` | Mandatory | Justification note. |
+
+```json
+{
+  "item_id": "a901f41b-4fef-48a1-b84e-8664fd37a912",
+  "batch_id": "b101-aa-bb",
+  "source_department_id": "0fbfdbef-9873-4824-b1fd-6fb827d3ba57",
+  "destination_department_id": "f1cb936c-1d4f-47da-8de6-a48ba04a4a81",
+  "quantity": 120,
+  "transfer_reason": "Emergency OT Ward Stock Replenishment"
+}
+```
+
+#### Response Body (`201 Created`)
+```json
+{
+  "success": true,
+  "code": 201,
+  "data": {
+    "id": "t1-aa30b4b7-0da8-4b9d-8643-4fdffefabe9a",
+    "item_id": "a901f41b-4fef-48a1-b84e-8664fd37a912",
+    "quantity": 120,
+    "status": "COMPLETED",
+    "created_at": "2026-04-20T10:30:00.000Z"
+  }
+}
+```
+
+---
+
+## 3. Screen 1: Inventory Overview Tab
+
+### 3.1 Overview KPI Summary Cards (`GET /admin/inventory/warehouse/overview`)
 * **Method**: `GET`
 * **URL Path**: `/admin/inventory/warehouse/overview`
 * **Handler**: `inventory_svc.get_warehouse_overview()`
-
-#### Query Parameters
-| Parameter | Type | Required | Default | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `as_of_date` | `string (YYYY-MM-DD)` | Optional | Today | Snapshot cutoff date for metrics calculation. |
 
 #### Response Body (`200 OK`)
 ```json
@@ -47,14 +145,12 @@ Populates the 4 top summary cards on the Inventory Overview screen.
       "currency": "INR",
       "formatted": "₹24,86,450",
       "percentage_change": 12.5,
-      "comparison_period": "vs last month",
       "trend": "UP"
     },
     "total_stock_items": {
       "count": 98340,
       "formatted": "98,340",
       "percentage_change": 3.2,
-      "comparison_period": "vs last month",
       "trend": "UP"
     },
     "low_stock_items": {
@@ -75,27 +171,21 @@ Populates the 4 top summary cards on the Inventory Overview screen.
 
 ---
 
-### 2.2 Warehouse Inventory Table & Filter Drawer (`GET /admin/inventory`)
-Fetches paginated stock records matching search terms, department filters, warehouse locations, movement statuses, and batch expiry date ranges.
-
+### 3.2 Warehouse Inventory Table & Filter Drawer (`GET /admin/inventory`)
 * **Method**: `GET`
 * **URL Path**: `/admin/inventory`
 * **Handler**: `inventory_svc.list_inventory()`
 
-#### Query Parameters (All Optional)
-| Parameter | Type | Allowed Values | Description |
-| :--- | :--- | :--- | :--- |
-| `search` | `string` | Free text | Matches Item Name, SKU Code (e.g. `012456`), or Order ID (`OD-102456`). |
-| `item_type` | `string` | `MEDICAL`, `NON_MEDICAL` | Filter by medical vs non-medical item classification. |
-| `category` | `string` | `OT Consumables`, `Pharmacy`, `Laboratory`, `House Keeping`, `Radiology` | Item category filter. |
-| `department_id` | `string (UUID)` | UUID | Filter by assigned department location. |
-| `warehouse_location` | `string` | e.g. `Central Storage` | Storage location string filter. |
-| `movement_status` | `string` | `STABLE`, `CRITICAL`, `FAST_MOVING`, `SLOW_MOVING` | Badge status filter. Can pass multiple comma-separated. |
-| `status_level` | `string` | `HEALTHY`, `LOW_STOCK`, `CRITICAL` | Stock health status. |
-| `expiry_date_from` | `string (YYYY-MM-DD)` | Date | Batch expiry start date range. |
-| `expiry_date_to` | `string (YYYY-MM-DD)` | Date | Batch expiry end date range. |
-| `page` | `integer` | Minimum: `1` (Default: `1`) | Pagination page number. |
-| `page_size` | `integer` | 1–100 (Default: `10`) | Items limit per page. |
+#### Query Parameters
+| Parameter | Type | Required | Allowed Enums / Values | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `search` | `string` | Optional | Free text | Matches Item Name, SKU Code (`012456`), or Order ID (`OD-102456`). |
+| `item_type` | `string` | Optional | `MEDICAL`, `NON_MEDICAL` | Classification filter. |
+| `category` | `string` | Optional | `OT Consumables`, `Pharmacy`, `Laboratory`, `House Keeping`, `Radiology` | Category filter. |
+| `movement_status` | `string` | Optional | `STABLE`, `CRITICAL`, `FAST_MOVING`, `SLOW_MOVING` | Movement status filter. |
+| `status_level` | `string` | Optional | `HEALTHY`, `LOW_STOCK`, `CRITICAL` | Stock health status level. |
+| `page` | `integer` | Optional | Min: `1` (Default: `1`) | Pagination page number. |
+| `page_size` | `integer` | Optional | 1–100 (Default: `10`) | Page size limit. |
 
 #### Response Body (`200 OK`)
 ```json
@@ -110,14 +200,8 @@ Fetches paginated stock records matching search terms, department filters, wareh
         "sku_code": "SKU: 012456",
         "item_name": "Surgical Gloves",
         "category": "OT Consumables",
-        "department": {
-          "id": "dept-01",
-          "name": "Pharmacy"
-        },
-        "warehouse_location": {
-          "id": "loc-c1",
-          "name": "Central Storage"
-        },
+        "department": { "id": "dept-01", "name": "Pharmacy" },
+        "warehouse_location": { "id": "loc-c1", "name": "Central Storage" },
         "stock": {
           "available_units": 1240,
           "reserved_units": 220,
@@ -130,56 +214,19 @@ Fetches paginated stock records matching search terms, department filters, wareh
           "formatted_expiry": "Jan 2028"
         },
         "movement_status": "STABLE"
-      },
-      {
-        "id": "item-99282-b91",
-        "order_id": "OD-102456",
-        "sku_code": "SKU: 012457",
-        "item_name": "Surgical Gloves",
-        "category": "OT Consumables",
-        "department": {
-          "id": "dept-02",
-          "name": "Laboratory"
-        },
-        "warehouse_location": {
-          "id": "loc-c1",
-          "name": "Central Storage"
-        },
-        "stock": {
-          "available_units": 1240,
-          "reserved_units": 220,
-          "total_units": 1460,
-          "unit_of_measure": "Units"
-        },
-        "batch": {
-          "batch_number": "BG-2026-12",
-          "expiry_date": "2026-06-30",
-          "formatted_expiry": "Jun 2026"
-        },
-        "movement_status": "CRITICAL"
       }
     ],
-    "meta": {
-      "total": 124,
-      "page": 1,
-      "page_size": 10,
-      "total_pages": 13
-    }
+    "meta": { "total": 124, "page": 1, "page_size": 10, "total_pages": 13 }
   }
 }
 ```
 
 ---
 
-### 2.3 Item Details Drawer & Activity Log (`GET /admin/inventory/{item_id}`)
-Fetches single item attributes and recent audit/reservation activities for the right side drawer.
-
+### 3.3 Item Details Drawer & Activity Log (`GET /admin/inventory/{item_id}`)
 * **Method**: `GET`
 * **URL Path**: `/admin/inventory/{item_id}`
 * **Handler**: `inventory_svc.get_inventory_item()`
-
-#### Path Parameters
-* `item_id` (`string`, Mandatory): Item UUID (e.g. `item-99281-a82`).
 
 #### Response Body (`200 OK`)
 ```json
@@ -214,13 +261,6 @@ Fetches single item attributes and recent audit/reservation activities for the r
         "performed_by": "Dr. Robert Chen",
         "formatted_timestamp": "Oct 04, 2023 • 09:42 PM",
         "activity_type": "RESERVATION"
-      },
-      {
-        "id": "act-103",
-        "title": "Stock Batch Verified and Tagged at Central Storage",
-        "performed_by": "Mark Spencer",
-        "formatted_timestamp": "Oct 03, 2023 • 08:30 AM",
-        "activity_type": "VERIFICATION"
       }
     ]
   }
@@ -229,11 +269,9 @@ Fetches single item attributes and recent audit/reservation activities for the r
 
 ---
 
-## 3. Screen 2: Procurement Tab
+## 4. Screen 2: Procurement Tab
 
-### 3.1 Procurement Dashboard KPI Insights (`GET /admin/procurement/insights`)
-Fetches top 4 KPI cards on the **Procurement** tab screen.
-
+### 4.1 Procurement Dashboard KPI Insights (`GET /admin/procurement/insights`)
 * **Method**: `GET`
 * **URL Path**: `/admin/procurement/insights`
 * **Handler**: `procurement_svc.get_procurement_insights()`
@@ -245,36 +283,10 @@ Fetches top 4 KPI cards on the **Procurement** tab screen.
   "code": 200,
   "data": {
     "metrics": {
-      "total_purchase_orders": {
-        "count": 1284,
-        "formatted": "1,284",
-        "label": "Orders placed",
-        "percentage_change": 12.4,
-        "trend": "UP"
-      },
-      "procurement_value": {
-        "amount": 4836500.00,
-        "formatted": "₹48,36,500",
-        "currency": "INR",
-        "label": "Total procurement spend",
-        "percentage_change": 18.5,
-        "trend": "UP"
-      },
-      "pending_purchase_orders": {
-        "count": 87,
-        "formatted": "87",
-        "label": "Requires attention",
-        "overdue_count": 14,
-        "on_track_count": 73,
-        "status_severity": "WARNING"
-      },
-      "active_suppliers": {
-        "count": 134,
-        "formatted": "134",
-        "label": "Approved vendors",
-        "percentage_change": 4.0,
-        "trend": "UP"
-      }
+      "total_purchase_orders": { "count": 1284, "formatted": "1,284", "percentage_change": 12.4, "trend": "UP" },
+      "procurement_value": { "amount": 4836500.00, "formatted": "₹48,36,500", "currency": "INR", "percentage_change": 18.5, "trend": "UP" },
+      "pending_purchase_orders": { "count": 87, "formatted": "87", "overdue_count": 14, "on_track_count": 73, "status_severity": "WARNING" },
+      "active_suppliers": { "count": 134, "formatted": "134", "percentage_change": 4.0, "trend": "UP" }
     }
   }
 }
@@ -282,9 +294,7 @@ Fetches top 4 KPI cards on the **Procurement** tab screen.
 
 ---
 
-### 3.2 Purchase Orders List & Filters (`GET /admin/procurement/orders`)
-Fetches paginated purchase order rows matching search inputs, status badges, vendor selection, and date pickers.
-
+### 4.2 Purchase Orders List & Filters (`GET /admin/procurement/orders`)
 * **Method**: `GET`
 * **URL Path**: `/admin/procurement/orders`
 * **Handler**: `procurement_svc.list_purchase_orders()`
@@ -292,13 +302,10 @@ Fetches paginated purchase order rows matching search inputs, status badges, ven
 #### Query Parameters
 | Parameter | Type | Required | Description |
 | :--- | :--- | :--- | :--- |
-| `search` | `string` | Optional | Search string for PO ID e.g. `PO-2045`, Item e.g. `Lidocaine`, or Vendor. |
-| `status` | `string` | Optional | Filter by approval status: `Pending`, `Processing`, `Approved`, `Rejected`. |
-| `vendor_id` | `string (UUID)` | Optional | Filter by vendor UUID. |
-| `invoice_status` | `string` | Optional | `Awaiting Submission`, `Pending GRN`, `Matched`. |
-| `date_from` | `string (YYYY-MM-DD)` | Optional | Start date filter. |
-| `date_to` | `string (YYYY-MM-DD)` | Optional | End date filter. |
-| `page` | `integer` | Optional (Default: `1`) | Page offset. |
+| `search` | `string` | Optional | Search string for PO ID (`PO-2045`), Item (`Lidocaine`), or Vendor. |
+| `status` | `string` | Optional | `Pending`, `Processing`, `Approved`, `Rejected`. |
+| `vendor_id` | `string (UUID)` | Optional | Supplier UUID. |
+| `page` | `integer` | Optional (Default: `1`) | Page number. |
 | `page_size` | `integer` | Optional (Default: `10`) | Limit per page. |
 
 #### Response Body (`200 OK`)
@@ -322,59 +329,19 @@ Fetches paginated purchase order rows matching search inputs, status badges, ven
         "approval_status": "Pending",
         "total_amount": 45000.00,
         "created_at": "2026-04-19T10:00:00.000Z"
-      },
-      {
-        "id": "po-2046-uuid-02",
-        "po_number": "PO-2046",
-        "item_name": "Lidocaine Packet 5cl",
-        "vendor_name": "MediPlus Pharma",
-        "vendor_category": "Primary Medical Dist.",
-        "category": "Procedure Medication",
-        "quantity_units": 1240,
-        "reserved_units": 220,
-        "delivery_eta": "2 days",
-        "invoice_status": "Pending GRN",
-        "approval_status": "Processing",
-        "total_amount": 45000.00,
-        "created_at": "2026-04-18T14:30:00.000Z"
-      },
-      {
-        "id": "po-2047-uuid-03",
-        "po_number": "PO-2047",
-        "item_name": "Lidocaine Packet 5cl",
-        "vendor_name": "MediPlus Pharma",
-        "vendor_category": "Primary Medical Dist.",
-        "category": "Procedure Medication",
-        "quantity_units": 1240,
-        "reserved_units": 220,
-        "delivery_eta": "Delivered",
-        "invoice_status": "Matched",
-        "approval_status": "Approved",
-        "total_amount": 45000.00,
-        "created_at": "2026-04-15T09:15:00.000Z"
       }
     ],
-    "meta": {
-      "total": 124,
-      "page": 1,
-      "page_size": 10,
-      "total_pages": 13
-    }
+    "meta": { "total": 124, "page": 1, "page_size": 10, "total_pages": 13 }
   }
 }
 ```
 
 ---
 
-### 3.3 Purchase Order Details Modal (`GET /admin/procurement/orders/{po_id}`)
-Fetches single PO details for rendering in the bottom-right details modal.
-
+### 4.3 Purchase Order Details Modal (`GET /admin/procurement/orders/{po_id}`)
 * **Method**: `GET`
 * **URL Path**: `/admin/procurement/orders/{po_id}`
 * **Handler**: `procurement_svc.get_purchase_order()`
-
-#### Path Parameters
-* `po_id` (`string`, Mandatory): Purchase Order UUID.
 
 #### Response Body (`200 OK`)
 ```json
@@ -398,19 +365,12 @@ Fetches single PO details for rendering in the bottom-right details modal.
 
 ---
 
-### 3.4 Approve / Reject PO Status (`PATCH /admin/procurement/orders/{po_id}/status`)
-Triggers the "Approve Order" button action in the Purchase Order modal.
-
+### 4.4 Approve / Reject PO Status (`PATCH /admin/procurement/orders/{po_id}/status`)
 * **Method**: `PATCH`
 * **URL Path**: `/admin/procurement/orders/{po_id}/status`
 * **Handler**: `procurement_svc.update_po_status()`
 
 #### Request Body
-| Field | Type | Mandatory | Allowed Values | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `status` | `string` | Yes | `APPROVED`, `REJECTED`, `PROCESSING` | Target approval status. |
-| `notes` | `string` | Optional | Max 500 chars | Approval or rejection justification note. |
-
 ```json
 {
   "status": "APPROVED",
@@ -435,11 +395,9 @@ Triggers the "Approve Order" button action in the Purchase Order modal.
 
 ---
 
-## 4. Screen 3: Vendor Management Tab
+## 5. Screen 3: Vendor Management Tab
 
-### 4.1 Vendor Summary KPI Cards (`GET /admin/procurement/vendors/metrics`)
-Populates the 6 summary cards at the top of the **Vendor Management** screen.
-
+### 5.1 Vendor Summary KPI Cards (`GET /admin/procurement/vendors/metrics`)
 * **Method**: `GET`
 * **URL Path**: `/admin/procurement/vendors/metrics`
 * **Handler**: `procurement_svc.get_vendor_metrics()`
@@ -450,57 +408,22 @@ Populates the 6 summary cards at the top of the **Vendor Management** screen.
   "success": true,
   "code": 200,
   "data": {
-    "total_vendors": {
-      "count": 148,
-      "formatted": "148",
-      "percentage_change": 4.0
-    },
-    "active_vendors": {
-      "count": 124,
-      "formatted": "124"
-    },
-    "pending_approvals": {
-      "count": 12,
-      "formatted": "12",
-      "status_severity": "WARNING"
-    },
-    "expiring_contracts": {
-      "count": 9,
-      "formatted": "9",
-      "status_severity": "ALERT"
-    },
-    "delayed_deliveries": {
-      "count": 17,
-      "formatted": "17"
-    },
-    "avg_vendor_rating": {
-      "score": 4.5,
-      "formatted": "4.5"
-    }
+    "total_vendors": { "count": 148, "formatted": "148", "percentage_change": 4.0 },
+    "active_vendors": { "count": 124, "formatted": "124" },
+    "pending_approvals": { "count": 12, "formatted": "12", "status_severity": "WARNING" },
+    "expiring_contracts": { "count": 9, "formatted": "9", "status_severity": "ALERT" },
+    "delayed_deliveries": { "count": 17, "formatted": "17" },
+    "avg_vendor_rating": { "score": 4.5, "formatted": "4.5" }
   }
 }
 ```
 
 ---
 
-### 4.2 Vendor Listing Table (`GET /admin/procurement/vendors`)
-Retrieves paginated suppliers for the main table and populates vendor dropdowns.
-
+### 5.2 Vendor Listing Table (`GET /admin/procurement/vendors`)
 * **Method**: `GET`
 * **URL Path**: `/admin/procurement/vendors`
 * **Handler**: `procurement_svc.list_vendors()`
-
-#### Query Parameters
-| Parameter | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `search` | `string` | Optional | Search Vendor Name (`MedLine Pharma`), Code (`VND-1020`), or GSTIN (`27AAACM1234F1Z5`). |
-| `status` | `string` | Optional | `Active`, `Pending Approval`, `Contract Expiring`, `Inactive`. |
-| `category` | `string` | Optional | `Pharma Supplier`, `Surgical Vendor`, `Lab Consumables`. |
-| `performance_score` | `string` | Optional | `HIGH` (>90%), `AVERAGE` (70-90%), `UNDERPERFORMING` (<70%). |
-| `contract_date_from` | `string (YYYY-MM-DD)` | Optional | Contract date range start. |
-| `contract_date_to` | `string (YYYY-MM-DD)` | Optional | Contract date range end. |
-| `page` | `integer` | Optional (Default: `1`) | Page index. |
-| `page_size` | `integer` | Optional (Default: `10`) | Limit per page. |
 
 #### Response Body (`200 OK`)
 ```json
@@ -524,61 +447,19 @@ Retrieves paginated suppliers for the main table and populates vendor dropdowns.
           "last_delivery": "Last delivery 2 days ago"
         },
         "status": "Contract Expiring"
-      },
-      {
-        "id": "v-9913-surgicare",
-        "vendor_code": "VND-1021",
-        "vendor_name": "SurgiCare Supplies",
-        "gstin": "27AAACM2345G2Z6",
-        "category": "Surgical Vendor",
-        "contact_person": "Rahul Desai",
-        "contact_phone": "+91 98765 43210",
-        "performance": {
-          "on_time_delivery_rate": 82.0,
-          "formatted_on_time": "82% On-Time",
-          "rating": 4.0,
-          "last_delivery": "3 delayed deliveries this month"
-        },
-        "status": "Pending Approval"
-      },
-      {
-        "id": "v-9914-healthcare",
-        "vendor_code": "VND-1022",
-        "vendor_name": "HealCare Diagnostics",
-        "gstin": "07AAACM3456H3Z7",
-        "category": "Lab Consumables",
-        "contact_person": "Rahul Desai",
-        "contact_phone": "+91 98765 43210",
-        "performance": {
-          "on_time_delivery_rate": 82.0,
-          "formatted_on_time": "82% On-Time",
-          "rating": 4.0,
-          "last_delivery": "3 delayed deliveries this month"
-        },
-        "status": "Active"
       }
     ],
-    "meta": {
-      "total": 124,
-      "page": 1,
-      "page_size": 10,
-      "total_pages": 13
-    }
+    "meta": { "total": 124, "page": 1, "page_size": 10, "total_pages": 13 }
   }
 }
 ```
 
 ---
 
-### 4.3 Vendor 360-Degree Profile Drawer (`GET /admin/procurement/vendors/{vendor_id}`)
-Retrieves full details for rendering the right-side vendor profile drawer.
-
+### 5.3 Vendor 360-Degree Profile Drawer (`GET /admin/procurement/vendors/{vendor_id}`)
 * **Method**: `GET`
 * **URL Path**: `/admin/procurement/vendors/{vendor_id}`
 * **Handler**: `procurement_svc.get_vendor()`
-
-#### Path Parameters
-* `vendor_id` (`string`, Mandatory): Vendor UUID (e.g. `v-9912-medline`).
 
 #### Response Body (`200 OK`)
 ```json
@@ -618,32 +499,6 @@ Retrieves full details for rendering the right-side vendor profile drawer.
       "outstanding_payable": 450000.00,
       "formatted_outstanding_payable": "₹ 4,50,000"
     },
-    "active_contracts": [
-      {
-        "contract_id": "CT-2023-0045",
-        "title": "Critical OT Supplies SLA",
-        "category": "Critical OT Medication",
-        "valid_till": "2027-12-31",
-        "auto_renewal": true,
-        "status": "ACTIVE_SLA"
-      }
-    ],
-    "stock_details": {
-      "current_stock": 1240,
-      "reorder_level": 150,
-      "lead_time": "2-3 Days",
-      "last_received": "2026-01-12",
-      "stock_status": "IN STOCK",
-      "stock_value": 245000.00,
-      "formatted_stock_value": "₹ 2,45,000"
-    },
-    "quantity_received_breakdown": [
-      { "item_name": "Paracetamol 500mg", "unit": "Tabs", "ordered_qty": 200, "received_qty": 200, "pending_qty": 0 },
-      { "item_name": "Amoxicillin 250mg", "unit": "Caps", "ordered_qty": 150, "received_qty": 150, "pending_qty": 0 },
-      { "item_name": "IV Saline 500ml", "unit": "Btl", "ordered_qty": 50, "received_qty": 48, "pending_qty": 2 },
-      { "item_name": "Gloves L", "unit": "Pairs", "ordered_qty": 300, "received_qty": 300, "pending_qty": 0 },
-      { "item_name": "Syringes 5ml", "unit": "Pcs", "ordered_qty": 120, "received_qty": 110, "pending_qty": 10 }
-    ],
     "compliance_documents": [
       { "id": "doc-01", "name": "GST_Certificate_2023.pdf", "download_url": "/api/v1/documents/doc-01" },
       { "id": "doc-02", "name": "Drug_License_Renewed.pdf", "download_url": "/api/v1/documents/doc-02" },
@@ -655,28 +510,12 @@ Retrieves full details for rendering the right-side vendor profile drawer.
 
 ---
 
-### 4.4 Create / Onboard New Vendor (`POST /admin/procurement/vendors`)
-Registers a new supplier when the user clicks `+ Create Vendor`.
-
+### 5.4 Create / Onboard New Vendor (`POST /admin/procurement/vendors`)
 * **Method**: `POST`
 * **URL Path**: `/admin/procurement/vendors`
 * **Handler**: `procurement_svc.create_vendor()`
 
 #### Request Body
-| Field | Type | Mandatory | Constraints | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `vendor_name` | `string` | Mandatory | Max 200 chars | Legal company name. |
-| `category` | `string` | Mandatory | e.g. `Pharma Supplier` | Category classification. |
-| `gstin` | `string` | Mandatory | 15 chars (e.g. `27AAACM1234F1Z5`) | GST identification number. |
-| `pan_number` | `string` | Mandatory | 10 chars (e.g. `AAACM1234D`) | PAN number. |
-| `drug_license_no` | `string` | Optional | Max 60 chars | Drug License Registration number. |
-| `contact_person` | `string` | Mandatory | Max 100 chars | Primary contact person name. |
-| `contact_phone` | `string` | Mandatory | Max 20 chars | Primary mobile/phone number. |
-| `official_email` | `string` | Mandatory | Max 200 chars | Email address. |
-| `registered_address` | `string` | Mandatory | Max 500 chars | Full registered address. |
-| `credit_period_days` | `integer` | Mandatory | Min: 0 (e.g. `45`) | Payment credit days. |
-| `lead_time_days` | `integer` | Mandatory | Min: 0 (e.g. `3`) | Standard delivery lead time days. |
-
 ```json
 {
   "vendor_name": "MedLine Pharma Pvt Ltd",
@@ -710,31 +549,148 @@ Registers a new supplier when the user clicks `+ Create Vendor`.
 
 ---
 
-## 5. Screen 4: Workflows, GRN & Invoice Reconciliation
+## 6. Screen 4: Asset Management Tab
 
-### 5.1 POST Receive Goods Received Note (GRN) (`POST /admin/procurement/grn`)
-Records arrival of delivered items and updates stock balances.
+### 6.1 Asset Dashboard Overview & KPI Metrics (`GET /admin/inventory/assets/dashboard`)
+* **Method**: `GET`
+* **URL Path**: `/admin/inventory/assets/dashboard`
+* **Handler**: `dashboard_svc.get_asset_dashboard()`
 
+#### Response Body (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "total_assets": 2847,
+    "operational_assets": 2341,
+    "under_maintenance": 312,
+    "out_of_service": 94,
+    "maintenance_due": 187,
+    "maintenance_alerts": [
+      { "equipment": "MRI Scanner Bay 2", "message": "Overdue maintenance by 3 days", "severity": "HIGH" },
+      { "equipment": "Sterilization Unit A4", "message": "Calibration required", "severity": "MEDIUM" },
+      { "equipment": "Emergency Generator", "message": "Annual inspection due in 5 days", "severity": "LOW" }
+    ],
+    "upcoming_maintenance": [
+      { "asset_name": "MRI Scanner #3", "department": "Radiology", "next_maintenance": "Oct 12, 2026", "status": "Pending" },
+      { "asset_name": "ICU Ventilator Unit #12", "department": "ICU", "next_maintenance": "Oct 14, 2026", "status": "Scheduled" }
+    ],
+    "critical_equipment_status": [
+      { "name": "ICU Ventilators", "online": 48, "total": 50, "status": "ONLINE" },
+      { "name": "OR Monitors", "online": 24, "total": 24, "status": "ONLINE" }
+    ],
+    "assets_by_department": [
+      { "department": "Radiology", "count": 420 },
+      { "department": "Surgery", "count": 380 }
+    ],
+    "recent_activity": [
+      { "activity": "MRI Scanner A3 — Maintenance Completed", "time_ago": "2 hours ago" }
+    ]
+  }
+}
+```
+
+---
+
+### 6.2 Asset Listing Table & Filter Drawer (`GET /admin/inventory/assets`)
+* **Method**: `GET`
+* **URL Path**: `/admin/inventory/assets`
+* **Handler**: `inventory_svc.list_assets()`
+
+#### Response Body (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "ast-2024-001-uuid",
+        "asset_id": "AST-2024-001",
+        "asset_name": "MRI Scanner - GE Signa Premier 3T",
+        "category": "Medical Equipment",
+        "location": "Radiology - Ground Floor",
+        "purchase_date": "2021-01-12",
+        "formatted_purchase_date": "Jan 12, 2021",
+        "condition": "Good",
+        "status": "Maintenance"
+      }
+    ],
+    "meta": { "total": 124, "page": 1, "page_size": 10, "total_pages": 13 }
+  }
+}
+```
+
+---
+
+### 6.3 Single Asset Details Drawer (`GET /admin/inventory/assets/{asset_id}`)
+* **Method**: `GET`
+* **URL Path**: `/admin/inventory/assets/{asset_id}`
+* **Handler**: `inventory_svc.get_asset()`
+
+#### Response Body (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "id": "ast-2024-0847-uuid",
+    "asset_code": "AST-2024-0847",
+    "asset_name": "MRI Scanner T3",
+    "status": "Active",
+    "summary": {
+      "category": "Medical Equipment",
+      "sub_category": "Imaging",
+      "manufacturer": "Siemens Healthineers",
+      "model": "MAGNETOM Vida",
+      "serial_no": "SN-9982014-1117"
+    },
+    "location": {
+      "building": "Building A",
+      "floor": "Floor 2",
+      "room": "Room 215",
+      "department": "Radiology Department"
+    },
+    "purchase_info": {
+      "purchase_date": "2021-01-12",
+      "purchase_cost": 1450000.00,
+      "formatted_cost": "₹ 1,450,000",
+      "vendor_name": "Siemens Healthcare",
+      "po_number": "PO-2024-0894"
+    },
+    "warranty": {
+      "valid_till": "2029-03-31",
+      "formatted_valid_till": "Mar 2029",
+      "coverage": "Siemens Care (Comprehensive Coverage)"
+    },
+    "maintenance_timeline": {
+      "last_serviced": "2024-01-15",
+      "preventive_maintenance_due": "2024-04-20",
+      "inspection_status": "Passed"
+    }
+  }
+}
+```
+
+---
+
+### 6.4 Schedule Asset Maintenance Form (`POST /admin/inventory/assets/{asset_id}/maintenance`)
 * **Method**: `POST`
-* **URL Path**: `/admin/procurement/grn`
-* **Handler**: `procurement_svc.receive_grn()`
+* **URL Path**: `/admin/inventory/assets/{asset_id}/maintenance`
+* **Handler**: `inventory_svc.schedule_asset_maintenance()`
 
 #### Request Body
 ```json
 {
-  "po_id": "po-2045-uuid-01",
-  "vendor_id": "v-9912-medline",
-  "notes": "Verified 1,240 units received in good condition.",
-  "items": [
-    {
-      "item_name": "Lidocaine Packet 5cl",
-      "batch_number": "BG-2026-88",
-      "quantity_received": 1240,
-      "accepted_quantity": 1240,
-      "rejected_quantity": 0,
-      "expiry_date": "2028-06-30"
-    }
-  ]
+  "asset_code": "AST-2024-0847",
+  "maintenance_type": "Preventive",
+  "scheduled_date": "2025-02-28",
+  "priority_status": "High Priority",
+  "assigned_technician": "Mr. Marcus Brody (Lead Biotech Eng.)",
+  "vendor_service_provider": "Medtronics Allied Engineering",
+  "estimated_service_cost": 45000.00,
+  "service_scope_notes": "Bi-annual pressure seal inspection, gas calibration, replacement of flow sensor filters. Complete oxygen pressure drop tests."
 }
 ```
 
@@ -743,53 +699,94 @@ Records arrival of delivered items and updates stock balances.
 {
   "success": true,
   "code": 201,
+  "message": "Asset maintenance task scheduled successfully",
   "data": {
-    "grn_id": "grn-2026-0091",
-    "po_id": "po-2045-uuid-01",
-    "status": "COMPLETED",
-    "created_at": "2026-04-20T12:00:00.000Z"
+    "maintenance_id": "maint-2025-0089",
+    "asset_code": "AST-2024-0847",
+    "asset_name": "Ventilator Unit A3",
+    "scheduled_date": "2025-02-28",
+    "status": "SCHEDULED",
+    "created_at": "2026-04-20T11:55:00.000Z"
   }
 }
 ```
 
 ---
 
-### 5.2 POST Reconcile Invoice (`POST /admin/procurement/invoices/{invoice_id}/reconcile`)
-Matches received vendor invoice against PO & GRN records.
+### 6.5 Add New Asset Form (`POST /admin/inventory/assets`)
+Registers a new medical device, equipment, or facility asset (from the **Add New Asset** modal screen).
 
 * **Method**: `POST`
-* **URL Path**: `/admin/procurement/invoices/{invoice_id}/reconcile`
-* **Handler**: `procurement_svc.reconcile_invoice()`
+* **URL Path**: `/admin/inventory/assets`
+* **Handler**: `inventory_svc.create_non_medical_inventory()`
 
-#### Request Body
+#### Request Body Schema
+| Field | Type | Mandatory | Constraints | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `asset_name` | `string` | Mandatory | Max 200 chars | Commercial name (e.g. `MRI Scanner - GE Signa Premier 3T`). |
+| `category` | `string` | Mandatory | Max 60 chars | `Medical Equipment`, `IT Equipment`, `Office Furniture`, `Lab Equipment`. |
+| `sub_category` | `string` | Optional | Max 60 chars | e.g. `Imaging`, `Ventilation`, `Monitoring`. |
+| `manufacturer` | `string` | Optional | Max 120 chars | Manufacturer name (e.g. `Siemens Healthineers`, `GE`). |
+| `model` | `string` | Optional | Max 120 chars | Model string (e.g. `MAGNETOM Vida`). |
+| `serial_number` | `string` | Mandatory | Max 60 chars | Serial number (e.g. `SN-9982014-1117`). |
+| `assigned_department` | `string (UUID)` | Mandatory | UUID | Department UUID (e.g. `Radiology Department`). |
+| `building` | `string` | Optional | Max 60 chars | e.g. `Building A`. |
+| `floor_wing` | `string` | Optional | Max 60 chars | e.g. `Floor 2, Ground Floor`. |
+| `room_number` | `string` | Optional | Max 60 chars | e.g. `Room 215`. |
+| `asset_location_code` | `string` | Optional | Max 60 chars | Location code (e.g. `LOC-RAD-215`). |
+| `purchase_date` | `string` | Optional | YYYY-MM-DD | Date of purchase (e.g. `2021-01-12`). |
+| `purchase_cost` | `number` | Optional | Min: 0 | Cost in INR (e.g. `1450000.00`). |
+| `preferred_vendor_id` | `string (UUID)` | Optional | UUID | Vendor UUID (e.g. `MedTech Solutions`). |
+| `service_contract_no` | `string` | Optional | Max 60 chars | PO / Contract Number (e.g. `PO-2024-0894`). |
+| `warranty_period` | `string` | Optional | YYYY-MM-DD | Warranty expiry date (e.g. `2029-03-31`). |
+| `maintenance_required` | `boolean` | Optional | Default: `true` | Requires scheduled maintenance sweeps. |
+
 ```json
 {
-  "match_status": "MATCHED",
-  "mismatch_reason": null
+  "asset_name": "MRI Scanner - GE Signa Premier 3T",
+  "category": "Medical Equipment",
+  "sub_category": "Imaging",
+  "manufacturer": "Siemens Healthineers",
+  "model": "MAGNETOM Vida",
+  "serial_number": "SN-9982014-1117",
+  "assigned_department": "0fbfdbef-9873-4824-b1fd-6fb827d3ba57",
+  "building": "Building A",
+  "floor_wing": "Floor 2",
+  "room_number": "Room 215",
+  "asset_location_code": "LOC-RAD-215",
+  "purchase_date": "2021-01-12",
+  "purchase_cost": 1450000.00,
+  "service_contract_no": "PO-2024-0894",
+  "warranty_period": "2029-03-31",
+  "maintenance_required": true
 }
 ```
 
-#### Response Body (`200 OK`)
+#### Response Body (`201 Created`)
 ```json
 {
   "success": true,
-  "code": 200,
-  "message": "Invoice reconciled successfully",
+  "code": 201,
+  "message": "Asset created successfully",
   "data": {
-    "invoice_id": "inv-2026-9912",
-    "status": "RECONCILED"
+    "id": "ast-2024-0847-uuid",
+    "asset_code": "AST-2024-0847",
+    "asset_name": "MRI Scanner - GE Signa Premier 3T",
+    "category": "Medical Equipment",
+    "status": "Active",
+    "created_at": "2026-04-20T11:58:00.000Z"
   }
 }
 ```
 
 ---
 
-## 6. Standard API Error Codes Matrix
+## 7. Standard API Error Codes Matrix
 
 | HTTP Status Code | Error Response Schema (`code`, `message`, `details`) | Cause / Trigger | Frontend Remediation |
 | :--- | :--- | :--- | :--- |
 | `400 Bad Request` | `{"success": false, "code": 400, "message": "Invalid date range or format"}` | Date picker range end < start or malformed query string. | Show form field error. |
 | `401 Unauthorized` | `{"success": false, "code": 401, "message": "Token expired or missing"}` | Missing or invalid Cognito JWT Bearer token in header. | Redirect user to Login. |
 | `403 Forbidden` | `{"success": false, "code": 403, "message": "Permission denied: Inventory access required"}` | Role lacks `ADM-001` or `PHM-004` permission. | Show permission alert message. |
-| `404 Not Found` | `{"success": false, "code": 404, "message": "Item or Vendor not found"}` | Invalid `item_id`, `vendor_id`, or `po_id`. | Display 404 state empty drawer. |
+| `404 Not Found` | `{"success": false, "code": 404, "message": "Item, Vendor, or Asset not found"}` | Invalid `item_id`, `vendor_id`, `po_id`, or `asset_id`. | Display 404 state empty drawer. |
 | `422 Unprocessable Entity` | `{"success": false, "code": 422, "message": "Insufficient stock available"}` | Transfer quantity exceeds `available_units`. | Highlight quantity field warning. |
