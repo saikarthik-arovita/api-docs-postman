@@ -1,0 +1,358 @@
+{
+  "info": {
+    "_postman_id": "a0b1c2d3-e4f5-6789-abcd-0123456789ef",
+    "name": "HMS IPD Split-Stage Registration & Lodging Master Data",
+    "description": "Complete Postman testing collection for Split-Stage IPD Registration (Draft Creation, Immediate Payment, Pay Later, Insurance Confirmation, Cancellation) and Lodging Master Data APIs (Floors, Blocks, Wards, Beds).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/ipd",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdWItMTIzIiwidXNlcl9pZCI6InVzZXItcmVjZXB0aW9uaXN0LTAxIiwicm9sZV9pZCI6InJvbGUtcmVjZXB0aW9uaXN0In0",
+      "type": "string"
+    },
+    {
+      "key": "tenant_id",
+      "value": "tenant-001",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "e302008e-5b12-421c-a111-9a99fcd23b89",
+      "type": "string"
+    },
+    {
+      "key": "attending_doctor_id",
+      "value": "b12d2bc4-f5ee-45df-98bd-674cd7bb0ecc",
+      "type": "string"
+    },
+    {
+      "key": "department_id",
+      "value": "dept-cardio-9988",
+      "type": "string"
+    },
+    {
+      "key": "floor_id",
+      "value": "11111111-2222-3333-4444-555555555555",
+      "type": "string"
+    },
+    {
+      "key": "block_id",
+      "value": "22222222-3333-4444-5555-666666666666",
+      "type": "string"
+    },
+    {
+      "key": "ward_id",
+      "value": "902d2bc4-f5ee-45df-98bd-674cd7bb0eef",
+      "type": "string"
+    },
+    {
+      "key": "bed_id",
+      "value": "a32d2bc4-f5ee-45df-98bd-674cd7bb0eee",
+      "type": "string"
+    },
+    {
+      "key": "admission_id",
+      "value": "f8bb5a02-0eb1-4366-814c-0763ba4f2b74",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Lodging Master Data APIs",
+      "item": [
+        {
+          "name": "List Floors",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/floors",
+              "host": ["{{base_url}}"],
+              "path": ["floors"]
+            }
+          }
+        },
+        {
+          "name": "List Blocks (Filter by Floor)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/blocks?floor_id={{floor_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["blocks"],
+              "query": [
+                { "key": "floor_id", "value": "{{floor_id}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Block",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"floor_id\": \"{{floor_id}}\",\n  \"name\": \"Block B - West Wing\",\n  \"code\": \"BLK-B\",\n  \"description\": \"Orthopedic & Neurological Specialty Block\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/blocks",
+              "host": ["{{base_url}}"],
+              "path": ["blocks"]
+            }
+          }
+        },
+        {
+          "name": "List Wards (Filter by Floor & Block)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/wards?floor_id={{floor_id}}&block_id={{block_id}}&ward_type=ICU&is_active=true&page=1&page_size=50",
+              "host": ["{{base_url}}"],
+              "path": ["wards"],
+              "query": [
+                { "key": "floor_id", "value": "{{floor_id}}" },
+                { "key": "block_id", "value": "{{block_id}}" },
+                { "key": "ward_type", "value": "ICU" },
+                { "key": "is_active", "value": "true" },
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Beds (Filter by Ward & Status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/beds?ward_id={{ward_id}}&status=AVAILABLE&bed_type=ICU&page=1&page_size=50",
+              "host": ["{{base_url}}"],
+              "path": ["beds"],
+              "query": [
+                { "key": "ward_id", "value": "{{ward_id}}" },
+                { "key": "status", "value": "AVAILABLE" },
+                { "key": "bed_type", "value": "ICU" },
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Bed",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ward_id\": \"{{ward_id}}\",\n  \"bed_number\": \"ICU-BED-05\",\n  \"bed_type\": \"VENTILATOR\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/beds",
+              "host": ["{{base_url}}"],
+              "path": ["beds"]
+            }
+          }
+        },
+        {
+          "name": "Get Bed Availability Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/beds/availability?ward_id={{ward_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["beds", "availability"],
+              "query": [
+                { "key": "ward_id", "value": "{{ward_id}}" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. IPD Registration Step 1 — Draft Creation (Bed Reservation)",
+      "item": [
+        {
+          "name": "POST /ipd/admissions — Create Draft Admission",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"visit_type\": \"IPD\",\n  \"attending_doctor_id\": \"{{attending_doctor_id}}\",\n  \"department_id\": \"{{department_id}}\",\n  \"admission_date\": \"2026-04-20\",\n  \"floor_id\": \"{{floor_id}}\",\n  \"block_id\": \"{{block_id}}\",\n  \"ward_id\": \"{{ward_id}}\",\n  \"bed_id\": \"{{bed_id}}\",\n  \"admission_reason\": \"Acute Myocardial Infarction - Inpatient Monitoring\",\n  \"admission_type\": \"ELECTIVE\",\n  \"was_referred\": true,\n  \"referral_details\": {\n    \"referred_by_doctor\": \"Dr. Sarah Connor\",\n    \"referral_source\": \"City Clinic & Diagnostics\",\n    \"notes\": \"Patient transferred for specialized cardiac care\"\n  },\n  \"notes\": \"Window bed requested by attendant\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admissions",
+              "host": ["{{base_url}}"],
+              "path": ["admissions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. IPD Registration Step 2 — Admission Confirmations",
+      "item": [
+        {
+          "name": "POST /ipd/admissions/{id}/confirm — Immediate Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_workflow\": \"IMMEDIATE\",\n  \"payment_details\": {\n    \"method\": \"UPI\",\n    \"amount\": \"15000.00\",\n    \"transaction_reference\": \"TXN987654321\",\n    \"receipt_notes\": \"Advance deposit paid via GPay\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admissions/{{admission_id}}/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["admissions", "{{admission_id}}", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "POST /ipd/admissions/{id}/confirm — Pay Later (Credit Account)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_workflow\": \"PAY_LATER\",\n  \"pay_later_details\": {\n    \"reason\": \"Emergency surgery - post-operative settlement approved\",\n    \"due_date\": \"2026-08-15\",\n    \"remarks\": \"Approved corporate credit alignment\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admissions/{{admission_id}}/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["admissions", "{{admission_id}}", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "POST /ipd/admissions/{id}/confirm — Insurance / TPA Pre-Auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_workflow\": \"INSURANCE\",\n  \"insurance_details\": {\n    \"insurance_provider\": \"Star Health Insurance\",\n    \"policy_number\": \"POL-88776655\",\n    \"member_id\": \"MEM-12345-A\",\n    \"policy_holder\": \"Amit Kumar\",\n    \"relationship\": \"SELF\",\n    \"coverage_type\": \"CASHLESS\",\n    \"pre_auth_number\": \"AUTH-2026-9988\",\n    \"claim_reference\": \"CLM-2026-5544\",\n    \"copayment\": 10.0,\n    \"approved_amount\": \"125000.00\",\n    \"remarks\": \"Laparoscopic treatment package pre-authorized\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admissions/{{admission_id}}/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["admissions", "{{admission_id}}", "confirm"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. IPD Registration Step 3 — Cancellation & Lookup",
+      "item": [
+        {
+          "name": "POST /ipd/admissions/{id}/cancel — Cancel Draft & Release Bed",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Patient opted for outpatient treatment elsewhere\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admissions/{{admission_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["admissions", "{{admission_id}}", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "GET /ipd/admissions — List Admissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admissions?status=ADMITTED&page=1&page_size=20",
+              "host": ["{{base_url}}"],
+              "path": ["admissions"],
+              "query": [
+                { "key": "status", "value": "ADMITTED" },
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /ipd/admissions/{id} — Get Admission Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "x-tenant-id", "value": "{{tenant_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admissions/{{admission_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admissions", "{{admission_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

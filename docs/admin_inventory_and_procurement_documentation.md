@@ -538,11 +538,13 @@ Transfers stock between warehouses or departments (enforces FEFO logic).
   "success": true,
   "code": 201,
   "data": {
-    "id": "v-9912-medline",
-    "vendor_code": "VND-1020",
-    "vendor_name": "MedLine Pharma Pvt Ltd",
-    "status": "PENDING_APPROVAL",
-    "created_at": "2026-04-20T11:52:00.000Z"
+    "id": "po-ffeee23d-9a29-454f-9f46-192f1aaab285",
+    "po_number": "PO-2026-0002",
+    "supplier_id": "a901f41b-4fef-48a1-b84e-8664fd37a912",
+    "order_date": "2026-07-25",
+    "expected_delivery": "2026-08-01",
+    "total_amount": 5000.00,
+    "status": "PENDING"
   }
 }
 ```
