@@ -1,0 +1,79 @@
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "HMS Lab Dev Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://api-dev.arovita.in",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "auth_base_url",
+      "value": "https://api-dev.arovita.in/auth",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "lab_base_url",
+      "value": "https://api-dev.arovita.in/lab",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "tenantId",
+      "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "patientId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "patientUhid",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "invoiceId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "sampleItemId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "packageId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "addendumId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

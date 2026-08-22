@@ -1,0 +1,1013 @@
+{
+  "info": {
+    "_postman_id": "7f8b91a2-4c3e-4d56-b789-0123456789ab",
+    "name": "HMS Lab Frontdesk Complete Workflow",
+    "description": "Complete Postman API Collection for Laboratory Frontdesk Operations (LAB_FRONTDESK role):\n1. Authentication & Auto-Token Injection\n2. Patient Search & Registration (PAT-YYYY-XXXX)\n3. Test & Multi-Test Packages Catalog\n4. Dynamic Price Calculation & Discounting\n5. Registration & Payment (Token LAB-XXXX, Barcode BC-XXXXX)\n6. Itemized Invoice Receipts & Printing\n7. Reschedule & Partial/Full Cancellation with Refunds\n8. Sample Queue Table & Active Filters Modal\n9. Move from Scheduled to In-Progress (Machine Name & Notes)\n10. Post-Validation Addendum Workflow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api-dev.arovita.in",
+      "type": "string"
+    },
+    {
+      "key": "auth_base_url",
+      "value": "https://api-dev.arovita.in/auth",
+      "type": "string"
+    },
+    {
+      "key": "lab_base_url",
+      "value": "https://api-dev.arovita.in/lab",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tenantId",
+      "value": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+      "type": "string"
+    },
+    {
+      "key": "patientId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patientUhid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invoiceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "packageId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "addendumId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Authentication",
+      "item": [
+        {
+          "name": "1. Lab Frontdesk Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.access_token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.data.access_token);",
+                  "    pm.environment.set('authToken', jsonData.data.access_token);",
+                  "    console.log('Auth token successfully captured.');",
+                  "}",
+                  "if (jsonData.data && jsonData.data.user && jsonData.data.user.branch_id) {",
+                  "    pm.collectionVariables.set('tenantId', jsonData.data.user.branch_id);",
+                  "    pm.environment.set('tenantId', jsonData.data.user.branch_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"lab_frontdesk@arovita.com\",\n  \"password\": \"Arovita@2026\",\n  \"device_info\": \"Postman Lab Client\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_base_url}}/login",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "Authenticates the lab frontdesk user and captures the JWT Bearer token."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get Current Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_base_url}}/me",
+              "host": [
+                "{{auth_base_url}}"
+              ],
+              "path": [
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 - Patient Search & Registration",
+      "item": [
+        {
+          "name": "1. Search Patients (Enriched Active Tests)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/patients?search=Rajesh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Rajesh"
+                }
+              ]
+            },
+            "description": "Searches patients by Name, UHID, or Mobile, enriching each patient record with active diagnostic orders count and in-progress lab tests."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Register New Patient (PAT-YYYY-XXXX)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data) {",
+                  "    pm.collectionVariables.set('patientId', jsonData.data.id || jsonData.data.patient_id);",
+                  "    pm.collectionVariables.set('patientUhid', jsonData.data.uhid || jsonData.data.patient_uhid);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Rajesh\",\n  \"last_name\": \"Kumar\",\n  \"gender\": \"Male\",\n  \"age\": 42,\n  \"date_of_birth\": \"1984-03-15\",\n  \"phone\": \"9876543210\",\n  \"email\": \"rajesh.kumar@email.com\",\n  \"blood_group\": \"B+\",\n  \"id_type\": \"Aadhar Card\",\n  \"id_number\": \"4920 8472 9184\",\n  \"street_name\": \"24, 3rd Cross, Indiranagar\",\n  \"city\": \"Bengaluru\",\n  \"district\": \"Bengaluru Urban\",\n  \"state\": \"Karnataka\",\n  \"pincode\": \"560038\",\n  \"country\": \"India\",\n  \"emergency_contact_name\": \"Sunita Kumar\",\n  \"emergency_contact_phone\": \"9876543211\",\n  \"emergency_contact_relation\": \"Spouse\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "patients"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Test Catalog & Multi-Test Packages",
+      "item": [
+        {
+          "name": "1. List All Lab Packages (Bundles)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.items && jsonData.data.items.length > 0) {",
+                  "    pm.collectionVariables.set('packageId', jsonData.data.items[0].package_id || jsonData.data.items[0].packageId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/packages?limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "packages"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Lists all 10 pre-configured multi-test health packages with child tests count and pricing."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Search Packages by Keyword",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/packages?search=Executive",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "packages"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Executive"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Package Details with Child Tests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/packages/{{packageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "packages",
+                "{{packageId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. List Individual Lab Tests Catalog",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/tests?search=CBC",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "tests"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "CBC"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Pricing & Registration Booking",
+      "item": [
+        {
+          "name": "1. Calculate Order Price & GST Breakdown",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"test_items\": [\n    {\n      \"test_code\": \"HEM-001\",\n      \"test_name\": \"Complete Blood Count (CBC)\",\n      \"price\": 350.00\n    },\n    {\n      \"test_code\": \"HEM-003\",\n      \"test_name\": \"Erythrocyte Sedimentation Rate (ESR)\",\n      \"price\": 350.00\n    }\n  ],\n  \"package_items\": [\n    {\n      \"package_code\": \"PKG-BASIC-HLTH\",\n      \"package_name\": \"Basic Health & Wellness Screening Package\",\n      \"price\": 999.00\n    }\n  ],\n  \"discount_type\": \"PERCENTAGE\",\n  \"discount_value\": 10.0,\n  \"tax_percent\": 18.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/orders/calculate-price",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "orders",
+                "calculate-price"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Direct Register & Pay (Auto Token & Barcode)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data) {",
+                  "    pm.collectionVariables.set('orderId', jsonData.data.order_id);",
+                  "    pm.collectionVariables.set('invoiceId', jsonData.data.invoice_id);",
+                  "    if (jsonData.data.items && jsonData.data.items.length > 0) {",
+                  "        pm.collectionVariables.set('sampleItemId', jsonData.data.items[0].id || jsonData.data.items[0].sample_id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patientId}}\",\n  \"visit_type\": \"WALK_IN\",\n  \"priority\": \"STAT\",\n  \"special_instructions\": \"10-12 hours overnight fasting mandatory. Do not take morning thyroid medicine before sample draw.\",\n  \"fasting_required\": true,\n  \"test_items\": [\n    {\n      \"test_code\": \"HEM-001\",\n      \"test_name\": \"Complete Blood Count (CBC)\",\n      \"category\": \"Haematology\",\n      \"price\": 350.00\n    },\n    {\n      \"test_code\": \"HEM-003\",\n      \"test_name\": \"Erythrocyte Sedimentation Rate (ESR)\",\n      \"category\": \"Haematology\",\n      \"price\": 350.00\n    }\n  ],\n  \"package_items\": [\n    {\n      \"package_code\": \"PKG-BASIC-HLTH\",\n      \"package_name\": \"Basic Health & Wellness Screening Package\",\n      \"price\": 999.00\n    }\n  ],\n  \"payment_method\": \"UPI\",\n  \"payment_amount\": 1829.00,\n  \"action\": \"CONFIRM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "registrations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Pay and Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"{{patientId}}\",\n  \"visit_type\": \"WALK_IN\",\n  \"priority\": \"ROUTINE\",\n  \"test_items\": [\n    {\n      \"test_code\": \"HEM-001\",\n      \"test_name\": \"Complete Blood Count (CBC)\",\n      \"price\": 350.00\n    }\n  ],\n  \"payment\": {\n    \"payment_method\": \"CASH\",\n    \"amount_paid\": 350.00\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/orders/pay-and-create",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "orders",
+                "pay-and-create"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Billing, Invoices & Receipts",
+      "item": [
+        {
+          "name": "1. Download / Print Bill Receipt (Full Itemization & Patient Guidance)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/invoices/{{invoiceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "invoices",
+                "{{invoiceId}}"
+              ]
+            },
+            "description": "Returns full itemized receipt with hospital header, patient demographics, token number, barcode, test lines, GST, special instructions, and dynamic preparation guidance."
+          },
+          "response": []
+        },
+        {
+          "name": "2. List Patient Bills",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/patients/{{patientId}}/bills",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "patients",
+                "{{patientId}}",
+                "bills"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Filter Invoices (Status, Date Range, Method)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/invoices?status=PAID&payment_method=UPI&from_date=2026-08-01&to_date=2026-08-22",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "invoices"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PAID"
+                },
+                {
+                  "key": "payment_method",
+                  "value": "UPI"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-08-22"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 - Reschedule & Cancel Exceptions",
+      "item": [
+        {
+          "name": "1. Reschedule Tests / Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduled_date\": \"2026-08-25\",\n  \"scheduled_time\": \"10:30 AM\",\n  \"reason\": \"Patient requested morning fasting slot\",\n  \"test_ids\": [\"{{sampleItemId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/orders/{{orderId}}/reschedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "orders",
+                "{{orderId}}",
+                "reschedule"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Cancel Specific Tests (Pro-Rated Refund)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Doctor cancelled ESR after preliminary review\",\n  \"test_ids\": [\"{{sampleItemId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/orders/{{orderId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "orders",
+                "{{orderId}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Cancel Entire Order (Full Refund)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Patient admitted to emergency ward; tests transferred to IPD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/orders/{{orderId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "orders",
+                "{{orderId}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 - Sample Queue & Active Testing",
+      "item": [
+        {
+          "name": "1. View Sample Queue (Today Default, Latest First)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.items && jsonData.data.items.length > 0) {",
+                  "    pm.collectionVariables.set('sampleItemId', jsonData.data.items[0].sample_id || jsonData.data.items[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/sample-queue?page=1&limit=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "sample-queue"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Active Filters Modal Query (Combined)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/sample-queue?test_type=CBC&priority=STAT%20(Urgent)&status=Processing,Pending&from_date=2026-08-01&to_date=2026-08-22&page=1&limit=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "sample-queue"
+              ],
+              "query": [
+                {
+                  "key": "test_type",
+                  "value": "CBC"
+                },
+                {
+                  "key": "priority",
+                  "value": "STAT (Urgent)"
+                },
+                {
+                  "key": "status",
+                  "value": "Processing,Pending"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-08-22"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Move Test from SCHEDULED to IN_PROGRESS (Machine & Notes)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"machine_name\": \"Sysmex XN-1000\",\n  \"notes\": \"Sample loaded onto Sysmex XN-1000 for CBC analysis\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/samples/{{sampleItemId}}/process",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "samples",
+                "{{sampleItemId}}",
+                "process"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 - Post-Validation Addendums",
+      "item": [
+        {
+          "name": "1. List Addendum Reports",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.items && jsonData.data.items.length > 0) {",
+                  "    pm.collectionVariables.set('addendumId', jsonData.data.items[0].id || jsonData.data.items[0].addendum_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/lab/addendums?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "addendums"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Create Addendum Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_item_id\": \"{{sampleItemId}}\",\n  \"reason\": \"Clinician requested repeat parameter verification due to borderline platelet count\",\n  \"notes\": \"Recalibrated bench analyzer before running sample draw\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/addendums",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "addendums"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Approve Addendum & Release Amended Report",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Approved\",\n  \"review_notes\": \"Verified and approved amended platelet count\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/lab/addendums/{{addendumId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "lab",
+                "addendums",
+                "{{addendumId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
