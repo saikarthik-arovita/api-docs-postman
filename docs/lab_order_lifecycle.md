@@ -1,98 +1,118 @@
-# Laboratory Order Life Cycle & Status Transitions
+# Laboratory Order Life Cycle & Patient Status Transitions
 
-This document details the lifecycle of a Laboratory Order from initial check-in/registration through sample collection, analyzer processing, result submission, validation, and final PDF report generation.
+This document details the streamlined lifecycle of a Laboratory Order from initial patient check-in/registration through active analyzer processing, result submission, pathologist validation, and final PDF report release.
 
 ---
 
-## 1. Lifecycle Workflow Diagram
+## 1. Streamlined Patient Lifecycle Diagram
 
-The diagram below maps the status changes of the individual **ordered test items** (`diagnostic.lab_order_items.status`) as they pass through different stages:
+The diagram below reflects the clean, patient-facing lifecycle where internal specimen-handling intermediate states (`SAMPLE_COLLECTED` and `DELIVERED`) are collapsed directly into active testing (**`IN_PROGRESS`**):
 
 ```mermaid
 stateDiagram-v2
-    [*] --> PENDING : 1. Pay & Create Order (Registration)
-    PENDING --> SCHEDULED : 2. Awaiting Sample Collection
-    SCHEDULED --> SAMPLE_COLLECTED : 3. Collect Sample (Phlebotomy)
-    SAMPLE_COLLECTED --> DELIVERED : 4. Confirm Arrival (Lab Intake)
-    DELIVERED --> IN_PROGRESS : 5. Process on Analyzer
-    IN_PROGRESS --> REPORT_READY : 6. Submit Results (Technician)
-    REPORT_READY --> VALIDATED : 7. Validate Results (Pathologist)
-    VALIDATED --> [*] : 8. Generate & Export PDF Report
+    [*] --> PENDING : 1. Create Order / Registration
+    PENDING --> SCHEDULED : 2. Payment Confirmed & Scheduled for Phlebotomy
+    
+    %% Exception Branch: Rescheduling & Cancellation
+    SCHEDULED --> SCHEDULED : 2a. Reschedule (Date, Time, Reason)
+    SCHEDULED --> CANCELLED : 2b. Cancel Order / Test (Refund Processed)
+    PENDING --> CANCELLED : 2c. Cancel Unpaid Order
+
+    SCHEDULED --> IN_PROGRESS : 3. Sample Collected & Testing In-Progress
+    IN_PROGRESS --> REPORT_READY : 4. Technician Submits Parameter Readings
+    REPORT_READY --> VALIDATED : 5. Pathologist Clinical Sign-off
+    VALIDATED --> COMPLETED : 6. Final Diagnostic PDF Report Released
+    
+    %% Exception Branch: Post-Release Clinical Addendum
+    COMPLETED --> ADDENDUM : 7. Addendum Requested (Amendment Initiated)
+    ADDENDUM --> IN_PROGRESS : 8. Re-test / Correct Parameters
+    IN_PROGRESS --> REPORT_READY : 9. Submit Revised Results
+    REPORT_READY --> VALIDATED : 10. Pathologist Approves Amended Report
+    VALIDATED --> [*] : 11. Versioned PDF Report Released (REP-XXXXX-A1)
 ```
 
 ---
 
-## 2. Step-by-Step Lifecycle Phases
+## 2. Step-by-Step Patient Lifecycle Phases
 
-### Phase 1: Check-in & Checkout (Order Creation)
-* **Trigger**: The patient check-in is initiated (either Walk-in or OPD Referral). Once checkout payment is successful, the order is created.
+### Phase 1: Order Registration (`PENDING`)
+* **Trigger**: The patient checks in at the laboratory desk (Walk-in or OPD Prescription) and the diagnostic test intake is created.
 * **API Endpoints**:
-  * OPD Patient Lookup: `GET /diagnostic-orders/lab/opd-visits/lookup`
-  * Visit Details POST: `POST /diagnostic-orders/lab/orders/visit-details`
-  * Pay and Create Order: `POST /diagnostic-orders/lab/orders/pay-and-create`
-* **Status Changes**:
+  * Create Draft/Intake: `POST /lab/registrations` *(action: "DRAFT")*
+* **Status**:
   * **Lab Order**: `PENDING`
-  * **Lab Order Items (Tests)**: `PENDING` (Initial unpaid/uncollected state)
-  * **Payment status**: `PAID`
+  * **Lab Order Items (Tests)**: `PENDING`
 
 ---
 
-### Phase 2: Sample Awaiting Collection
-* **Trigger**: Once payment is completed, the system schedules the tests for sample collection.
+### Phase 2: Payment Confirmation & Scheduled (`SCHEDULED`)
+* **Trigger**: Payment is completed (Cash/UPI/Card/Pay Later) or order is confirmed. System issues token number (`LAB-XXXX`), barcode (`BC-XXXXX`), and places patient in the phlebotomy sample queue.
 * **API Endpoints**:
-  * Barcode scanning/Label printing
-* **Status Changes**:
-  * **Lab Order Items (Tests)**: Transitions from `PENDING` to `SCHEDULED`.
+  * Pay and Confirm: `POST /lab/registrations` or `POST /lab/orders/pay-and-create`
+  * Print Bill & Guidance Receipt: `GET /lab/invoices/{id}`
+  * Sample Queue: `GET /lab/sample-queue`
+* **Status**:
+  * **Lab Order**: `PENDING`
+  * **Lab Order Items (Tests)**: `SCHEDULED`
+  * **Billing**: `PAID` / `OPEN` *(Pay Later)*
 
 ---
 
-### Phase 3: Sample Collection (Phlebotomy)
-* **Trigger**: Phlebotomist prints the generated shared barcode label, draws the sample (blood, urine, stool, etc.), and matches it to the patient.
+### Phase 3: Active Testing & Analyzer Processing (`IN_PROGRESS`)
+* **Trigger**: The patient enters the phlebotomy booth, the sample is drawn/barcoded, and immediately enters the active laboratory testing bench / automated analyzer (e.g. Sysmex, Roche Cobas).
+* **UI Badge**: `In-Process` (Amber badge)
+* **Status**:
+  * **Lab Order Items (Tests)**: `IN_PROGRESS`
+
+---
+
+### Phase 4: Result Submission (`REPORT_READY` / `VERIFICATION`)
+* **Trigger**: The laboratory technician reviews numerical parameter readings from the analyzer, enters results on the test entry sheet, and submits for clinical review.
 * **API Endpoints**:
-  * Unified Barcode Scan: `GET /diagnostic-orders/lab/samples?barcode={barcode}`
-* **Status Changes**:
-  * **Lab Order Items (Tests)**: Transitions from `SCHEDULED` to `SAMPLE_COLLECTED`.
+  * Result Entry Form: `GET /diagnostic-orders/lab/orders/{order_id}/result-entry`
+  * Submit Result Values: `POST /diagnostic-orders/lab/results/{item_id}/submit`
+* **UI Badge**: `Verification` (Green badge) / `Report Ready`
+* **Status**:
+  * **Lab Order Items (Tests)**: `REPORT_READY`
 
 ---
 
-### Phase 4: Intake & Arrival Confirmation
-* **Trigger**: Collected samples arrive at the Laboratory intake station, and the technician scans the barcode to confirm the physical arrival of the sample.
+### Phase 5: Pathologist Validation & Sign-off (`VALIDATED` / `COMPLETED`)
+* **Trigger**: The pathologist reviews submitted parameters, checks for abnormal/critical flags, verifies patient history, and digitally signs the report.
 * **API Endpoints**:
-  * Confirm Arrival: `PATCH /diagnostic-orders/lab/samples/{item_id}/confirm-arrival`
-* **Status Changes**:
-  * **Lab Order Items (Tests)**: Transitions from `SAMPLE_COLLECTED` to `DELIVERED`.
-
----
-
-### Phase 5: Analyzer Processing & testing
-* **Trigger**: The sample is sent to the analyzer bench for testing. When testing begins on the bench, the status updates to indicate active processing.
-* **Status Changes**:
-  * **Lab Order Items (Tests)**: Transitions from `DELIVERED` to `IN_PROGRESS`.
-
----
-
-### Phase 6: Result Submission (Technician Dashboard)
-* **Trigger**: The technician reviews parameter values from the analyzer, pulls the result-entry sheet, types the result values (e.g. Hemoglobin `14.5`), and clicks **Submit**.
-* **API Endpoints**:
-  * Technician Dashboard List: `GET /diagnostic-orders/lab/dashboard/technician`
-  * Result Entry Form Parameters: `GET /diagnostic-orders/lab/orders/{order_id}/result-entry`
-  * Submit Result values: `POST /diagnostic-orders/lab/results/{item_id}/submit`
-* **Status Changes**:
-  * **Lab Order Items (Tests)**: Transitions from `IN_PROGRESS` to `REPORT_READY` (also known as `READY_FOR_REVIEW`).
-
----
-
-### Phase 7: Result Validation (Pathologist Approval)
-* **Trigger**: The pathologist reviews the submitted values (flagging abnormal/critical values) and approves the laboratory report.
-* **API Endpoints**:
-  * Pathologist Review/Release: `PATCH /diagnostic-orders/lab/results/{id}/status`
-* **Status Changes**:
-  * **Lab Order Items (Tests)**: Transitions from `REPORT_READY` to `VALIDATED`.
-  * **Lab Order**: Transitions from `PENDING` to `COMPLETED` (triggered when all child tests are `VALIDATED`).
-
----
-
-### Phase 8: Report Export
-* **Trigger**: The patient or doctor downloads the final verified PDF diagnostic report.
-* **API Endpoints**:
+  * Pathologist Approval: `PATCH /diagnostic-orders/lab/results/{id}/status`
   * Download PDF Report: `GET /diagnostic-orders/lab/reports/{id}/pdf`
+* **UI Badge**: `Completed` (Green badge)
+* **Status**:
+  * **Lab Order Items (Tests)**: `VALIDATED`
+  * **Lab Order**: `COMPLETED` *(Automatically triggered when all child tests are validated)*
+
+---
+
+### Phase 6: Post-Release Clinical Addendum (`ADDENDUM`)
+* **Trigger**: A doctor or pathologist requests a post-release correction, repeat specimen analysis, analyzer recalibration, or additional clinical remarks.
+* **API Endpoints**:
+  * Create Addendum: `POST /lab/addendums`
+  * Submit Revised Parameters: `POST /diagnostic-orders/lab/results/{item_id}/submit`
+  * Approve & Finalize Addendum: `PATCH /lab/addendums/{id}`
+* **Progression**:
+  1. `COMPLETED` ➔ **`ADDENDUM`** (`status = "Pending"`)
+  2. Unlocks parameter modification ➔ **`IN_PROGRESS`**
+  3. Technician submits revised readings ➔ **`REPORT_READY`**
+  4. Pathologist re-validates ➔ **`VALIDATED`**
+  5. Versioned amended PDF published (e.g. `REP-10245-A1`).
+
+---
+
+## 3. Patient Status Summary Table
+
+| Phase | Patient-Facing Status | System Status Code | Meaning for Patient / Front Desk |
+| :---: | :--- | :--- | :--- |
+| **1** | **Draft / Intake** | `PENDING` | Order created; intake registered awaiting payment |
+| **2** | **Scheduled / Waiting** | `SCHEDULED` | Payment confirmed; token `LAB-XXXX` assigned; waiting in phlebotomy queue |
+| **3** | **In-Process** | `IN_PROGRESS` | Specimen drawn and actively running on laboratory analyzers |
+| **4** | **Under Verification** | `REPORT_READY` | Testing completed; undergoing clinical quality review |
+| **5** | **Completed** | `COMPLETED` / `VALIDATED` | Doctor digitally approved report; PDF ready for download |
+| **—** | **Rescheduled** | `SCHEDULED` (Revised Date) | Test moved to a future requested slot with audit reason |
+| **—** | **Cancelled** | `CANCELLED` / `PARTIALLY_CANCELLED` | Order/test cancelled; refund initiated to original payment method |
+| **—** | **Addendum** | `ADDENDUM` | Report re-opened for pathologist revision / clinical update |

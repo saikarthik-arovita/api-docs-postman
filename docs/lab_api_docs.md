@@ -33,10 +33,852 @@ All API responses follow the standard envelope format:
 
 ---
 
+## 1.5 Patient Search, Registration, Booking & Flexible Billing
+
+### 1.5.1 Search Registered Patients & Active Lab Tests
+Searches the patient demographics registry. Enriches each returned patient with their count of active diagnostic orders, and an array of all active lab tests and packages currently in progress.
+
+* **Endpoint:** `GET /lab/patients` *(Alias: `GET /diagnostic-orders/lab/patients`)*
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `q` | String | Optional | Search query matching Patient Name, UHID, or Mobile Number. If omitted, returns recent patients. |
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "93643ddd-0d0d-491d-83d6-37f3bcde518d",
+      "uhid": "PAT-2026-0042",
+      "full_name": "Rohan Deshmukh",
+      "phone": "9876543210",
+      "dob": "1992-04-15",
+      "age": 34,
+      "gender": "MALE",
+      "blood_group": "O+",
+      "address": "42 MG Road, Bangalore",
+      "has_active_tests": true,
+      "active_orders_count": 1,
+      "active_lab_tests": [
+        {
+          "order_id": "c8542c47-f3e5-4ec0-8f24-b9f7e58c32f2",
+          "lab_unique_id": "LABID-29181",
+          "order_item_id": "df86d618-0977-4579-a061-e75b1d14d4dd",
+          "test_id": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
+          "test_name": "Complete Blood Count",
+          "test_code": "CBC",
+          "test_category": "Hematology",
+          "specimen_type": "Whole Blood",
+          "status": "SAMPLE_COLLECTED",
+          "priority": "ROUTINE",
+          "barcode": "BC-10029",
+          "token_number": "TKN-1004",
+          "created_at": "2026-08-22T10:40:00Z"
+        }
+      ],
+      "last_order_date": "2026-08-22T10:40:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 1.5.2 Patient Registration
+Registers a new patient with standard `PAT-{YYYY}-{seq}` UHID generation, aligning directly with the **Patient Information — New Registration** form specifications.
+
+* **Endpoint:** `POST /lab/patients` *(Alias: `POST /diagnostic-orders/lab/patients`)*
+* **Required Permission:** `diagnostics:order:view`
+* **Request Body (JSON):**
+```json
+{
+  "id_type": "Aadhar Card",
+  "id_number": "4920 1827 3849",
+  "first_name": "Rajesh",
+  "last_name": "Kumar",
+  "date_of_birth": "1978-03-07",
+  "age": 42,
+  "gender": "Male",
+  "blood_group": "B+",
+  "phone": "+91 87654 3210",
+  "pincode": "560003",
+  "street_name": "24, 3rd Cross",
+  "city": "Bengaluru",
+  "district": "Bengaluru Urban",
+  "state": "Karnataka",
+  "country": "India",
+  "email": "rajeshk@email.com",
+  "emergency_contacts": [
+    {
+      "relationship": "Mother",
+      "name": "Heer Kumar",
+      "contact_number": "+91 78901 23456"
+    }
+  ],
+  "consent_confirmed": true
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Patient registered successfully",
+  "data": {
+    "patient_id": "83d637f3-bcde-491d-9364-3ddd0d0d518d",
+    "id": "83d637f3-bcde-491d-9364-3ddd0d0d518d",
+    "uhid": "PAT-2026-6482",
+    "patient_number": "PAT-2026-6482",
+    "first_name": "Rajesh",
+    "last_name": "Kumar",
+    "full_name": "Rajesh Kumar",
+    "id_type": "Aadhar Card",
+    "id_number": "4920 1827 3849",
+    "phone": "+91 87654 3210",
+    "email": "rajeshk@email.com",
+    "dob": "1978-03-07",
+    "age": 42,
+    "gender": "MALE",
+    "blood_group": "B+",
+    "street_name": "24, 3rd Cross",
+    "city": "Bengaluru",
+    "district": "Bengaluru Urban",
+    "state": "Karnataka",
+    "pincode": "560003",
+    "country": "India",
+    "address": "24, 3rd Cross, Bengaluru, Bengaluru Urban, Karnataka - 560003, India",
+    "emergency_contacts": [
+      {
+        "relationship": "Mother",
+        "name": "Heer Kumar",
+        "contact_number": "+91 78901 23456"
+      }
+    ],
+    "consent_confirmed": true,
+    "created_at": "2026-08-22 12:28:10.123456+05:30"
+  }
+}
+```
+
+---
+
+### 1.5.3 List Tests and Test Packages Catalog
+Retrieves individual lab tests and bundled test packages.
+
+* **Endpoints:**
+  * Tests: `GET /lab/tests` *(Alias: `GET /diagnostic-orders/lab/tests`)*
+  * Packages: `GET /lab/packages` *(Alias: `GET /diagnostic-orders/lab/packages`)*
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "b5d66607-f4de-4ac4-bfed-c9b27adad890",
+      "package_id": "b5d66607-f4de-4ac4-bfed-c9b27adad890",
+      "package_name": "Comprehensive Executive Health Check",
+      "package_code": "PKG-EXEC-01",
+      "price": 1200.00,
+      "discount_percentage": 10.00,
+      "is_active": true,
+      "tests": [
+        {
+          "test_id": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
+          "test_name": "Complete Blood Count",
+          "category": "Hematology",
+          "price": 350.00
+        },
+        {
+          "test_id": "42e82d23-96f8-4981-b068-52a12dc10de4",
+          "test_name": "Lipid Profile",
+          "category": "Biochemistry",
+          "price": 650.00
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### 1.5.4 Calculate Order Price (Invoice Preview)
+Calculates subtotal, package discounts, and GST (18%) for arbitrary combinations of individual tests and packages.
+
+* **Endpoint:** `POST /lab/orders/calculate-price`
+* **Request Body:**
+```json
+{
+  "selected_tests": [
+    { "test_id": "16a43dca-eb71-4b85-ab0a-3b984816cadf" }
+  ],
+  "selected_packages": [
+    { "package_id": "b5d66607-f4de-4ac4-bfed-c9b27adad890" }
+  ]
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "subtotal": 1550.00,
+    "discount_amount": 120.00,
+    "taxable_amount": 1430.00,
+    "tax": 257.40,
+    "tax_amount": 257.40,
+    "total_amount": 1687.40,
+    "tests": [
+      {
+        "test_id": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
+        "test_name": "Complete Blood Count",
+        "price": 350.00
+      }
+    ],
+    "packages": [
+      {
+        "package_id": "b5d66607-f4de-4ac4-bfed-c9b27adad890",
+        "package_name": "Comprehensive Executive Health Check",
+        "price": 1200.00,
+        "discount": 120.00,
+        "test_ids": [
+          "16a43dca-eb71-4b85-ab0a-3b984816cadf",
+          "42e82d23-96f8-4981-b068-52a12dc10de4"
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 1.5.5 Create Registration / Order (Draft, Instant Pay, Pay Later, Cards, UPI, Insurance)
+Supports draft booking (`action: "DRAFT"`), multi-test and multi-package combinations, and flexible payment methods:
+- **`CASH`**: Directly confirmed with `PAID` status.
+- **`UPI`**: Directly confirmed; takes `reference_no` (optional).
+- **`CARD`**: Directly confirmed; takes `reference_no` (optional).
+- **`PAY_LATER`**: Directly confirmed; adds total to patient's billing ledger as an outstanding balance with status `PAY_LATER` / `OPEN`.
+- **`INSURANCE` / `OTHERS`**: Recorded with policy claim details.
+
+* **Endpoints:**
+  * `POST /lab/registrations` *(Draft or Instant Register & Pay)*
+  * `POST /lab/orders/pay-and-create`
+* **Required Permission:** `diagnostics:order:view`
+
+#### Request Body
+```json
+{
+  "action": "REGISTER_AND_PAY",
+  "patient_id": "83d637f3-bcde-491d-9364-3ddd0d0d518d",
+  "visit_type": "Walk-in",
+  "priority": "Routine",
+  "fasting_required": true,
+  "special_instructions": "12 hours fasting required",
+  "selected_tests": [
+    { "test_id": "16a43dca-eb71-4b85-ab0a-3b984816cadf" }
+  ],
+  "selected_packages": [
+    { "package_id": "b5d66607-f4de-4ac4-bfed-c9b27adad890" }
+  ],
+  "payment": {
+    "payment_mode": "UPI",
+    "reference_no": "TXN-UPI-99201"
+  }
+}
+```
+
+#### Success Response (201 Created / 200 OK)
+Returns the complete payload formatted for the **"Lab Registration Completed"** UI card with synchronized identifiers, barcode, waiting token, and all item UUIDs:
+```json
+{
+  "success": true,
+  "message": "Registration completed successfully",
+  "data": {
+    "order_id": "73aaa2f0-e1d0-442f-9f9b-4bf0d58a08a5",
+    "id": "73aaa2f0-e1d0-442f-9f9b-4bf0d58a08a5",
+    "labid": "LABID-29184",
+    "patient_lab_id": "LABID-29184",
+    "lab_unique_id": "LABID-29184",
+    "lab_id": "LAB-2419",
+    "order_number": "LAB-2419",
+    "barcode": "BC-2419",
+    "barcode_id": "7151abcf-5a89-4339-8c6a-b49d21c5084f",
+    "token_number": "LAB-2419",
+    "registration_date": "2026-04-20",
+    "registration_time": "10:45:00",
+    "registration_datetime": "10:45 AM, 20 April 2026",
+    "patient_id": "401fcd56-3bd0-4247-8ece-d2cc47b616dd",
+    "patient_name": "Ananya Sharma",
+    "uhid": "ARV-2024-8932",
+    "age": 32,
+    "gender": "Female",
+    "phone_number": "+91 9938283477",
+    "contact": "+91 9938283477",
+    "visit_type": "Walk-in",
+    "priority": "Routine",
+    "pathologist": "Dr. Sarah Smith",
+    "doctor_name": "Dr. Sarah Smith",
+    "status": "CONFIRMED",
+    "payment_status": "PAID",
+    "payment_mode": "UPI",
+    "reference_no": "UPI-TXN-2026-9911",
+    "billing": {
+      "subtotal": 1500.00,
+      "discount_amount": 0.00,
+      "tax_amount": 250.00,
+      "total_amount": 1750.00,
+      "amount_paid": 1750.00,
+      "outstanding_balance": 0.00
+    },
+    "total_amount": 1750.00,
+    "test_names": [
+      "CBC (Complete Blood Count)",
+      "Lipid Profile",
+      "HbA1c"
+    ],
+    "tests": [
+      {
+        "order_item_id": "7151abcf-5a89-4339-8c6a-b49d21c5084f",
+        "id": "7151abcf-5a89-4339-8c6a-b49d21c5084f",
+        "test_id": "2570848a-74ce-48db-b1f7-1fc450e060c5",
+        "test_name": "CBC (Complete Blood Count)",
+        "test_code": "HEM-001",
+        "test_category": "Haematology",
+        "specimen_type": "Whole Blood",
+        "test_price": 500.00,
+        "price": 500.00,
+        "status": "PENDING",
+        "barcode": "BC-2419",
+        "barcode_id": "7151abcf-5a89-4339-8c6a-b49d21c5084f",
+        "token_number": "LAB-2419"
+      },
+      {
+        "order_item_id": "427c9384-0ce8-4599-952a-acf6afb85541",
+        "id": "427c9384-0ce8-4599-952a-acf6afb85541",
+        "test_id": "1a0ef01c-36ac-4c8f-a451-110f9d60d393",
+        "test_name": "Lipid Profile",
+        "test_code": "BIO-004",
+        "test_category": "Biochemistry",
+        "specimen_type": "Serum",
+        "test_price": 750.00,
+        "price": 750.00,
+        "status": "PENDING",
+        "barcode": "BC-2419",
+        "barcode_id": "7151abcf-5a89-4339-8c6a-b49d21c5084f",
+        "token_number": "LAB-2419"
+      },
+      {
+        "order_item_id": "9b183fd4-8b01-4475-ae90-7bbec9267104",
+        "id": "9b183fd4-8b01-4475-ae90-7bbec9267104",
+        "test_id": "b301fd45-9852-45e0-91cd-ef9034561001",
+        "test_name": "HbA1c",
+        "test_code": "BIO-008",
+        "test_category": "Biochemistry",
+        "specimen_type": "Whole Blood",
+        "test_price": 500.00,
+        "price": 500.00,
+        "status": "PENDING",
+        "barcode": "BC-2419",
+        "barcode_id": "7151abcf-5a89-4339-8c6a-b49d21c5084f",
+        "token_number": "LAB-2419"
+      }
+    ],
+    "packages": []
+  }
+}
+```
+
+---
+
+## 1.6 Order Management & Addendum Reports APIs
+
+### 1.6.1 Order Management Summary Statistics (KPI Cards)
+Retrieves summary metric counters displayed across top KPI cards on the Order Management dashboard.
+
+* **Endpoint:** `GET /lab/orders/statistics` *(Aliases: `GET /diagnostic-orders/lab/orders/statistics`, `GET /lab/dashboard`)*
+* **Required Permission:** `diagnostics:order:view`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "total_orders": 342,
+    "pending": 47,
+    "completed": 89,
+    "in_transit": 28,
+    "processing": 163,
+    "reviewed": 31
+  }
+}
+```
+
+---
+
+### 1.6.2 Order Management Table List
+Retrieves the paginated, searchable, and filterable laboratory orders list.
+
+* **Endpoint:** `GET /lab/orders` *(Alias: `GET /diagnostic-orders/lab/orders`)*
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `search` / `q` | String | Optional | Search by Patient Name, UHID, Phone, or Barcode |
+  | `status` | String | Optional | Filter by status: `Waiting` (`PENDING`), `Inprocess` (`IN_PROGRESS`), `Completed` (`COMPLETED`) |
+  | `patient_type` | String | Optional | `Walk-In`, `Hospital`, `Referral` |
+  | `collector_id` | UUID | Optional | Filter by phlebotomist / collector staff |
+  | `date` | String | Optional | Date filter (`YYYY-MM-DD`) |
+  | `page` | Integer | Optional | Page number (Default: `1`) |
+  | `limit` | Integer | Optional | Items per page (Default: `10`) |
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "order_id": "c8542c47-f3e5-4ec0-8f24-b9f7e58c32f2",
+        "order_item_id": "df86d618-0977-4579-a061-e75b1d14d4dd",
+        "patient_id": "d1d96f70-b397-457c-8954-c8728e03ca0c",
+        "patient_name": "Rahul Verma",
+        "uhid": "UHID-9821",
+        "age": 34,
+        "gender": "F",
+        "barcode": "BC-881234",
+        "test_names": [
+          "ESR (Erythrocyte Sedimentation Rate)"
+        ],
+        "collector": {
+          "name": "ARAV SHARMA",
+          "role": "Pathologist"
+        },
+        "patient_type": "Walk-In",
+        "status": "Completed",
+        "created_at": "2026-04-20T09:30:00Z"
+      },
+      {
+        "order_id": "a9184dca-8319-48fe-99d8-1fc450e060c5",
+        "order_item_id": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
+        "patient_id": "b16cc357-fb70-404f-aa70-51bb20763cd7",
+        "patient_name": "Rajesh Sharma",
+        "uhid": "UHID-9821",
+        "age": 34,
+        "gender": "F",
+        "barcode": "BC-881234",
+        "test_names": [
+          "CBC",
+          "ESR"
+        ],
+        "collector": {
+          "name": "ARAV SHARMA",
+          "role": "Lab Technician"
+        },
+        "patient_type": "Hospital",
+        "status": "Inprocess",
+        "created_at": "2026-04-20T10:15:00Z"
+      }
+    ],
+    "pagination": {
+      "total_records": 124,
+      "page": 1,
+      "limit": 10,
+      "total_pages": 13
+    }
+  }
+}
+```
+
+---
+
+### 1.6.3 Addendum Reports Table List
+Retrieves the paginated and searchable post-validation Addendum Reports audit table.
+
+* **Endpoint:** `GET /lab/addendums` *(Alias: `GET /diagnostic-orders/lab/addendums`)*
+* **Required Permission:** `diagnostics:order:view`
+* **Query Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `search` / `q` | String | Optional | Search by Report ID, Patient Name, or UHID |
+  | `status` | String | Optional | Filter by status: `Pending`, `Approved`, `Rejected` |
+  | `amendment_type`| String | Optional | `Value Correction`, `Comment Added`, `Test Result Updated`, `Typographical Correction`, `Additional Findings` |
+  | `page` | Integer | Optional | Page number (Default: `1`) |
+  | `limit` | Integer | Optional | Items per page (Default: `10`) |
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "addendum_id": "5d78936b-aaa0-457c-beb3-2d13853fc909",
+        "report_id": "REP-10245",
+        "lab_result_id": "401fcd56-3bd0-4247-8ece-d2cc47b616dd",
+        "patient_name": "Rajesh Kumar",
+        "patient_uhid": "PAT-2026-6483",
+        "original_report_date": "16 Jul 2026",
+        "addendum_date": "16 Jul 2026",
+        "amendment_type": "Value Correction",
+        "reason": "Analyzer recalibration",
+        "requested_by": "Dr. Mehta",
+        "status": "Approved",
+        "created_at": "2026-07-16T14:20:00Z"
+      }
+    ],
+    "pagination": {
+      "total_records": 48,
+      "page": 1,
+      "limit": 10,
+      "total_pages": 5
+    }
+  }
+}
+---
+
+### 1.6.4 Reschedule Lab Tests & Packages
+Reschedules one or more selected tests, order items, or bundled packages under an active order with a revised date, time, and reason. All entity references strictly enforce UUID standards.
+
+* **Endpoint:** `POST /lab/orders/{id}/reschedule` *(Alias: `POST /diagnostic-orders/lab/orders/{id}/reschedule`)*
+* **Required Permission:** `diagnostics:order:write`
+* **Request Body (JSON):**
+```json
+{
+  "selected_tests": [
+    {
+      "test_id": "2570848a-74ce-48db-b1f7-1fc450e060c5"
+    }
+  ],
+  "selected_packages": [
+    {
+      "package_id": "b5d66607-f4de-4ac4-bfed-c9b27adad890"
+    }
+  ],
+  "rescheduled_date": "2026-08-25",
+  "rescheduled_time": "10:30 AM",
+  "reason": "Patient requested morning fasting slot"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Lab test(s) rescheduled successfully",
+  "data": {
+    "order_id": "812ef6f8-ffce-45c0-8000-3979b96c898f",
+    "lab_id": "LABID-29354",
+    "rescheduled_date": "2026-08-25",
+    "rescheduled_time": "10:30 AM",
+    "reason": "Patient requested morning fasting slot",
+    "rescheduled_items": [
+      {
+        "order_item_id": "3bb24083-5e74-47cb-aeeb-a1e28f13bed7",
+        "test_id": "1a0ef01c-36ac-4c8f-a451-110f9d60d393",
+        "test_name": "Special CBC Parameters Verification",
+        "barcode": "BC-56817",
+        "status": "SCHEDULED",
+        "rescheduled_date": "2026-08-25",
+        "rescheduled_time": "10:30 AM",
+        "reason": "Patient requested morning fasting slot",
+        "updated_at": "2026-08-22 13:02:30.659419+05:30"
+      },
+      {
+        "order_item_id": "b2bb9ab9-24f5-4ccc-99f1-715f7731cb2e",
+        "test_id": "2570848a-74ce-48db-b1f7-1fc450e060c5",
+        "test_name": "Erythrocyte Sedimentation Rate (ESR)",
+        "barcode": "BC-56817",
+        "status": "SCHEDULED",
+        "rescheduled_date": "2026-08-25",
+        "rescheduled_time": "10:30 AM",
+        "reason": "Patient requested morning fasting slot",
+        "updated_at": "2026-08-22 13:02:30.659419+05:30"
+      }
+    ],
+    "rescheduled_packages": [
+      {
+        "package_id": "b5d66607-f4de-4ac4-bfed-c9b27adad890"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 1.6.5 Cancel Lab Tests & Orders
+Cancels specified tests, packages, or an entire diagnostic order with a mandatory cancellation audit reason. All entity references strictly enforce UUID standards.
+
+* **Endpoint:** `POST /lab/orders/{id}/cancel` *(Alias: `POST /diagnostic-orders/lab/orders/{id}/cancel`)*
+* **Required Permission:** `diagnostics:order:write`
+* **Request Body (JSON):**
+```json
+{
+  "selected_tests": [
+    {
+      "test_id": "2570848a-74ce-48db-b1f7-1fc450e060c5"
+    }
+  ],
+  "reason": "Patient decided not to take individual ESR test"
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Lab test(s) cancelled successfully",
+  "data": {
+    "order_id": "85fc6d09-9da0-4bbc-9482-832113d3998b",
+    "order_number": "LABID-29360",
+    "lab_id": "LABID-29360",
+    "order_status": "PARTIALLY_CANCELLED",
+    "cancellation_reason": "Patient decided not to take individual ESR test",
+    "payment_details": {
+      "payment_method": "UPI",
+      "reference_no": "UPI-TXN-2026-9911",
+      "invoice_number": "INV-LAB-BDEB8852",
+      "original_total_amount": 1829.00,
+      "original_amount_paid": 1829.00,
+      "previous_outstanding": 0.00
+    },
+    "refund_details": {
+      "refund_amount": 413.00,
+      "refund_status": "REFUND_DUE",
+      "refund_mode": "UPI (Original Payment Method)",
+      "refund_reference_no": "REF-UPI-27855955",
+      "outstanding_balance_adjusted": 0.00,
+      "remaining_order_balance": 1416.00
+    },
+    "cancelled_items": [
+      {
+        "order_item_id": "0b2de937-4e21-40c1-aa41-65bb4d59cd07",
+        "test_id": "2570848a-74ce-48db-b1f7-1fc450e060c5",
+        "test_name": "Erythrocyte Sedimentation Rate (ESR)",
+        "test_price": 350.00,
+        "refund_amount": 413.00,
+        "status": "CANCELLED",
+        "reason": "Patient decided not to take individual ESR test",
+        "cancelled_at": "2026-08-22 13:06:29.213111+05:30"
+      }
+    ],
+    "cancelled_packages": []
+  }
+}
+---
+
+### 1.7 Patient Bills & Invoices APIs
+
+#### 1.7.1 List All Bills for a Specific Patient
+Retrieves all historical and active bills, payment receipts, and outstanding dues for a specific patient.
+
+* **Endpoint:** `GET /lab/patients/{id}/bills` *(Aliases: `GET /lab/patients/{id}/invoices`, `GET /diagnostic-orders/lab/patients/{id}/bills`)*
+* **Required Permission:** `diagnostics:billing:view`
+* **Query Parameters:** `status`, `payment_method`, `start_date`, `end_date`, `page`, `limit`
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "bill_id": "621b59c1-f2e0-44c0-b60b-e9f2a18de59f",
+        "invoice_id": "621b59c1-f2e0-44c0-b60b-e9f2a18de59f",
+        "invoice_number": "INV-LAB-D4BAB345",
+        "patient_id": "96077f2b-2fae-4f8d-999a-742d6a9d290d",
+        "patient_name": "Rajesh Kumar",
+        "patient_uhid": "PAT-2026-6495",
+        "patient_age": 42,
+        "patient_gender": "MALE",
+        "patient_phone": "9823461993",
+        "rx_id": "fad29ebf-f072-4f4f-9e46-0ab1663b7e71",
+        "order_number": "LABID-29372",
+        "rx_number": "LABID-29372",
+        "payment_method": "UPI",
+        "payment_mode": "UPI",
+        "amount": 1829.00,
+        "total_amount": 1829.00,
+        "subtotal_amount": 1550.00,
+        "discount_amount": 0.00,
+        "tax_amount": 279.00,
+        "paid_amount": 1829.00,
+        "outstanding_amount": 0.00,
+        "status": "PAID",
+        "invoice_date": "2026-08-22",
+        "created_at": "2026-08-22T13:25:41.733580+05:30"
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+#### 1.7.2 General Invoices Endpoint with Query Filters
+Lists all diagnostic bills and invoices across the laboratory with support for patient filtering (`patient_id`, `uhid`), search keywords, status, and date range.
+
+* **Endpoint:** `GET /lab/invoices`
+* **Gateway Route Aliases:** `GET /lab/billing/invoices`, `GET /lab/bills`, `GET /diagnostic-orders/billing/invoices`
+* **Required Permission:** `diagnostics:billing:view`
+* **Filter by Patient UUID:** `GET /lab/invoices?patient_id=96077f2b-2fae-4f8d-999a-742d6a9d290d`
+* **Filter by UHID:** `GET /lab/invoices?uhid=PAT-2026-6495`
+* **Filter by Search:** `GET /lab/invoices?search=Rajesh`
+* **Filter by Status & Mode:** `GET /lab/invoices?patient_id=96077f2b-2fae-4f8d-999a-742d6a9d290d&status=PAID&payment_method=UPI&page=1&limit=10`
+
+##### Success Response (200 OK)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "bill_id": "621b59c1-f2e0-44c0-b60b-e9f2a18de59f",
+        "invoice_id": "621b59c1-f2e0-44c0-b60b-e9f2a18de59f",
+        "invoice_number": "INV-LAB-D4BAB345",
+        "patient_id": "96077f2b-2fae-4f8d-999a-742d6a9d290d",
+        "patient_name": "Rajesh Kumar",
+        "patient_uhid": "PAT-2026-6495",
+        "patient_age": 42,
+        "patient_gender": "MALE",
+        "patient_phone": "9823461993",
+        "rx_id": "fad29ebf-f072-4f4f-9e46-0ab1663b7e71",
+        "order_number": "LABID-29372",
+        "rx_number": "LABID-29372",
+        "payment_method": "UPI",
+        "payment_mode": "UPI",
+        "amount": 1829.00,
+        "total_amount": 1829.00,
+        "subtotal_amount": 1550.00,
+        "discount_amount": 0.00,
+        "tax_amount": 279.00,
+        "paid_amount": 1829.00,
+        "outstanding_amount": 0.00,
+        "status": "PAID",
+        "invoice_date": "2026-08-22",
+        "created_at": "2026-08-22T13:25:41.733580+05:30"
+      },
+      {
+        "bill_id": "fcf20c85-b528-4765-9701-a9f643a75f33",
+        "invoice_id": "fcf20c85-b528-4765-9701-a9f643a75f33",
+        "invoice_number": "INV-LAB-83C689FB",
+        "patient_id": "96077f2b-2fae-4f8d-999a-742d6a9d290d",
+        "patient_name": "Rajesh Kumar",
+        "patient_uhid": "PAT-2026-6495",
+        "patient_age": 42,
+        "patient_gender": "MALE",
+        "patient_phone": "9823461993",
+        "rx_id": "709af13a-22fd-405f-9300-2e8fa865daf5",
+        "order_number": "LABID-29371",
+        "rx_number": "LABID-29371",
+        "payment_method": null,
+        "payment_mode": null,
+        "amount": 1829.00,
+        "total_amount": 1829.00,
+        "subtotal_amount": 1550.00,
+        "discount_amount": 0.00,
+        "tax_amount": 279.00,
+        "paid_amount": 0.00,
+        "outstanding_amount": 1829.00,
+        "status": "OPEN",
+        "invoice_date": "2026-08-22",
+        "created_at": "2026-08-22T13:25:40.231401+05:30"
+      }
+    ],
+    "total": 2
+  }
+}
+```
+
+#### 1.7.3 "Filter Options" Modal Integration
+Direct mapping between the UI Filter Options modal and API query parameters:
+
+* **Status Options (`status`):** `Completed`, `Pending`, `Paid`, `Cancelled` (supports multi-selection via comma: `status=Paid,Completed`).
+* **Date Range (`from_date`, `to_date`):** Format `YYYY-MM-DD` (aliases: `startDate`, `endDate`).
+* **Payment Method (`payment_method`):** `UPI`, `Card`, `Cash` (supports multi-selection via comma: `payment_method=UPI,Card`).
+
+#### 1.7.4 Download / Print Bill Receipt (`GET /lab/invoices/{id}`)
+Retrieves the complete receipt structure required for downloading/printing the **LAB REGISTRATION & TEST ORDER** invoice:
+
+* **Endpoint:** `GET /lab/invoices/{id}`
+* **Gateway Route Aliases:** `GET /lab/bills/{id}`, `GET /diagnostic-orders/billing/invoices/{id}`
+* **Required Permission:** `diagnostics:billing:view`
+* **Response Details:** Returns `hospital_info`, `patient_info` (with `age_gender`, contact), `lab_info` (with report ID, barcode `BC-2419`, pathologist, `special_instructions`, `fasting_required`), `billing_summary` (subtotal, 18% GST, discount, total amount paid), full `tests` array (with test code, category, specimen type, and individual test price), `instructions` (dynamic array containing custom order preparation instructions, fasting advisories, and document tracking notes), and `authorized_representative` note.
+
+##### Example Request:
+```http
+GET /lab/invoices/1072c717-eeee-4165-8c22-983e6703f599
+Authorization: Bearer <access_token>
+```
+
+#### 1.7.5 Sample Queue & Active Filters Modal (`GET /lab/sample-queue`)
+Powers the **Sample Queue** table and its **Active Filters Modal**:
+
+* **Endpoint:** `GET /lab/sample-queue`
+* **Gateway Route Aliases:** `GET /lab/samples`, `GET /lab/orders/samples`, `GET /diagnostic-orders/lab/samples`, `GET /diagnostic-orders/lab/sample-queue`
+* **Required Permission:** `diagnostics:order:view`
+* **Behavioral Defaults & Rules:**
+  * **Default View:** Automatically filters for tests registered on the **Current Day** (`CURRENT_DATE`).
+  * **Default Ordering:** Displays **Latest Orders First** (`ORDER BY created_at DESC`).
+  * **Past History Access:** Users can query any past date/range (`from_date`, `to_date`, `date`) or all history (`all_time=true`).
+  * **Future Date Restriction:** Any query for a future date (e.g. tomorrow or next week) automatically returns an **empty queue** (`total: 0`, `items: []`).
+* **Query Filters Supported:**
+  * **Search (`search` / `q`):** Order ID (`ORD-10482`, `LABID-29184`), Patient Name, UHID, Barcode, Phone, Test Name.
+  * **Test Type (`test_type` / `category`):** Dropdown filter (`All Test Types`, `Haematology`, `Biochemistry`, `CBC + ESR`, `Lipid Profile`, `Urine Routine`).
+  * **Priority (`priority`):** `STAT (Urgent)`, `Routine` (multi-select: `priority=STAT,Routine`).
+  * **Status (`status`):** `Pending`, `Processing`, `In-Process`, `Verification`, `Completed`, `Waiting` (multi-select: `status=Processing,Verification`).
+  * **Date Range (`from_date`, `to_date`, `date`, `all_time`):** Format `YYYY-MM-DD`. Defaults to Today.
+  * **Pagination (`page`, `limit`):** Configurable rows per page (e.g. `limit=5`).
+* **Table Column Outputs:** `order_id`, `patient_name`, `test_type`, `date_time`, `status` (`Completed`, `In-Process`, `Waiting`, `Pending`, `Verification`), `priority` (`STAT (Urgent)`, `Routine`), `raw_order_id` (action link `👁`), and `pagination` metadata.
+
+##### Example Request:
+```
+
+#### 1.7.6 Laboratory Packages & Multi-Test Bundles (`GET /lab/packages`)
+Lists pre-configured multi-test health packages (e.g. Executive Health Checkup, Diabetic Care, Cardiac Profile) with test counts and bundled child tests:
+
+* **Endpoint:** `GET /lab/packages` (List/Search) and `GET /lab/packages/{id}` (Details)
+* **Gateway Route Aliases:** `GET /diagnostic-orders/lab/packages`, `GET /lab/catalog?type=packages`
+* **Required Permission:** `diagnostics:order:view` or `config.read`
+* **Query Parameters:** `search` (name or code), `page`, `limit`.
+
+##### Example Request:
+```http
+GET /lab/packages?search=Executive&limit=10
+Authorization: Bearer <access_token>
+```
+
+---
+
 ## 2. Laboratory Operations & Workflow Endpoints
 
 These endpoints manage the workflow transitions of a lab order item:
-`PENDING` -> `SAMPLE_COLLECTED` -> `IN_PROGRESS` -> `COMPLETED` / `CANCELLED`
+`PENDING` -> `IN_PROGRESS` -> `REPORT_READY` -> `VALIDATED` / `COMPLETED` (or `CANCELLED` / `ADDENDUM`)
+
+### 2.0.1 Start Testing & Process Sample (Move from SCHEDULED to IN_PROGRESS)
+Transitions an individual lab test item from `SCHEDULED` to `IN_PROGRESS` when analyzer testing begins.
+
+* **Endpoint:** `PATCH /lab/samples/{id}/process`
+* **Gateway Route Aliases:** `PATCH /diagnostic-orders/lab/samples/{id}/process`, `POST /lab/samples/{id}/process`, `PATCH /lab/items/{id}/process`
+* **Required Permission:** `diagnostics:lab:collect` or `diagnostics:order:write`
+* **Request Body (JSON):**
+  | Field | Type | Requirement | Description |
+  | :--- | :--- | :--- | :--- |
+  | `machine_name` | `string` | Optional | Analyzer / Bench name (e.g. `"Sysmex XN-1000"`). Saved directly without requiring pre-configured machine setup. |
+  | `notes` | `string` | Optional | Technician bench processing notes / remarks. |
+  | `machine_id` | `UUID` | Optional | Analyzer machine UUID (if configured). |
+
+##### Example Request:
+```http
+PATCH /lab/samples/d9b609af-1d54-4a11-a24d-46e4f6feab4d/process
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "machine_name": "Sysmex XN-1000",
+  "notes": "Sample loaded onto Sysmex XN-1000 for CBC analysis"
+}
+```
 
 ### 2.1 Get Lab Order Details
 Retrieves diagnostic order header details along with enriched lab items and results.
