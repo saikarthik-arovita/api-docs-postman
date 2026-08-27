@@ -2210,129 +2210,7 @@ Authorization: Bearer <access_token>
             "testId": "9e77ed6d-5cbb-4e6b-be0f-8452bacfcc3f",
             "testName": "Fasting Blood Sugar (FBS)",
             "code": "BCH-001",
-            "basePrice": 150.0,
-            "displayOrder": 3
-          }
-        ]
-      }
-    ],
-    "total": 1
-  }
-}
-```
-
----
-
-### 12.4 Example Request: Get Package Details
-```http
-GET /lab/packages/b5d66607-f4de-4ac4-bfed-c9b27adad890
-Authorization: Bearer <access_token>
-```
-
-#### Success Response (`200 OK`):
-```json
-{
-  "success": true,
-  "code": 200,
-  "data": {
-    "packageId": "b5d66607-f4de-4ac4-bfed-c9b27adad890",
-    "code": "PKG-EXEC-HLTH",
-    "packageName": "Executive Comprehensive Health Checkup Package",
-    "price": 2499.0,
-    "description": "Full-body preventive health assessment including CBC, ESR, Fasting Glucose, HbA1c, Complete Lipid Profile, Liver Function, Kidney Function, Serum Electrolytes, and Urine Routine.",
-    "status": "Active",
-    "tests": [
-      {
-        "testId": "116a0b90-ec8e-4a90-835e-4713588d3999",
-        "testName": "Complete Blood Count (CBC)",
-        "code": "HEM-001",
-        "basePrice": 350.0,
-        "displayOrder": 1,
-        "optional": false
-      },
-      {
-        "testId": "2570848a-74ce-48db-b1f7-1fc450e060c5",
-        "testName": "Erythrocyte Sedimentation Rate (ESR)",
-        "code": "HEM-003",
-        "basePrice": 350.0,
-        "displayOrder": 2,
-        "optional": false
-      },
-      {
-        "testId": "9e77ed6d-5cbb-4e6b-be0f-8452bacfcc3f",
-        "testName": "Fasting Blood Sugar (FBS)",
-        "code": "BCH-001",
-        "basePrice": 150.0,
-        "displayOrder": 3,
-        "optional": false
-      },
-      {
-        "testId": "bc339cc5-d386-466b-87c5-097b291defce",
-        "testName": "HbA1c (Glycated Haemoglobin)",
-        "code": "BCH-004",
-        "basePrice": 450.0,
-        "displayOrder": 4,
-        "optional": false
-      },
-      {
-        "testId": "8596fb10-33a7-4166-bdff-a1f7d2b6a5af",
-        "testName": "Lipid Profile",
-        "code": "BCH-017",
-        "basePrice": 650.0,
-        "displayOrder": 5,
-        "optional": false
-      },
-      {
-        "testId": "9901413e-cc16-4b04-88ce-14b7c03a6569",
-        "testName": "Liver Function Test (LFT)",
-        "code": "BCH-005",
-        "basePrice": 850.0,
-        "displayOrder": 6,
-        "optional": false
-      },
-      {
-        "testId": "3f10dd1d-b7db-40b6-acf8-bb27874f1ef6",
-        "testName": "Renal Function Test (RFT/KFT)",
-        "code": "BCH-012",
-        "basePrice": 750.0,
-        "displayOrder": 7,
-        "optional": false
-      },
-      {
-        "testId": "123dd002-9824-409c-af60-7f06fd9787fb",
-        "testName": "Serum Electrolytes (Na, K, Cl)",
-        "code": "BCH-023",
-        "basePrice": 450.0,
-        "displayOrder": 8,
-        "optional": false
-      },
-      {
-        "testId": "f044fd54-4244-4536-9740-03d40ba51f03",
-        "testName": "Urine Routine & Microscopy",
-        "code": "URN-001",
-        "basePrice": 250.0,
-        "displayOrder": 9,
-        "optional": false
-      }
-    ]
-  }
-}
-```
-
----
-
-# SECTION 11: PATIENT EMR / REPORT HISTORY API
-
-## 11.1 Overview & UI Alignment
-
-This endpoint supports the **Patient EMR / Report History** screen (`Dashboard > Order management > EMR/Report History`).
-
-### Key Behavioral Rules
-1. **Strictly Completed Records:** Only diagnostic orders and tests with status **`Completed`** (or reported/validated/delivered) appear in this history view. Non-completed orders (Scheduled, In-Progress, Pending) are excluded.
-2. **Real-time Inclusion:** Both past historical test orders and current-day completed orders automatically appear.
-3. **Dual Payload Structure:**
-   - **`patient` Header Object:** Patient demographics, UHID, age/gender (`35 / Male`), blood group, mobile number, attending doctor, and registration time.
-   - **`items` Array:** Table rows containing `order_number` (`ORD-1024`), `report_id` (`RID-5341`), `test_package_count` (`test_count`), tests summary array, formatted `date` (`12 Aug 2026`), `status` (`Completed`), and `actions` (direct URLs for View, Download, and Print).
+            "    - **`items` Array:** Table rows containing `order_number` (`ORD-1024`), `report_id` (`RID-5341`), `test_package_count` (`test_count`), tests summary array, formatted `date` (`12 Aug 2026`), and `status` (`Completed`).
 
 ---
 
@@ -2403,13 +2281,7 @@ This endpoint supports the **Patient EMR / Report History** screen (`Dashboard >
         ],
         "date": "12 Aug 2026",
         "created_at": "2026-08-12T10:42:00.000000+05:30",
-        "status": "Completed",
-        "report_url": "https://s3.amazonaws.com/arovita-lab-reports/RID-5341.pdf",
-        "actions": {
-          "view_url": "/lab/reports/RID-5341",
-          "download_url": "/lab/reports/RID-5341/download",
-          "print_url": "/lab/reports/RID-5341/print"
-        }
+        "status": "Completed"
       },
       {
         "order_id": "42858ba0-533c-43dd-86ed-024546083473",
@@ -2424,15 +2296,19 @@ This endpoint supports the **Patient EMR / Report History** screen (`Dashboard >
           "Liver Function Test (LFT)",
           "HbA1c"
         ],
+        "tests": [
+          {
+            "item_id": "9f464e0a-b102-4411-9a72-8822998fce02",
+            "test_id": "cc3cdae0-2821-4f46-a36a-2d4e78f9fbc4",
+            "test_name": "Lipid Profile",
+            "test_code": "BCH-005",
+            "category": "Biochemistry",
+            "status": "COMPLETED"
+          }
+        ],
         "date": "12 Aug 2026",
         "created_at": "2026-08-12T10:42:00.000000+05:30",
-        "status": "Completed",
-        "report_url": "https://s3.amazonaws.com/arovita-lab-reports/RID-5049.pdf",
-        "actions": {
-          "view_url": "/lab/reports/RID-5049",
-          "download_url": "/lab/reports/RID-5049/download",
-          "print_url": "/lab/reports/RID-5049/print"
-        }
+        "status": "Completed"
       }
     ]
   }
@@ -2538,9 +2414,7 @@ This endpoint powers the **Eye Symbol (View Details)**, **Download**, and **Prin
           }
         ]
       }
-    ],
-    "download_url": "/lab/reports/RID-5341/download",
-    "print_url": "/lab/reports/RID-5341/print"
+    ]
   }
 }
 ```
