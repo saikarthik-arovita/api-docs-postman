@@ -57,22 +57,29 @@ All API endpoints return standard enveloped responses:
 
 ## 3. Detailed Endpoint Specifications
 
-### 3.1 Search Patients & Active Lab Tests (`GET /lab/patients`)
-Searches the patient registry by Name, UHID, or Mobile Number. Enriches each patient record with their active diagnostic orders count and a full list of lab tests currently in progress.
+### 3.1 Search Patients & Order List (`GET /lab/patients`)
+Searches and returns the patient registry aligned by diagnostic order records matching the **Patient List** table. Enriches each record with its `order_id`, human order identifier (`order_number`), total count of tests/packages, dynamically assigned technician(s), order date, lifecycle status, payment status (`PAID`, `UNPAID`, `PARTIAL`), and itemized test items.
 
 * **HTTP Method:** `GET`
 * **Route:** `/lab/patients`
 * **Gateway Route Alias:** `/diagnostic-orders/lab/patients`
 * **Required Permission:** `diagnostics:order:view`
 
-#### Query Parameters
+#### Query Parameters & Filters
 | Parameter | Type | Required? | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `q` | `string` | **Optional** | `""` | Search query matching full name, UHID (`PAT-2026-XXXX`), or phone number. If empty or omitted, returns up to 50 recent patients prioritized by active tests. |
+| `q` / `search` | `string` | **Optional** | `""` | Search query matching full name, UHID (`PAT-2026-XXXX`), phone number, barcode (`BC-XXXXX`), or Order ID (`LABID-XXXXX`). |
+| `status` | `string` | **Optional** | `""` | Filter by order status: `SCHEDULED` (or `Scheduled`), `COMPLETED` (or `Completed`), `IN_PROGRESS` (or `Inprocess`), `ADDENDUM` (or `Addendum`), `PENDING`, `CANCELLED`. |
+| `payment_status` | `string` | **Optional** | `""` | Filter by order payment status: `PAID` (or `Paid`), `UNPAID` (or `Unpaid` / `PAY_LATER`), `PARTIAL` (or `Partial`). |
+| `technician` | `string` | **Optional** | `""` | Filter by technician name or UUID. Set to `null`, `none`, or `unassigned` to fetch orders with unassigned technicians. |
+| `date_start` | `string` | **Optional** | `""` | Start date filter (`YYYY-MM-DD` or ISO timestamp). |
+| `date_end` | `string` | **Optional** | `""` | End date filter (`YYYY-MM-DD` or ISO timestamp). |
+| `page` | `integer` | **Optional** | `1` | Page number for pagination. |
+| `limit` | `integer` | **Optional** | `50` | Number of records per page (`rows_per_page`). |
 
 #### Request Headers
 ```http
-GET /lab/patients?q=9876543210 HTTP/1.1
+GET /lab/patients?q=Kavita&status=Scheduled&payment_status=Paid HTTP/1.1
 Host: api.arovita.com
 Authorization: Bearer <access_token>
 ```
@@ -81,20 +88,43 @@ Authorization: Bearer <access_token>
 ```json
 {
   "success": true,
+  "code": 200,
   "data": [
     {
-      "id": "401fcd56-3bd0-4247-8ece-d2cc47b616dd",
+      "order_id": "b16cc357-fb70-404f-aa70-51bb20763cd7",
+      "order_number": "ORD-001",
+      "lab_unique_id": "LABID-29333",
+      "patient_id": "401fcd56-3bd0-4247-8ece-d2cc47b616dd",
       "uhid": "PAT-2026-6481",
-      "full_name": "Kavita R. Patil",
-      "phone": "9876543210",
-      "dob": "1995-03-21",
-      "age": 31,
+      "patient_name": "Aisha Khan",
+      "dob": "1994-08-12",
+      "age": 32,
       "gender": "FEMALE",
+      "age_gender_display": "32Y • F",
       "blood_group": "A+",
+      "phone": "9876543210",
       "address": "Baner, Pune, Maharashtra",
-      "has_active_tests": true,
-      "active_orders_count": 1,
-      "active_lab_tests": [
+      "test_count": 1,
+      "assigned_to": "Priya Nair",
+      "assigned_technicians": [
+        "Priya Nair"
+      ],
+      "date": "August 25, 2026",
+      "order_date": "2026-08-25",
+      "created_at": "2026-08-25T10:15:30.000000+00:00",
+      "status": "Completed",
+      "payment_status": "PAID",
+      "payment_status_label": "Paid",
+      "bill_details": {
+        "id": "c16cc357-fb70-404f-aa70-51bb20763cd8",
+        "invoice_number": "INV-LAB-4A2D19B4",
+        "status": "PAID",
+        "total_amount": 350.0,
+        "paid_amount": 350.0,
+        "outstanding": 0.0,
+        "payment_mode": "UPI"
+      },
+      "tests": [
         {
           "order_id": "b16cc357-fb70-404f-aa70-51bb20763cd7",
           "lab_unique_id": "LABID-29333",
@@ -104,14 +134,23 @@ Authorization: Bearer <access_token>
           "test_code": "HEM-003",
           "test_category": "Haematology",
           "specimen_type": "BLOOD",
-          "status": "PENDING",
+          "status": "COMPLETED",
           "priority": "ROUTINE",
           "barcode": "BC-56796",
           "token_number": "LAB-1015",
-          "created_at": "2026-08-22T12:18:02+05:30"
+          "technician_id": "7b79d2bf-e2b2-4d2c-80ea-73599cf37cf3",
+          "technician_name": "Priya Nair",
+          "assigned_to": "Priya Nair",
+          "sample_collected_by": "8ca080fe-f8aa-475a-a309-84382c4ee97f",
+          "sample_collected_by_name": "Ravi Kumar",
+          "sample_collected_at": "2026-08-25T10:18:00+00:00",
+          "processed_at": "2026-08-25T10:30:00+00:00",
+          "created_at": "2026-08-25T10:15:30.000000+00:00"
         }
       ],
-      "last_order_date": "2026-08-22T12:18:02+05:30"
+      "has_active_tests": true,
+      "active_orders_count": 1,
+      "last_order_date": "2026-08-25T10:15:30.000000+00:00"
     }
   ]
 }
@@ -395,12 +434,14 @@ Unified intake endpoint supporting:
 | **Order Items** | `selected_tests` | `object[]` | **CONDITIONAL** | `[]` | Array of `{"test_id": "UUID"}`. *(At least 1 test or package is mandatory)* |
 | | `selected_packages`| `object[]` | **CONDITIONAL** | `[]` | Array of `{"package_id": "UUID"}`. *(At least 1 test or package is mandatory)* |
 | **Workflow** | `action` | `string` | **OPTIONAL** | `"CONFIRM"` | Values: `DRAFT` (draft order), `CONFIRM` (confirmed order), `REGISTER_AND_PAY` (instant order + payment). |
-| | `visit_type` | `string` | **OPTIONAL** | `"Walk-in"` | Values: `Walk-in`, `OPD Referral`, `IPD`, `Home Collection`. |
+| | `visit_type` | `string` | **OPTIONAL** | `"Walk-in"` | Values: `Hospital`, `Walk-in`, `Referral`. |
 | | `priority` | `string` | **OPTIONAL** | `"Routine"` | Values: `Routine`, `Urgent`, `STAT`. |
 | **Patient Guidance** | `fasting_required` | `boolean` | **OPTIONAL** | `false` | When `true`, patient fasting guidelines are automatically printed on the bill receipt. |
 | | `special_instructions`| `string`| **OPTIONAL** | `""` | Clinical instructions, preparation rules, or fasting hours (e.g. `"10-12 hrs fasting mandatory"`). |
 | | `remarks` | `string` | **OPTIONAL** | `""` | Administrative notes or internal comments. |
-| **Doctor Referral** | `referring_doctor` | `object` | **OPTIONAL** | `null` | Object with `{"doctor_name": "Dr. Sarah", "department_name": "General Medicine", "referral_code": "DOC-102"}`. |
+| **Referral Details** | `referred_by_doctor` | `string` | **CONDITIONAL** | `null` | Referring doctor name. *(**MANDATORY** if `visit_type: "Referral"`)* |
+| | `referred_by_hospital` | `string` | **CONDITIONAL** | `null` | Referring hospital / clinic name. *(**MANDATORY** if `visit_type: "Referral"`)* |
+| | `referring_doctor` | `object` | **OPTIONAL** | `null` | Object format: `{"doctor_name": "Dr. Sarah", "hospital_name": "City Care Hospital", "department_name": "General Medicine", "referral_code": "DOC-102"}`. |
 | | `doctor_id` | `UUID` | **OPTIONAL** | System Default | Direct doctor user UUID. |
 | | `department_id` | `UUID` | **OPTIONAL** | System Default | Department UUID. |
 | **Payment Details**| `payment` | `object` | **CONDITIONAL** | `null` | Payment object. *(Mandatory if `action: "REGISTER_AND_PAY"` or confirming payment)* |
@@ -444,7 +485,7 @@ Unified intake endpoint supporting:
 }
 ```
 
-#### Example 3: Confirm with UPI / Instant Payment
+#### Example 3: Confirm with Instant Payment (`action: "REGISTER_AND_PAY"`)
 ```json
 {
   "action": "REGISTER_AND_PAY",
@@ -462,6 +503,24 @@ Unified intake endpoint supporting:
   "payment": {
     "payment_mode": "UPI",
     "reference_no": "UPI-TXN-2026-9911"
+  }
+}
+```
+
+#### Example 4: Confirm Referral Booking (`visit_type: "Referral"`)
+```json
+{
+  "action": "CONFIRM",
+  "patient_id": "401fcd56-3bd0-4247-8ece-d2cc47b616dd",
+  "visit_type": "Referral",
+  "referred_by_doctor": "Dr. Sarah Jenkins",
+  "referred_by_hospital": "City Care Hospital",
+  "priority": "Urgent",
+  "selected_tests": [
+    { "test_id": "2570848a-74ce-48db-b1f7-1fc450e060c5" }
+  ],
+  "payment": {
+    "payment_mode": "CASH"
   }
 }
 ```
