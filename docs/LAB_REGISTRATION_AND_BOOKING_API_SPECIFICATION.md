@@ -2319,5 +2319,232 @@ Authorization: Bearer <access_token>
 }
 ```
 
+---
+
+# SECTION 11: PATIENT EMR / REPORT HISTORY API
+
+## 11.1 Overview & UI Alignment
+
+This endpoint supports the **Patient EMR / Report History** screen (`Dashboard > Order management > EMR/Report History`).
+
+### Key Behavioral Rules
+1. **Strictly Completed Records:** Only diagnostic orders and tests with status **`Completed`** (or reported/validated/delivered) appear in this history view. Non-completed orders (Scheduled, In-Progress, Pending) are excluded.
+2. **Real-time Inclusion:** Both past historical test orders and current-day completed orders automatically appear.
+3. **Dual Payload Structure:**
+   - **`patient` Header Object:** Patient demographics, UHID, age/gender (`35 / Male`), blood group, mobile number, attending doctor, and registration time.
+   - **`items` Array:** Table rows containing `order_number` (`ORD-1024`), `report_id` (`RID-5341`), `test_package_count` (`test_count`), tests summary array, formatted `date` (`12 Aug 2026`), `status` (`Completed`), and `actions` (direct URLs for View, Download, and Print).
+
+---
+
+## 11.2 Endpoint Specification
+
+* **HTTP Method:** `GET`
+* **Route:** `/lab/patients/{patient_id}/history`
+* **Route Aliases:** `GET /lab/patients/{id}/report-history`, `GET /diagnostic-orders/lab/patients/{id}/history`
+* **Identifier Support:** Accepts either Patient UUID (e.g. `7acd7680-a041-4ad8-a1c3-32cd1a1c9691`) or Patient UHID (e.g. `ARV-2026-09283`, `PAT-2026-2174`).
+* **Required Permission:** `diagnostics:order:view`
+
+### Query Parameters
+
+| Parameter | Type | Required? | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `page` | `integer` | Optional | `1` | Page number for table pagination. |
+| `limit` / `rows_per_page` | `integer` | Optional | `10` | Number of report rows per page (e.g. `5`, `10`, `25`). |
+| `search` / `q` | `string` | Optional | `""` | Search by test name, order number, or barcode. |
+| `from_date` / `startDate` | `string` | Optional | `""` | Start date filter (`YYYY-MM-DD`). |
+| `to_date` / `endDate` | `string` | Optional | `""` | End date filter (`YYYY-MM-DD`). |
+
+### Response Example (`200 OK`)
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "patient": {
+      "patient_id": "7acd7680-a041-4ad8-a1c3-32cd1a1c9691",
+      "uhid": "ARV-2026-09283",
+      "patient_name": "Rahul Verma",
+      "dob": "1991-04-12",
+      "age": 35,
+      "gender": "Male",
+      "age_gender_display": "35 / Male",
+      "blood_group": "O+",
+      "phone": "+91 8912345681",
+      "address": "Bangalore, Karnataka",
+      "attending_doctor": "Dr. Sarah Connor",
+      "registration_time": "10:42 AM"
+    },
+    "total": 124,
+    "page": 1,
+    "limit": 10,
+    "total_pages": 13,
+    "items": [
+      {
+        "order_id": "3a244c74-3e10-45c4-a263-0f1837e2f1a5",
+        "order_number": "ORD-1024",
+        "lab_unique_id": "LABID-30391",
+        "report_id": "RID-5341",
+        "report_uuid": "3a244c74-3e10-45c4-a263-0f1837e2f1a5",
+        "test_package_count": 1,
+        "test_count": 1,
+        "tests_summary": [
+          "Complete Blood Count (CBC)"
+        ],
+        "tests": [
+          {
+            "item_id": "8e364e0a-b102-4411-9a72-8822998fce01",
+            "test_id": "bb3cdae0-2821-4f46-a36a-2d4e78f9fbc3",
+            "test_name": "Complete Blood Count (CBC)",
+            "test_code": "HEM-001",
+            "category": "Haematology",
+            "status": "COMPLETED"
+          }
+        ],
+        "date": "12 Aug 2026",
+        "created_at": "2026-08-12T10:42:00.000000+05:30",
+        "status": "Completed",
+        "report_url": "https://s3.amazonaws.com/arovita-lab-reports/RID-5341.pdf",
+        "actions": {
+          "view_url": "/lab/reports/RID-5341",
+          "download_url": "/lab/reports/RID-5341/download",
+          "print_url": "/lab/reports/RID-5341/print"
+        }
+      },
+      {
+        "order_id": "42858ba0-533c-43dd-86ed-024546083473",
+        "order_number": "ORD-1024",
+        "lab_unique_id": "LABID-30390",
+        "report_id": "RID-5049",
+        "report_uuid": "42858ba0-533c-43dd-86ed-024546083473",
+        "test_package_count": 3,
+        "test_count": 3,
+        "tests_summary": [
+          "Lipid Profile",
+          "Liver Function Test (LFT)",
+          "HbA1c"
+        ],
+        "date": "12 Aug 2026",
+        "created_at": "2026-08-12T10:42:00.000000+05:30",
+        "status": "Completed",
+        "report_url": "https://s3.amazonaws.com/arovita-lab-reports/RID-5049.pdf",
+        "actions": {
+          "view_url": "/lab/reports/RID-5049",
+          "download_url": "/lab/reports/RID-5049/download",
+          "print_url": "/lab/reports/RID-5049/print"
+        }
+      }
+    ]
+  }
+}
+```
+
+---
+
+# SECTION 12: DETAILED LAB TEST REPORT & PARAMETERS API
+
+## 12.1 Overview
+
+This endpoint powers the **Eye Symbol (View Details)**, **Download**, and **Print** actions on the report history table. It delivers full test results, parameter values, reference ranges, units, abnormality flags, and pathologist validation signatures.
+
+---
+
+## 12.2 Endpoint Specification
+
+* **HTTP Method:** `GET`
+* **Route:** `/lab/reports/{report_id}`
+* **Route Aliases:** `GET /diagnostic-orders/lab/reports/{id}`, `GET /lab/orders/{order_id}/results`, `GET /lab/orders/{order_id}/report`
+* **Identifier Support:** Accepts Report ID (`RID-5341`), Order ID UUID (`3a244c74-3e10-45c4-a263-0f1837e2f1a5`), or Order Human ID (`ORD-1024`).
+* **Required Permission:** `diagnostics:order:view`
+
+### Response Example (`200 OK`)
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "report_id": "RID-5341",
+    "order_id": "3a244c74-3e10-45c4-a263-0f1837e2f1a5",
+    "order_number": "ORD-1024",
+    "lab_unique_id": "LABID-30391",
+    "report_date": "12 Aug 2026",
+    "created_at": "2026-08-12T10:42:00.000000+05:30",
+    "status": "COMPLETED",
+    "patient": {
+      "patient_id": "7acd7680-a041-4ad8-a1c3-32cd1a1c9691",
+      "uhid": "ARV-2026-09283",
+      "patient_name": "Rahul Verma",
+      "age": 35,
+      "gender": "Male",
+      "age_gender_display": "35 / Male",
+      "blood_group": "O+",
+      "phone": "+91 8912345681",
+      "address": "Bangalore, Karnataka"
+    },
+    "doctor": {
+      "doctor_name": "Dr. Sarah Connor",
+      "department_name": "General Medicine"
+    },
+    "test_count": 1,
+    "tests": [
+      {
+        "item_id": "8e364e0a-b102-4411-9a72-8822998fce01",
+        "test_id": "bb3cdae0-2821-4f46-a36a-2d4e78f9fbc3",
+        "test_name": "Complete Blood Count (CBC)",
+        "test_code": "HEM-001",
+        "category": "Haematology",
+        "specimen_type": "BLOOD",
+        "status": "COMPLETED",
+        "barcode": "BC-84920",
+        "technician_name": "Shivam Gupta",
+        "pathologist_name": "Dr. Amit Verma",
+        "validated_at": "2026-08-12T14:30:00+05:30",
+        "technician_notes": "Sample received in good condition, no haemolysis.",
+        "pathologist_comments": "Parameters within normal biological reference limits.",
+        "parameters": [
+          {
+            "parameter_id": "01b2a92c-5541-4cf5-a89e-0129841f3e01",
+            "parameter_name": "Hemoglobin (Hb)",
+            "parameter_code": "HB",
+            "result_value": "14.5",
+            "unit": "g/dL",
+            "reference_range": "13.0 - 17.0",
+            "flag": "NORMAL",
+            "is_abnormal": false,
+            "is_critical": false
+          },
+          {
+            "parameter_id": "01b2a92c-5541-4cf5-a89e-0129841f3e02",
+            "parameter_name": "Total Leukocyte Count (TLC)",
+            "parameter_code": "WBC",
+            "result_value": "6800",
+            "unit": "/cumm",
+            "reference_range": "4000 - 11000",
+            "flag": "NORMAL",
+            "is_abnormal": false,
+            "is_critical": false
+          },
+          {
+            "parameter_id": "01b2a92c-5541-4cf5-a89e-0129841f3e03",
+            "parameter_name": "Platelet Count",
+            "parameter_code": "PLT",
+            "result_value": "240000",
+            "unit": "/cumm",
+            "reference_range": "150000 - 450000",
+            "flag": "NORMAL",
+            "is_abnormal": false,
+            "is_critical": false
+          }
+        ]
+      }
+    ],
+    "download_url": "/lab/reports/RID-5341/download",
+    "print_url": "/lab/reports/RID-5341/print"
+  }
+}
+```
+
+
 
 
