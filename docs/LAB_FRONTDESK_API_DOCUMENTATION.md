@@ -234,16 +234,17 @@ Register a patient for lab tests. This creates the diagnostic order and auto-gen
 | `doctor_id` | UUID | ✅ | Referring doctor UUID |
 | `department_id` | UUID | ✅ | Department UUID (from dropdowns) |
 | `order_type` | string | ✅ | Must be `"LAB"` for lab orders |
-| `context_type` | string | ✅ | `"OPD"`, `"IPD"`, or `"EMERGENCY"` |
-| `context_id` | UUID | ✅ | Visit/encounter UUID |
-| `source_module` | string | ✅ | `"OPD"`, `"WARD"`, etc. |
-| `encounter_type` | string | ✅ | `"WALK_IN"`, `"REFERRAL"` |
+| `context_type` | string | ✅ | `"OPD_VISIT"` (Walk-in), `"IPD_ADMISSION"` (Hospital), or `"CONSULTATION"` (Referral) |
+| `context_id` | UUID | ➖ | Visit/encounter UUID (or null) |
+| `source_module` | string | ✅ | `"OPD"` (Walk-in/Referral) or `"IPD"` (Hospital) |
+| `encounter_type` | string | ✅ | `"CONSULTATION"` (Walk-in/Referral) or `"WARD_ROUND"` (Hospital) |
 | `lab_items` | array | ✅ | Array of test objects |
 
 **Optional Fields:**
 
 | Field | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
+| `visit_type` | string | `"Walk-in"` | `"Hospital"`, `"Walk-in"`, `"Referral"` |
 | `priority` | string | `"ROUTINE"` | `"ROUTINE"`, `"URGENT"`, `"STAT"` |
 | `clinical_notes` | string | null | Doctor's clinical notes |
 | `visit_number` | string | null | Visit reference number |
@@ -267,10 +268,11 @@ Register a patient for lab tests. This creates the diagnostic order and auto-gen
   "department_id": "46d19155-09a1-462e-b256-ce2a5741b091",
   "order_type": "LAB",
   "priority": "ROUTINE",
-  "context_type": "OPD",
-  "context_id": "46d19155-09a1-462e-b256-ce2a5741b091",
+  "visit_type": "Walk-in",
+  "context_type": "OPD_VISIT",
+  "context_id": null,
   "source_module": "OPD",
-  "encounter_type": "WALK_IN",
+  "encounter_type": "CONSULTATION",
   "lab_items": [
     {
       "test_id": "52949dc3-e8b3-4abc-8d5d-c95b00337f6c",

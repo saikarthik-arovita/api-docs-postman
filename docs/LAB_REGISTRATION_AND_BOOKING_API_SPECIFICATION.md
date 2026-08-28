@@ -449,6 +449,17 @@ Unified intake endpoint supporting:
 | | `payment.amount` | `number` | **OPTIONAL** | Total Amount | Paid amount (defaults to calculated bill total). |
 | | `payment.notes` | `string` | **OPTIONAL** | `""` | Payment specific notes. |
 
+#### 3.6.1 Visit Type & Database Context Alignment Matrix
+When a registration is created, the system maps the selected `visit_type` to normalized Postgres enum columns in `diagnostic.diagnostic_orders`:
+
+| Visit Type (`visit_type`) | Context Type (`context_type`) | Source Module (`source_module`) | Encounter Type (`encounter_type`) | Order Status (`status`) |
+| :--- | :--- | :--- | :--- | :--- |
+| **`Hospital`** | **`"IPD_ADMISSION"`** | **`"IPD"`** | **`"WARD_ROUND"`** | **`"SCHEDULED"`** |
+| **`Walk-in`** | **`"OPD_VISIT"`** | **`"OPD"`** | **`"CONSULTATION"`** | **`"SCHEDULED"`** |
+| **`Referral`** | **`"CONSULTATION"`** | **`"OPD"`** | **`"CONSULTATION"`** | **`"SCHEDULED"`** |
+
+* **Initial Order & Item Status**: All created diagnostic orders and constituent lab order items are initialized with `status = "SCHEDULED"` in the database.
+
 #### Example 1: Create Draft Booking (`action: "DRAFT"`)
 ```json
 {
