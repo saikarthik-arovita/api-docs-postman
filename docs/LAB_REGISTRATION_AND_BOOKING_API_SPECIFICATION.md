@@ -1455,13 +1455,36 @@ Authorization: Bearer <access_token>
         "discount_amount": 0.00,
         "tax_amount": 279.00,
         "paid_amount": 0.00,
-        "outstanding_amount": 1829.00,
         "status": "OPEN",
         "invoice_date": "2026-08-22",
         "created_at": "2026-08-22T13:25:40.231401+05:30"
       }
     ],
----
+    "total": 2354,
+    "total_records": 2354,
+    "page": 1,
+    "page_number": 1,
+    "limit": 10,
+    "size": 10,
+    "page_size": 10,
+    "total_pages": 236,
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 2354,
+      "totalPages": 236,
+      "hasNext": true,
+      "hasPrevious": false
+    },
+    "meta": {
+      "total": 2354,
+      "page": 1,
+      "page_size": 10,
+      "total_pages": 236
+    }
+  }
+}
+```
 
 ## 8. "Filter Options" Modal Query Parameters & Contract
 

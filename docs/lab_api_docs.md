@@ -785,7 +785,28 @@ Lists all diagnostic bills and invoices across the laboratory with support for p
         "created_at": "2026-08-22T13:25:40.231401+05:30"
       }
     ],
-    "total": 2
+    "total": 2354,
+    "total_records": 2354,
+    "page": 1,
+    "page_number": 1,
+    "limit": 10,
+    "size": 10,
+    "page_size": 10,
+    "total_pages": 236,
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 2354,
+      "totalPages": 236,
+      "hasNext": true,
+      "hasPrevious": false
+    },
+    "meta": {
+      "total": 2354,
+      "page": 1,
+      "page_size": 10,
+      "total_pages": 236
+    }
   }
 }
 ```
