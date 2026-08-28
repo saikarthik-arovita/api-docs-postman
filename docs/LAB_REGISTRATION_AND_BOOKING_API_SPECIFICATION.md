@@ -438,12 +438,11 @@ Unified intake endpoint supporting:
 | | `priority` | `string` | **OPTIONAL** | `"Routine"` | Values: `Routine`, `Urgent`, `STAT`. |
 | **Patient Guidance** | `fasting_required` | `boolean` | **OPTIONAL** | `false` | When `true`, patient fasting guidelines are automatically printed on the bill receipt. |
 | | `special_instructions`| `string`| **OPTIONAL** | `""` | Clinical instructions, preparation rules, or fasting hours (e.g. `"10-12 hrs fasting mandatory"`). |
-| | `remarks` | `string` | **OPTIONAL** | `""` | Administrative notes or internal comments. |
-| **Referral Details** | `referred_by_doctor` | `string` | **CONDITIONAL** | `null` | Referring doctor name. *(**MANDATORY** if `visit_type: "Referral"`)* |
-| | `referred_by_hospital` | `string` | **CONDITIONAL** | `null` | Referring hospital / clinic name. *(**MANDATORY** if `visit_type: "Referral"`)* |
+| **Referral Details** | `referred_by_doctor` | `string` | **OPTIONAL** | `null` | Referring doctor name (free-text string, e.g. `"Dr. Sarah Jenkins"`). No DB lookup required. |
+| | `referred_by_hospital` | `string` | **OPTIONAL** | `null` | Referring hospital / clinic name (free-text string, e.g. `"City Care Hospital"`). No DB lookup required. |
 | | `referring_doctor` | `object` | **OPTIONAL** | `null` | Object format: `{"doctor_name": "Dr. Sarah", "hospital_name": "City Care Hospital", "department_name": "General Medicine", "referral_code": "DOC-102"}`. |
-| | `doctor_id` | `UUID` | **OPTIONAL** | System Default | Direct doctor user UUID. |
-| | `department_id` | `UUID` | **OPTIONAL** | System Default | Department UUID. |
+| | `doctor_id` | `UUID` | **OPTIONAL** | null | Direct doctor user UUID (if assigned internally). |
+| | `department_id` | `UUID` | **OPTIONAL** | null | Department UUID (if assigned internally). |
 | **Payment Details**| `payment` | `object` | **CONDITIONAL** | `null` | Payment object. *(Mandatory if `action: "REGISTER_AND_PAY"` or confirming payment)* |
 | | `payment.payment_mode` | `string` | **MANDATORY (in payment)** | `"CASH"` | Values: `UPI`, `CARD`, `CASH`, `PAY_LATER`, `INSURANCE`. |
 | | `payment.reference_no` | `string` | **OPTIONAL** | `null` | Transaction ID, UPI UTR reference number, or Cheque number. |

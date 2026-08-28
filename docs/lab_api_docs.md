@@ -273,7 +273,9 @@ Supports draft booking (`action: "DRAFT"`), multi-test and multi-package combina
 {
   "action": "REGISTER_AND_PAY",
   "patient_id": "83d637f3-bcde-491d-9364-3ddd0d0d518d",
-  "visit_type": "Walk-in",
+  "visit_type": "Referral",
+  "referred_by_doctor": "Dr. Sarah Jenkins",
+  "referred_by_hospital": "City Care Hospital",
   "priority": "Routine",
   "fasting_required": true,
   "special_instructions": "12 hours fasting required",
@@ -289,6 +291,7 @@ Supports draft booking (`action: "DRAFT"`), multi-test and multi-package combina
   }
 }
 ```
+> **Note on Doctor & Hospital Details**: `referred_by_doctor` (or `doctor_name`) and `referred_by_hospital` (or `hospital_name`) are accepted as optional free-text strings. No database lookups are performed against staff tables.
 
 #### Success Response (201 Created / 200 OK)
 Returns the complete payload formatted for the **"Lab Registration Completed"** UI card with synchronized identifiers, barcode, waiting token, and all item UUIDs:
