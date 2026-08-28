@@ -1459,7 +1459,9 @@ Authorization: Bearer <access_token>
         "discount_amount": 0.00,
         "tax_amount": 279.00,
         "paid_amount": 0.00,
-        "status": "OPEN",
+        "outstanding_amount": 1829.00,
+        "status": "UNPAID",
+        "payment_status": "UNPAID",
         "invoice_date": "2026-08-22",
         "created_at": "2026-08-22T13:25:40.231401+05:30"
       }

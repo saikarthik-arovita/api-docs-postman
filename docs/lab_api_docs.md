@@ -784,7 +784,8 @@ Lists all diagnostic bills and invoices across the laboratory with support for p
         "tax_amount": 279.00,
         "paid_amount": 0.00,
         "outstanding_amount": 1829.00,
-        "status": "OPEN",
+        "status": "UNPAID",
+        "payment_status": "UNPAID",
         "invoice_date": "2026-08-22",
         "created_at": "2026-08-22T13:25:40.231401+05:30"
       }
