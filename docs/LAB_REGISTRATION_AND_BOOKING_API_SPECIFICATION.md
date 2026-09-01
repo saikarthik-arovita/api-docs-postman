@@ -113,6 +113,9 @@ Authorization: Bearer <access_token>
       "order_date": "2026-08-25",
       "created_at": "2026-08-25T10:15:30.000000+00:00",
       "status": "Completed",
+      "has_scheduled": false,
+      "has_in_progress": false,
+      "has_report_ready": false,
       "payment_status": "PAID",
       "payment_status_label": "Paid",
       "bill_details": {
