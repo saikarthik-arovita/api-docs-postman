@@ -36,18 +36,25 @@ All API endpoints return standard enveloped responses:
 |---|---|---|---|---|
 | **1** | Patient Search | `GET` | `/lab/patients` | Search registered patients with enriched active lab tests |
 | **2** | Patient Registration | `POST` | `/lab/patients` | Register patient with sequential `PAT-YYYY-XXXX` UHID |
-| **3** | Tests Catalog | `GET` | `/lab/tests` | List all active diagnostic tests |
-| **4** | Packages Catalog | `GET` | `/lab/packages` | List all active bundled test packages with member tests |
-| **5** | Price Calculation | `POST` | `/lab/orders/calculate-price` | Dynamic invoice calculation for arbitrary tests and packages |
-| **6** | Booking & Drafts | `POST` | `/lab/registrations` | Create draft booking or confirm with flexible payment |
-| **7** | Instant Order & Pay | `POST` | `/lab/orders/pay-and-create` | Direct confirmation and payment processing |
-| **8** | Order Statistics | `GET` | `/lab/orders/statistics` | Summary KPI cards (Total, Pending, Completed, In Transit, Processing, Reviewed) |
-| **9** | Order Management List | `GET` | `/lab/orders` | Paginated and filterable orders table with Patient Type and Collector |
-| **10** | Addendum Reports List | `GET` | `/lab/addendums` | Paginated post-validation Addendum Reports audit table |
-| **11** | Create Addendum Report | `POST` | `/lab/addendums` | Submit addendum report revision with clinical reasons |
-| **12** | Reschedule Tests / Packages | `POST` | `/lab/orders/{id}/reschedule` | Reschedule specific tests or packages by Date, Time, and Reason |
-| **13** | Cancel Tests / Order | `POST` | `/lab/orders/{id}/cancel` | Cancel specific tests, packages, or whole order with reason |
-| **14** | Patient Bills & Invoices | `GET` | `/lab/patients/{id}/bills` | List all historical and active bills according to a patient |
+| **3** | Tests Catalog | `GET` | `/lab/tests` | List all active diagnostic tests with parameter count |
+| **4** | Test Parameters | `GET` | `/lab/tests/{id}/parameters` | Dynamic parameters & normal ranges for dynamic FE rendering |
+| **5** | Test Details | `GET` | `/lab/tests/{id}` | Single test details with embedded parameters & turnaround time |
+| **6** | Packages Catalog | `GET` | `/lab/packages` | List all active bundled test packages with member tests |
+| **7** | Package Details | `GET` | `/lab/packages/{id}` | Single package details with full list of member tests |
+| **8** | Price Calculation | `POST` | `/lab/orders/calculate-price` | Dynamic invoice calculation for arbitrary tests and packages |
+| **9** | Booking & Drafts | `POST` | `/lab/registrations` | Create draft booking or confirm with flexible payment |
+| **10** | Instant Order & Pay | `POST` | `/lab/orders/pay-and-create` | Direct confirmation and payment processing |
+| **11** | Get Test Result | `GET` | `/lab/orders/{order_id}/tests/{order_item_id}/result` | Fetch entered parameter values & processing info for an item |
+| **12** | Save Test Result | `POST` | `/lab/orders/{order_id}/tests/{order_item_id}/result` | Enter & persist parameter values for an order item |
+| **13** | Update Test Result | `PATCH` | `/lab/orders/{order_id}/tests/{order_item_id}/result` | Modify entered parameter values or remarks |
+| **14** | Complete Order Report | `GET` | `/lab/orders/{order_id}/report` | Canonical report grouped by packages and standalone tests |
+| **15** | Order Statistics | `GET` | `/lab/orders/statistics` | Summary KPI cards (Total, Pending, Completed, In Transit, Processing, Reviewed) |
+| **16** | Order Management List | `GET` | `/lab/orders` | Paginated and filterable orders table with Patient Type and Collector |
+| **17** | Addendum Reports List | `GET` | `/lab/addendums` | Paginated post-validation Addendum Reports audit table |
+| **18** | Create Addendum Report | `POST` | `/lab/addendums` | Submit addendum report revision with clinical reasons |
+| **19** | Reschedule Tests / Packages | `POST` | `/lab/orders/{id}/reschedule` | Reschedule specific tests or packages by Date, Time, and Reason |
+| **20** | Cancel Tests / Order | `POST` | `/lab/orders/{id}/cancel` | Cancel specific tests, packages, or whole order with reason |
+| **21** | Patient Bills & Invoices | `GET` | `/lab/patients/{id}/bills` | List all historical and active bills according to a patient |
 | **15** | Download / Print Bill Receipt | `GET` | `/lab/invoices/{id}` | Complete itemized receipt with all test items, GST, barcode, and notes |
 | **17** | Start Testing / Process Sample | `PATCH` | `/lab/samples/{id}/process` | Transitions test item from `SCHEDULED` to `IN_PROGRESS` |
 | **18** | List Laboratory Packages | `GET` | `/lab/packages` | Searchable multi-test packages catalogue with test counts & child items |
@@ -266,12 +273,50 @@ Registers a new patient into the hospital master registry, generating a sequenti
 ---
 
 ### 3.3 List Diagnostic Tests Catalog (`GET /lab/tests`)
-Fetches all available active laboratory diagnostic tests.
+Fetches all available active laboratory diagnostic tests including parameter counts and structured normal ranges.
 
 * **HTTP Method:** `GET`
 * **Route:** `/lab/tests`
 * **Gateway Route Alias:** `/diagnostic-orders/lab/tests`
-* **Required Permission:** `diagnostics:order:view`
+* **Required Permission:** `config:read` or `diagnostics:order:view`
+
+#### Success Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": {
+    "total": 176,
+    "items": [
+      {
+        "testId": "116a0b90-ec8e-4a90-835e-4713588d3999",
+        "code": "HEM-001",
+        "testName": "Complete Blood Count (CBC)",
+        "department": "Laboratory Medicine",
+        "category": "Haematology",
+        "referenceRange": "Refer report parameters",
+        "parameterCount": 14,
+        "sampleType": "Whole Blood (EDTA)",
+        "tat": "24 hrs",
+        "price": 450.00,
+        "status": "Active"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 3.4 Get Lab Test Parameters & Reference Ranges (`GET /lab/tests/{id}/parameters`)
+Returns the complete list of parameters, reference intervals, and clinical units for a specific test to enable dynamic Frontend (FE) parameter rendering during order configuration and result entry.
+
+* **HTTP Method:** `GET`
+* **Route:** `/lab/tests/{id}/parameters`
+* **Gateway Route Aliases:**
+  * `/diagnostic-orders/lab/tests/{id}/parameters`
+  * `/diagnostic-orders/tests/{id}/parameters`
+* **Path Parameters:**
+  * `id` *(UUID, required)*: The unique ID of the lab test (`testId`).
 
 #### Success Response (`200 OK`)
 ```json
@@ -279,26 +324,34 @@ Fetches all available active laboratory diagnostic tests.
   "success": true,
   "data": [
     {
-      "id": "2570848a-74ce-48db-b1f7-1fc450e060c5",
-      "test_name": "Erythrocyte Sedimentation Rate (ESR)",
-      "test_code": "HEM-003",
-      "department_name": "Pathology",
-      "category": "Haematology",
-      "specimen_type": "BLOOD",
-      "tat_hours": 4,
-      "price": 350.00,
-      "is_active": true
+      "parameterId": "afe4c769-7ecb-4b31-a950-9a429bd8a784",
+      "parameterName": "Hemoglobin (Hb)",
+      "parameterCode": "HEM-001-P01-HEMOGL",
+      "referenceRange": "Men: 13.5 - 17.5 g/dL; Women: 12.0 - 15.5 g/dL",
+      "unit": "g/dL",
+      "criticalMin": null,
+      "criticalMax": null,
+      "displayOrder": 1
     },
     {
-      "id": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
-      "test_name": "Complete Blood Count (CBC)",
-      "test_code": "HEM-001",
-      "department_name": "Pathology",
-      "category": "Haematology",
-      "specimen_type": "Whole Blood",
-      "tat_hours": 6,
-      "price": 450.00,
-      "is_active": true
+      "parameterId": "5304316f-c7f1-48c8-8e5b-c9c7829e62de",
+      "parameterName": "Total WBC (Leukocyte) Count",
+      "parameterCode": "HEM-001-P08-TOTALW",
+      "referenceRange": "4,000 - 11,000 /µL",
+      "unit": "/µL",
+      "criticalMin": null,
+      "criticalMax": null,
+      "displayOrder": 8
+    },
+    {
+      "parameterId": "32480c82-5619-484a-82d5-df66c5748ddb",
+      "parameterName": "Platelet Count",
+      "parameterCode": "HEM-001-P14-PLATE",
+      "referenceRange": "150,000 - 450,000 /µL",
+      "unit": "/µL",
+      "criticalMin": null,
+      "criticalMax": null,
+      "displayOrder": 14
     }
   ]
 }
@@ -306,7 +359,56 @@ Fetches all available active laboratory diagnostic tests.
 
 ---
 
-### 3.4 List Test Packages Catalog (`GET /lab/packages`)
+### 3.5 Get Test Details with Parameters (`GET /lab/tests/{id}`)
+Fetches complete test configuration, turnaround times, and embedded parameter definitions.
+
+* **HTTP Method:** `GET`
+* **Route:** `/lab/tests/{id}`
+* **Gateway Route Aliases:**
+  * `/diagnostic-orders/lab/tests/{id}`
+  * `/diagnostic-orders/tests/{id}`
+
+#### Success Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": {
+    "testId": "9901413e-cc16-4b04-88ce-14b7c03a6569",
+    "code": "BCH-018",
+    "testName": "Liver Function Test (LFT)",
+    "department": "Biochemistry",
+    "referenceRange": "Refer report parameters",
+    "parameters": [
+      {
+        "parameterId": "c4d1898b-90f7-4186-b489-8d8a5f4581a0",
+        "parameterName": "Total Bilirubin",
+        "parameterCode": "BCH-018-P01-TOTALB",
+        "referenceRange": "0.3 - 1.2 mg/dL",
+        "unit": "mg/dL",
+        "displayOrder": 1
+      },
+      {
+        "parameterId": "e1f1898b-90f7-4186-b489-8d8a5f4581a1",
+        "parameterName": "SGOT (AST)",
+        "parameterCode": "BCH-018-P04-SGOTAS",
+        "referenceRange": "5 - 40 U/L",
+        "unit": "U/L",
+        "displayOrder": 4
+      }
+    ],
+    "sampleType": "Serum (Clot Activator)",
+    "tat": 12,
+    "price": 600.00,
+    "status": "Active",
+    "unit": "Multiple",
+    "category": "Biochemistry"
+  }
+}
+```
+
+---
+
+### 3.6 List Test Packages Catalog (`GET /lab/packages`)
 Fetches all bundled diagnostic test packages with member tests.
 
 * **HTTP Method:** `GET`
@@ -318,37 +420,273 @@ Fetches all bundled diagnostic test packages with member tests.
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "id": "b5d66607-f4de-4ac4-bfed-c9b27adad890",
-      "package_id": "b5d66607-f4de-4ac4-bfed-c9b27adad890",
-      "package_name": "Comprehensive Executive Health Check",
-      "package_code": "PKG-EXEC-01",
-      "description": "Full body screening package including CBC, Liver & Renal profiles",
-      "price": 1200.00,
-      "is_active": true,
-      "tests": [
-        {
-          "test_id": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
-          "test_name": "Complete Blood Count (CBC)",
-          "category": "Haematology",
-          "price": 450.00
-        },
-        {
-          "test_id": "2570848a-74ce-48db-b1f7-1fc450e060c5",
-          "test_name": "Erythrocyte Sedimentation Rate (ESR)",
-          "category": "Haematology",
-          "price": 350.00
-        }
-      ]
-    }
-  ]
+  "data": {
+    "total": 12,
+    "items": [
+      {
+        "id": "b5d66607-f4de-4ac4-bfed-c9b27adad890",
+        "packageId": "b5d66607-f4de-4ac4-bfed-c9b27adad890",
+        "packageName": "Comprehensive Executive Health Check",
+        "packageCode": "PKG-EXEC-01",
+        "description": "Full body screening package including CBC, Liver & Renal profiles",
+        "price": 1200.00,
+        "status": "Active",
+        "tests": [
+          {
+            "testId": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
+            "testName": "Complete Blood Count (CBC)",
+            "category": "Haematology",
+            "price": 450.00
+          },
+          {
+            "testId": "2570848a-74ce-48db-b1f7-1fc450e060c5",
+            "testName": "Erythrocyte Sedimentation Rate (ESR)",
+            "category": "Haematology",
+            "price": 350.00
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
 ---
 
-### 3.5 Calculate Order Price / Invoice Preview (`POST /lab/orders/calculate-price`)
+### 3.7 Get Package Details (`GET /lab/packages/{package_id}`)
+Fetches single package specification along with its full list of member tests.
+
+* **HTTP Method:** `GET`
+* **Route:** `/lab/packages/{package_id}`
+* **Gateway Route Alias:** `/diagnostic-orders/lab/packages/{id}`
+* **Required Permission:** `diagnostics:order:view`
+
+#### Success Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": {
+    "packageId": "04bdfa99-fdf3-4d20-b8df-544e5f755047",
+    "packageName": "Acute Fever & Infectious Disease Profile",
+    "packageCode": "PKG-FEV-01",
+    "description": "Screening for acute febrile illness",
+    "price": 1150.00,
+    "status": "Active",
+    "totalTests": 7,
+    "tests": [
+      {
+        "testId": "116a0b90-ec8e-4a90-835e-4713588d3999",
+        "testName": "Complete Blood Count (CBC)",
+        "code": "HEM-001",
+        "category": "Haematology",
+        "sampleType": "Whole Blood (EDTA)",
+        "tat": "6 hrs",
+        "price": 450.00
+      },
+      {
+        "testId": "2570848a-74ce-48db-b1f7-1fc450e060c5",
+        "testName": "Erythrocyte Sedimentation Rate (ESR)",
+        "code": "HEM-003",
+        "category": "Haematology",
+        "sampleType": "Whole Blood",
+        "tat": "4 hrs",
+        "price": 350.00
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 3.8 Get Individual Test Result (`GET /lab/orders/{order_id}/tests/{order_item_id}/result`)
+Fetches the current parameter values, reference ranges, critical/abnormal flags, technician remarks, and processing metadata for a specific ordered test.
+
+> **Core Architectural Rule:**
+> * **Package** = grouping / commercial unit
+> * **Order Item / Test** = processing unit (identified by `order_id + order_item_id`)
+> * **Parameter** = result-entry unit (identified by `parameter_id`)
+
+* **HTTP Method:** `GET`
+* **Route:** `/lab/orders/{order_id}/tests/{order_item_id}/result`
+* **Gateway Route Alias:** `/diagnostic-orders/lab/orders/{order_id}/tests/{order_item_id}/result`
+* **Required Permission:** Authenticated
+
+#### Success Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": {
+    "orderId": "c3301517-21fe-4cc0-9125-5a0dbce2a369",
+    "orderItemId": "d9787b52-ff22-4971-928a-60ded44c35f6",
+    "testId": "116a0b90-ec8e-4a90-835e-4713588d3999",
+    "testName": "Complete Blood Count (CBC)",
+    "testCode": "HEM-001",
+    "category": "Haematology",
+    "specimenType": "BLOOD",
+    "status": "REPORT_READY",
+    "hasResult": true,
+    "resultId": "b18b5774-7a33-4f96-b072-519bda165d38",
+    "remarks": "All parameters normal. Automated analyzer run #4492.",
+    "isAbnormal": false,
+    "isCritical": false,
+    "parameters": [
+      {
+        "parameterId": "afe4c769-7ecb-4b31-a950-9a429bd8a784",
+        "parameterName": "Hemoglobin (Hb)",
+        "parameterCode": "HEM-001-P01-HEMOGL",
+        "referenceRange": "Men: 13.5 - 17.5 g/dL; Women: 12.0 - 15.5 g/dL",
+        "unit": "g/dL",
+        "displayOrder": 1,
+        "value": "15.0",
+        "isAbnormal": false,
+        "isCritical": false
+      },
+      {
+        "parameterId": "32480c82-5619-484a-82d5-df66c5748ddb",
+        "parameterName": "Platelet Count",
+        "parameterCode": "HEM-001-P14-PLATE",
+        "referenceRange": "150,000 - 450,000 /µL",
+        "unit": "/µL",
+        "displayOrder": 14,
+        "value": "250000",
+        "isAbnormal": false,
+        "isCritical": false
+      }
+    ],
+    "patient": {
+      "id": "4b6a1e8f-d3c1-492f-bc98-d67660884dae",
+      "name": "Test Processing Flow Patient",
+      "uhid": "PAT-2026-6540"
+    },
+    "processedAt": "2026-09-01T07:27:28.910245+00:00"
+  }
+}
+```
+
+---
+
+### 3.9 Save / Submit Test Result (`POST /lab/orders/{order_id}/tests/{order_item_id}/result`)
+Initial creation and submission of parameter values entered by the laboratory technician.
+
+* **HTTP Method:** `POST`
+* **Route:** `/lab/orders/{order_id}/tests/{order_item_id}/result`
+* **Gateway Route Alias:** `/diagnostic-orders/lab/orders/{order_id}/tests/{order_item_id}/result`
+* **Required Permission:** `diagnostics:lab:result:enter` or `diagnostics:lab:collect`
+
+#### Request Body
+```json
+{
+  "parameters": [
+    {
+      "parameter_id": "afe4c769-7ecb-4b31-a950-9a429bd8a784",
+      "value": "14.5"
+    },
+    {
+      "parameter_id": "32480c82-5619-484a-82d5-df66c5748ddb",
+      "value": "250000"
+    }
+  ],
+  "remarks": "All parameters normal. Automated analyzer run #4492.",
+  "status": "REPORT_READY"
+}
+```
+
+#### Success Response (`200 OK`)
+Returns the complete populated test result object (same structure as `GET /result`).
+
+---
+
+### 3.10 Update / Correct Test Result (`PATCH /lab/orders/{order_id}/tests/{order_item_id}/result`)
+Allows the technician or pathologist to update/correct entered parameter values, modify technician remarks, or update test status.
+
+* **HTTP Method:** `PATCH`
+* **Route:** `/lab/orders/{order_id}/tests/{order_item_id}/result`
+* **Gateway Route Alias:** `/diagnostic-orders/lab/orders/{order_id}/tests/{order_item_id}/result`
+
+#### Request Body
+```json
+{
+  "parameters": [
+    {
+      "parameter_id": "afe4c769-7ecb-4b31-a950-9a429bd8a784",
+      "value": "15.0"
+    }
+  ],
+  "remarks": "Updated Hemoglobin to 15.0 after manual re-verification.",
+  "status": "REPORT_READY"
+}
+```
+
+---
+
+### 3.11 Complete Order Report (`GET /lab/orders/{order_id}/report`)
+Returns the complete canonical report for an entire order, with tests and structured parameter result sections grouped by package or listed as standalone tests.
+
+* **HTTP Method:** `GET`
+* **Route:** `/lab/orders/{order_id}/report`
+* **Gateway Route Alias:** `/diagnostic-orders/lab/orders/{id}/report`
+
+#### Success Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": {
+    "report_id": "RID-6041",
+    "order_id": "c3301517-21fe-4cc0-9125-5a0dbce2a369",
+    "order_number": "ORD-6041",
+    "lab_unique_id": "LAB-60410",
+    "report_title": "Complete Blood Count (CBC) Report",
+    "department": "HAEMATOLOGY",
+    "status": "COMPLETED",
+    "patient_name": "Test Processing Flow Patient",
+    "uhid": "PAT-2026-6540",
+    "age": 35,
+    "gender": "Male",
+    "patient": {
+      "patient_id": "4b6a1e8f-d3c1-492f-bc98-d67660884dae",
+      "uhid": "PAT-2026-6540",
+      "patient_name": "Test Processing Flow Patient",
+      "age": 35,
+      "gender": "Male"
+    },
+    "doctor": {
+      "doctor_name": "Dr. Sarah Connor",
+      "department_name": "General Medicine"
+    },
+    "sections": [
+      {
+        "section_name": "Complete Blood Count (CBC)",
+        "parameters": [
+          {
+            "name": "Hemoglobin (Hb)",
+            "code": "HEM-001-P01-HEMOGL",
+            "result": "15.0",
+            "unit": "g/dL",
+            "bio_ref_interval": "Men: 13.5 - 17.5 g/dL; Women: 12.0 - 15.5 g/dL",
+            "flag": "NORMAL",
+            "is_abnormal": false
+          }
+        ]
+      }
+    ],
+    "tests": [
+      {
+        "item_id": "d9787b52-ff22-4971-928a-60ded44c35f6",
+        "test_id": "116a0b90-ec8e-4a90-835e-4713588d3999",
+        "test_name": "Complete Blood Count (CBC)",
+        "status": "REPORT_READY",
+        "parameters": [ ... ]
+      }
+    ],
+    "test_count": 1
+  }
+}
+```
+
+---
+
+### 3.12 Calculate Order Price / Invoice Preview (`POST /lab/orders/calculate-price`)
 Dynamically computes itemized subtotal, discounts, GST (18%), and net payable amount for arbitrary combinations of individual tests and packages (1-1, 1-many).
 
 * **HTTP Method:** `POST`

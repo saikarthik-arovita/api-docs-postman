@@ -1244,14 +1244,52 @@ Retrieves operational dashboard KPIs (orders, samples, results counts and alert 
 ---
 
 ### 3.2 List Lab Tests
-Lists clinical lab tests available in the diagnostics catalog.
+Lists clinical lab tests available in the diagnostics catalog with parameter counts and structured reference ranges.
 
-* **Endpoint:** `GET /diagnostic-orders/lab/tests`
+* **Endpoint:** `GET /diagnostic-orders/lab/tests` (Alias: `GET /lab/tests`)
 * **Required Permission:** None (Authenticated only)
 * **Query Parameters:**
   | Parameter | Type | Required? | Description |
   | :--- | :--- | :--- | :--- |
   | `category` | String | Optional | Filter by test category (e.g. `Biochemistry`, `Hematology`) |
+  | `search` | String | Optional | Match against test name or code |
+  | `limit` | Integer | Optional | Items per page (default `10`) |
+  | `offset` | Integer | Optional | Pagination offset (default `0`) |
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "total": 176,
+    "items": [
+      {
+        "testId": "116a0b90-ec8e-4a90-835e-4713588d3999",
+        "code": "HEM-001",
+        "testName": "Complete Blood Count (CBC)",
+        "department": "Laboratory Medicine",
+        "category": "Haematology",
+        "referenceRange": "Refer report parameters",
+        "parameterCount": 14,
+        "sampleType": "BLOOD",
+        "tat": "24 hrs",
+        "price": 450.00,
+        "status": "Active"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 3.3 Get Lab Test Parameters & Reference Ranges
+Fetches the granular analyte parameters, reference intervals, and measurement units for dynamic Frontend parameter form rendering.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/tests/{id}/parameters` (Aliases: `GET /lab/tests/{id}/parameters`, `GET /diagnostic-orders/tests/{id}/parameters`)
+* **Required Permission:** None (Authenticated only)
+* **Path Parameters:**
+  * `id` *(UUID, required)*: The unique lab test ID.
 
 * **Success Response (200 OK):**
 ```json
@@ -1259,15 +1297,236 @@ Lists clinical lab tests available in the diagnostics catalog.
   "success": true,
   "data": [
     {
-      "id": "16a43dca-eb71-4b85-ab0a-3b984816cadf",
-      "test_name": "Complete Blood Count",
-      "test_code": "CBC",
-      "category": "Hematology",
-      "specimen_type": "Whole Blood",
-      "price": 350.00,
-      "is_active": true
+      "parameterId": "afe4c769-7ecb-4b31-a950-9a429bd8a784",
+      "parameterName": "Hemoglobin (Hb)",
+      "parameterCode": "HEM-001-P01-HEMOGL",
+      "referenceRange": "Men: 13.5 - 17.5 g/dL; Women: 12.0 - 15.5 g/dL",
+      "unit": "g/dL",
+      "criticalMin": null,
+      "criticalMax": null,
+      "displayOrder": 1
+    },
+    {
+      "parameterId": "32480c82-5619-484a-82d5-df66c5748ddb",
+      "parameterName": "Platelet Count",
+      "parameterCode": "HEM-001-P14-PLATE",
+      "referenceRange": "150,000 - 450,000 /µL",
+      "unit": "/µL",
+      "criticalMin": null,
+      "criticalMax": null,
+      "displayOrder": 14
     }
   ]
+}
+```
+
+---
+
+### 3.4 Get Lab Test Details
+Fetches single lab test specification along with all parameter definitions.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/tests/{id}` (Aliases: `GET /lab/tests/{id}`, `GET /diagnostic-orders/tests/{id}`)
+* **Required Permission:** None (Authenticated only)
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "testId": "9901413e-cc16-4b04-88ce-14b7c03a6569",
+    "code": "BCH-018",
+    "testName": "Liver Function Test (LFT)",
+    "department": "Biochemistry",
+    "referenceRange": "Refer report parameters",
+    "parameters": [
+      {
+        "parameterId": "c4d1898b-90f7-4186-b489-8d8a5f4581a0",
+        "parameterName": "Total Bilirubin",
+        "parameterCode": "BCH-018-P01-TOTALB",
+        "referenceRange": "0.3 - 1.2 mg/dL",
+        "unit": "mg/dL",
+        "displayOrder": 1
+      }
+    ],
+    "sampleType": "Serum",
+    "tat": 12,
+    "price": 600.00,
+    "status": "Active",
+    "unit": "Multiple",
+    "category": "Biochemistry"
+  }
+}
+```
+
+---
+
+### 3.5 Get Test Package Details
+Fetches package details and all member tests.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/packages/{id}` (Alias: `GET /lab/packages/{id}`)
+* **Required Permission:** None (Authenticated only)
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "packageId": "04bdfa99-fdf3-4d20-b8df-544e5f755047",
+    "packageName": "Acute Fever & Infectious Disease Profile",
+    "code": "PKG-FEV-01",
+    "description": "Screening profile for acute febrile illness",
+    "price": 1150.00,
+    "status": "Active",
+    "totalTests": 7,
+    "tests": [
+      {
+        "testId": "116a0b90-ec8e-4a90-835e-4713588d3999",
+        "testName": "Complete Blood Count (CBC)",
+        "code": "HEM-001",
+        "category": "Haematology",
+        "price": 450.00
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 3.6 Get Individual Test Result
+Fetches the current parameter values, reference ranges, critical/abnormal flags, technician remarks, and processing metadata for a specific ordered test.
+
+> **Primary reference:** `order_id + order_item_id`
+
+* **Endpoint:** `GET /diagnostic-orders/lab/orders/{order_id}/tests/{order_item_id}/result` (Alias: `GET /lab/orders/{order_id}/tests/{order_item_id}/result`)
+* **Required Permission:** None (Authenticated only)
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "orderId": "c3301517-21fe-4cc0-9125-5a0dbce2a369",
+    "orderItemId": "d9787b52-ff22-4971-928a-60ded44c35f6",
+    "testId": "116a0b90-ec8e-4a90-835e-4713588d3999",
+    "testName": "Complete Blood Count (CBC)",
+    "testCode": "HEM-001",
+    "status": "REPORT_READY",
+    "hasResult": true,
+    "remarks": "All parameters normal.",
+    "isAbnormal": false,
+    "isCritical": false,
+    "parameters": [
+      {
+        "parameterId": "afe4c769-7ecb-4b31-a950-9a429bd8a784",
+        "parameterName": "Hemoglobin (Hb)",
+        "parameterCode": "HEM-001-P01-HEMOGL",
+        "referenceRange": "Men: 13.5 - 17.5 g/dL; Women: 12.0 - 15.5 g/dL",
+        "unit": "g/dL",
+        "displayOrder": 1,
+        "value": "15.0",
+        "isAbnormal": false,
+        "isCritical": false
+      }
+    ],
+    "patient": {
+      "id": "4b6a1e8f-d3c1-492f-bc98-d67660884dae",
+      "name": "Test Patient",
+      "uhid": "PAT-2026-6540"
+    }
+  }
+}
+```
+
+---
+
+### 3.7 Save / Submit Test Result
+Initial creation and submission of parameter values entered by the laboratory technician.
+
+* **Endpoint:** `POST /diagnostic-orders/lab/orders/{order_id}/tests/{order_item_id}/result` (Alias: `POST /lab/orders/{order_id}/tests/{order_item_id}/result`)
+* **Required Permission:** Authenticated
+
+* **Request Body:**
+```json
+{
+  "parameters": [
+    {
+      "parameter_id": "afe4c769-7ecb-4b31-a950-9a429bd8a784",
+      "value": "14.5"
+    }
+  ],
+  "remarks": "Automated analyzer run complete.",
+  "status": "REPORT_READY"
+}
+```
+
+---
+
+### 3.8 Update / Correct Test Result
+Allows updating/correcting entered parameter values, modifying technician remarks, or adjusting test status.
+
+* **Endpoint:** `PATCH /diagnostic-orders/lab/orders/{order_id}/tests/{order_item_id}/result` (Alias: `PATCH /lab/orders/{order_id}/tests/{order_item_id}/result`)
+* **Required Permission:** Authenticated
+
+* **Request Body:**
+```json
+{
+  "parameters": [
+    {
+      "parameter_id": "afe4c769-7ecb-4b31-a950-9a429bd8a784",
+      "value": "15.0"
+    }
+  ],
+  "remarks": "Updated Hemoglobin after manual verification.",
+  "status": "REPORT_READY"
+}
+```
+
+---
+
+### 3.9 Complete Order Report
+Returns the canonical merged order report with tests and structured results grouped by package or listed standalone.
+
+* **Endpoint:** `GET /diagnostic-orders/lab/orders/{order_id}/report` (Alias: `GET /lab/orders/{order_id}/report`)
+* **Required Permission:** None (Authenticated only)
+
+* **Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "report_id": "RID-6041",
+    "order_id": "c3301517-21fe-4cc0-9125-5a0dbce2a369",
+    "status": "COMPLETED",
+    "patient_name": "Test Patient",
+    "uhid": "PAT-2026-6540",
+    "age": 35,
+    "gender": "Male",
+    "sections": [
+      {
+        "section_name": "Complete Blood Count (CBC)",
+        "parameters": [
+          {
+            "name": "Hemoglobin (Hb)",
+            "code": "HEM-001-P01-HEMOGL",
+            "result": "15.0",
+            "unit": "g/dL",
+            "bio_ref_interval": "Men: 13.5 - 17.5 g/dL; Women: 12.0 - 15.5 g/dL",
+            "flag": "NORMAL",
+            "is_abnormal": false
+          }
+        ]
+      }
+    ],
+    "tests": [
+      {
+        "item_id": "d9787b52-ff22-4971-928a-60ded44c35f6",
+        "test_id": "116a0b90-ec8e-4a90-835e-4713588d3999",
+        "test_name": "Complete Blood Count (CBC)",
+        "status": "REPORT_READY"
+      }
+    ]
+  }
 }
 ```
 
