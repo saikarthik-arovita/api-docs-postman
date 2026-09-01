@@ -574,7 +574,7 @@ Fetches the current parameter values, reference ranges, critical/abnormal flags,
 ---
 
 ### 3.9 Save / Submit Test Result (`POST /lab/orders/{order_id}/tests/{order_item_id}/result`)
-Initial creation and submission of parameter values entered by the laboratory technician.
+Initial creation and submission of parameter values entered by the laboratory technician. During result entry, the test item status remains `IN_PROGRESS`. Once the test/order is forwarded/assigned to the pathologist via `POST /lab/orders/{order_id}/assign-pathologist`, its status transitions to `REPORT_READY`.
 
 * **HTTP Method:** `POST`
 * **Route:** `/lab/orders/{order_id}/tests/{order_item_id}/result`
@@ -595,7 +595,7 @@ Initial creation and submission of parameter values entered by the laboratory te
     }
   ],
   "remarks": "All parameters normal. Automated analyzer run #4492.",
-  "status": "REPORT_READY"
+  "status": "IN_PROGRESS"
 }
 ```
 
@@ -621,7 +621,7 @@ Allows the technician or pathologist to update/correct entered parameter values,
     }
   ],
   "remarks": "Updated Hemoglobin to 15.0 after manual re-verification.",
-  "status": "REPORT_READY"
+  "status": "IN_PROGRESS"
 }
 ```
 
