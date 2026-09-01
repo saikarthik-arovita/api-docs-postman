@@ -55,10 +55,11 @@ All API endpoints return standard enveloped responses:
 | **19** | Reschedule Tests / Packages | `POST` | `/lab/orders/{id}/reschedule` | Reschedule specific tests or packages by Date, Time, and Reason |
 | **20** | Cancel Tests / Order | `POST` | `/lab/orders/{id}/cancel` | Cancel specific tests, packages, or whole order with reason |
 | **21** | Patient Bills & Invoices | `GET` | `/lab/patients/{id}/bills` | List all historical and active bills according to a patient |
-| **15** | Download / Print Bill Receipt | `GET` | `/lab/invoices/{id}` | Complete itemized receipt with all test items, GST, barcode, and notes |
-| **17** | Start Testing / Process Sample | `PATCH` | `/lab/samples/{id}/process` | Transitions test item from `SCHEDULED` to `IN_PROGRESS` |
-| **18** | List Laboratory Packages | `GET` | `/lab/packages` | Searchable multi-test packages catalogue with test counts & child items |
-| **19** | Package Details & Child Tests | `GET` | `/lab/packages/{id}` | Full package metadata with all constituent test definitions & prices |
+| **22** | Download / Print Bill Receipt | `GET` | `/lab/invoices/{id}` | Complete itemized receipt with all test items, GST, barcode, and notes |
+| **23** | Start Testing / Process Sample | `PATCH` | `/lab/samples/{id}/process` | Transitions test item from `SCHEDULED` to `IN_PROGRESS` |
+| **24** | List Available Pathologists | `GET` | `/lab/pathologists` | Fetch active pathologists/reviewers with pending review workloads |
+| **25** | Assign Report to Pathologist | `POST` | `/lab/orders/{order_id}/assign-pathologist` | Assign report-ready documents/orders/tests to pathologist with note |
+| **26** | Bulk Assign Reports | `POST` | `/lab/reports/assign-pathologist` | Assign multiple report documents/orders to a pathologist |
 
 ---
 
@@ -2810,6 +2811,132 @@ This endpoint powers the **Eye Symbol (View Details)**, **Download**, and **Prin
 }
 ```
 
+---
 
+### 3.24 List Available Pathologists (`GET /lab/pathologists`)
+Retrieves all active pathologists, medical review officers, and report validators in the current branch/facility. Includes their designation, department, contact details, and current pending review workload count for workload balancing in the laboratory.
 
+* **HTTP Method:** `GET`
+* **Route:** `/lab/pathologists`
+* **Gateway Route Alias:** `/diagnostic-orders/lab/pathologists`
+* **Required Permission:** `diagnostics:order:view`
 
+#### Query Parameters
+| Parameter | Type | Required? | Description |
+| :--- | :--- | :--- | :--- |
+| `search` | `string` | **Optional** | Filter by pathologist full name, email, or designation. |
+
+#### Request Example
+```http
+GET /lab/pathologists HTTP/1.1
+Host: api.arovita.com
+Authorization: Bearer <access_token>
+```
+
+#### Success Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "id": "143b85f9-0073-4b51-8357-bf5ccfcffcea",
+      "pathologist_id": "143b85f9-0073-4b51-8357-bf5ccfcffcea",
+      "name": "Dr. Harpal Singh",
+      "full_name": "Dr. Harpal Singh",
+      "email": "pathologist@arovita.com",
+      "phone": "+919781186436",
+      "role_id": "LAB-005",
+      "role_name": "PATHOLOGIST",
+      "designation": "Consultant Pathologist",
+      "department": "Laboratory Medicine",
+      "department_name": "Laboratory Medicine",
+      "is_active": true,
+      "pending_reviews_count": 5
+    },
+    {
+      "id": "54239323-811a-4e6b-b86d-1e0b3610daf4",
+      "pathologist_id": "54239323-811a-4e6b-b86d-1e0b3610daf4",
+      "name": "Dr. Tanvi Reddy",
+      "full_name": "Dr. Tanvi Reddy",
+      "email": "dr.tanvi.reddy.pathology.b1@hospital.com",
+      "phone": "+919988000132",
+      "role_id": "MED-001",
+      "role_name": "DOCTOR",
+      "designation": "Consultant Pathologist",
+      "department": "Pathology",
+      "department_name": "Pathology",
+      "is_active": true,
+      "pending_reviews_count": 0
+    }
+  ]
+}
+```
+
+---
+
+### 3.25 Assign Report-Ready Documents / Orders / Tests to Pathologist (`POST /lab/orders/{order_id}/assign-pathologist`)
+Assigns report-ready diagnostic documents, whole orders, or individual order test items to a selected pathologist for validation and signoff with a handover note/remark.
+
+* **HTTP Method:** `POST`
+* **Routes & Aliases:**
+  - `POST /lab/orders/{order_id}/assign-pathologist`
+  - `POST /lab/orders/{order_id}/tests/{order_item_id}/assign-pathologist`
+  - `POST /lab/reports/assign-pathologist`
+  - `POST /lab/assign-pathologist`
+  - `/diagnostic-orders/...` aliases for all above
+* **Required Permission:** `diagnostics:order:view`
+
+#### Request Body
+| Field | Type | Required? | Description |
+| :--- | :--- | :--- | :--- |
+| `pathologist_id` | `string` (UUID) | **Required** | Target pathologist user ID from `GET /lab/pathologists`. |
+| `notes` | `string` | **Optional** | Handover instructions or clinical note for the pathologist. |
+| `order_id` | `string` (UUID) | **Optional** | Order ID if assigning via body (or supplied in URL). |
+| `order_item_id` | `string` (UUID) | **Optional** | Specific test item ID to assign (or supplied in URL). |
+| `order_ids` | `array[string]` | **Optional** | List of order UUIDs for bulk assignment. |
+| `order_item_ids` | `array[string]` | **Optional** | List of order item UUIDs for bulk assignment. |
+
+#### Request Example
+```http
+POST /lab/orders/873f672b-8c84-4ce7-848c-71e4c55e6aed/assign-pathologist HTTP/1.1
+Host: api.arovita.com
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "pathologist_id": "143b85f9-0073-4b51-8357-bf5ccfcffcea",
+  "notes": "Urgent review required: patient showing signs of acute infection."
+}
+```
+
+#### Success Response (`200 OK`)
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Assigned report ready documents to Dr. Harpal Singh successfully",
+  "data": {
+    "pathologist_id": "143b85f9-0073-4b51-8357-bf5ccfcffcea",
+    "pathologist_name": "Dr. Harpal Singh",
+    "assigned_items_count": 1,
+    "assigned_orders_count": 1,
+    "order_ids": [
+      "873f672b-8c84-4ce7-848c-71e4c55e6aed"
+    ],
+    "notes": "Urgent review required: patient showing signs of acute infection.",
+    "assigned_items": [
+      {
+        "order_id": "873f672b-8c84-4ce7-848c-71e4c55e6aed",
+        "order_item_id": "7d5e2035-d987-4189-b9a5-0abf2dacf81f",
+        "test_name": "CBC with Differential",
+        "test_code": "HEM-002",
+        "status": "REPORT_READY",
+        "report_status": "ASSIGNED_FOR_VALIDATION",
+        "assigned_to": "Dr. Harpal Singh",
+        "pathologist_id": "143b85f9-0073-4b51-8357-bf5ccfcffcea"
+      }
+    ]
+  }
+}
+```
