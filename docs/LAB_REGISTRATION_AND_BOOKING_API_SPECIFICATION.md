@@ -112,6 +112,12 @@ Authorization: Bearer <access_token>
       "phone": "9876543210",
       "address": "Baner, Pune, Maharashtra",
       "test_count": 1,
+      "scheduled_count": 0,
+      "in_progress_count": 0,
+      "inprogress_count": 0,
+      "report_ready_count": 1,
+      "completed_count": 1,
+      "cancelled_count": 0,
       "assigned_to": "Priya Nair",
       "assigned_technicians": [
         "Priya Nair"
@@ -122,7 +128,7 @@ Authorization: Bearer <access_token>
       "status": "Completed",
       "has_scheduled": false,
       "has_in_progress": false,
-      "has_report_ready": false,
+      "has_report_ready": true,
       "payment_status": "PAID",
       "payment_status_label": "Paid",
       "bill_details": {
@@ -2648,6 +2654,9 @@ Authorization: Bearer <access_token>
         "report_uuid": "3a244c74-3e10-45c4-a263-0f1837e2f1a5",
         "test_package_count": 1,
         "test_count": 1,
+        "scheduled_count": 0,
+        "in_progress_count": 0,
+        "inprogress_count": 0,
         "tests_summary": [
           "Complete Blood Count (CBC)"
         ],
