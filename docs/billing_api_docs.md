@@ -115,41 +115,52 @@ Used by the billing desk to manually override and force-clear a patient's billin
 Post a payment collection event.
 
 * **Endpoint:** `POST /billing/collect`
+* **Method:** `POST`
 * **Required Permission:** `billing:payment:collect`
 * **Request Body:**
   | Field | Type | Required? | Description | Constraints |
   | :--- | :--- | :--- | :--- | :--- |
-  | `patient_id` | UUID | **Mandatory** | Patient identifier | |
-  | `invoice_id` | UUID | Optional | Invoice link | |
-  | `payment_mode` | String | **Mandatory** | Payment channel | `CASH`, `UPI`, `CARD`, `INSURANCE_TPA`, `NET_BANKING` |
-  | `amount` | Decimal | **Mandatory** | Paid amount value | Must be > 0.00 |
-  | `reference_no` | String | Optional | Txn ID / Cheque number | Max 100 chars |
-  | `payment_date` | DateTime | Optional | Timestamp | Defaults to current time |
+  | `invoice_id` | UUID | **Mandatory** | Invoice UUID being paid against | Valid open/partially paid bill |
+  | `patient_id` | UUID | Optional | Patient identifier | |
+  | `amount` | Decimal | **Mandatory** | Paid amount value | Must be > 0.00 and <= `outstanding` |
+  | `payment_mode` | String | **Mandatory** | Payment channel | `UPI`, `CARD`, `CASH`, `OTHER`, `BANK_TRANSFER`, `CHEQUE`, `INSURANCE` |
+  | `reference_no` | String | Optional | Transaction / Auth / Cheque number | Optional for `UPI`, `CARD`, `OTHER`; omitted/not required for `CASH` (Max 100 chars) |
 
-* **Example Request:**
+* **Validation Rules:**
+  - Overpayments are strictly rejected (`422/400 ValidationError`).
+  - Terminal bills in status `PAID`, `CANCELLED`, or `REFUNDED` reject payment collections (`409 ConflictError`).
+  - Cross-tenant or cross-branch bills are rejected (`403 Forbidden`).
+
+* **Status Transition Lifecycle:**
+  - Initial state: `OPEN`
+  - When payment < outstanding: status becomes `PARTIALLY_PAID`, `outstanding` is decremented.
+  - When remaining balance is settled (outstanding reaches `0.00`): status becomes `PAID`.
+  - Each payment inserts a distinct transaction row into `revenue.transactions`.
+
+* **Example Request (Partial Payment via UPI):**
 ```json
 {
-  "patient_id": "patient-uuid-2222",
-  "invoice_id": "invoice-uuid-5555",
+  "invoice_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+  "patient_id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
+  "amount": 2000.00,
   "payment_mode": "UPI",
-  "amount": 2500.00,
-  "reference_no": "UPI-83810294"
+  "reference_no": "UPI-987654321"
 }
 ```
+
 * **Example Response (201 Created):**
 ```json
 {
   "success": true,
   "message": "Payment collected successfully",
   "data": {
-    "receipt_id": "rec-uuid-8877",
-    "patient_id": "patient-uuid-2222",
-    "amount": 2500.00,
+    "invoice_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+    "transaction_id": "018e6a1b-7890-7abc-def0-123456789abc",
+    "amount_paid": 2000.00,
     "payment_mode": "UPI",
-    "status": "COMPLETED",
-    "reference_no": "UPI-83810294",
-    "collected_by": "user-uuid-receptionist",
-    "created_at": "2026-06-23T18:10:00Z"
+    "invoice_status": "PARTIALLY_PAID",
+    "outstanding": 4000.00,
+    "paid_at": "2026-09-21T04:30:00Z"
   }
 }
 ```
@@ -158,58 +169,175 @@ Post a payment collection event.
 
 ## 4. Invoices & Billing Items
 
-### 4.1 Generate Invoice
-* **Endpoint:** `POST /billing/invoices`
-* **Request Body:**
-```json
-{
-  "patient_id": "patient-uuid-2222",
-  "admission_id": "admit-uuid-1111",
-  "items": [
-    {
-      "item_code": "CHG-ROOM-GEN",
-      "quantity": 3,
-      "unit_price": 1500.00,
-      "description": "General ward room charge - 3 days"
-    },
-    {
-      "item_code": "CHG-CONS-GEN",
-      "quantity": 1,
-      "unit_price": 500.00,
-      "description": "Doctor OPD consultation"
-    }
-  ]
-}
+### 4.1 Pending OPD & IPD Bills Query
+Retrieve all pending (unpaid / partially paid) bills for a patient.
+
+* **Endpoint:** `GET /billing/bills`
+* **Method:** `GET`
+* **Required Permission:** `billing:view`
+* **Query Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `patient_id` | UUID | Optional | Patient UUID. When passed, automatically filters to pending bills. |
+  | `visit_type` | String | Optional | Filter by visit type: `OPD` or `IPD`. (Defaults to OPD and IPD when `patient_id` provided). |
+  | `status` | String | Optional | Filter by status: `PENDING`, `OPEN`, `PARTIALLY_PAID`, `PAID`, `ALL`. |
+  | `pending_only` | Boolean | Optional | `true` enforces pending-only filtering (`outstanding > 0`). |
+  | `page` / `per_page` | Integer | Optional | Pagination controls (default page 1, 20 items). |
+
+* **Pending Bills Filtering Rules:**
+  - `status IN ('OPEN', 'PARTIALLY_PAID') AND outstanding > 0`
+  - Fully paid bills (`PAID`), `CANCELLED`, `REFUNDED`, or bills where `outstanding = 0` are excluded.
+
+* **Example Request:**
+```http
+GET /billing/bills?patient_id=0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10&visit_type=IPD
 ```
-* **Success Response (201 Created):**
+
+* **Example Response (200 OK):**
 ```json
 {
   "success": true,
   "data": {
-    "invoice_id": "invoice-uuid-5555",
-    "invoice_number": "INV-2026-0924",
-    "total_amount": 5000.00,
-    "tax_amount": 0.00,
-    "net_payable": 5000.00,
-    "payment_status": "UNPAID"
+    "items": [
+      {
+        "invoice_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "invoice_number": "BILL-20260921-0001",
+        "visit_type": "IPD",
+        "status": "PARTIALLY_PAID",
+        "total_amount": 10000.00,
+        "paid_amount": 4000.00,
+        "outstanding": 6000.00,
+        "bill_date": "2026-09-21",
+        "patient_id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
+        "patient_name": "Ravi Kumar",
+        "mrn": "UHID-100234",
+        "patient_age": 42,
+        "patient_gender": "M"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "per_page": 20,
+      "total": 1,
+      "pages": 1
+    }
   }
 }
 ```
 
 ---
 
-### 4.2 Get Invoice Details
+### 4.2 Get Invoice Details & Clinical Breakdown
+Retrieves full invoice details, line items grouped by clinical billing source, and financial totals.
+
 * **Endpoint:** `GET /billing/invoices/{invoice_id}`
-* **Success Response (200 OK):**
+* **Method:** `GET`
+* **Required Permission:** `billing:view`
+* **Clinical Breakdown Sources Supported:**
+  - `BED`: Bed accommodation & nursing charges
+  - `SURGERY`: Surgical procedure costs
+  - `PROCEDURE`: Minor / major clinical procedures
+  - `OT`: Operating theater & anaesthesia charges
+  - `LAB`: Diagnostic laboratory tests
+  - `IMAGING`: Radiology & imaging scans
+  - `PHARMACY`: Prescribed drugs & consumables
+  - `OTHER`: Miscellaneous charges
+
+* **Financial Summary Fields:**
+  - `subtotal` / `subtotal_amount`: Total gross billable charges
+  - `discount` / `discount_amount`: Concessions or discount reductions
+  - `tax` / `tax_amount`: GST / applicable taxes
+  - `total_amount`: Final payable invoice total
+  - `paid_amount`: Cumulative payments collected to date
+  - `outstanding`: Current unpaid balance
+
+* **Example Response (200 OK):**
 ```json
 {
   "success": true,
   "data": {
-    "invoice_id": "invoice-uuid-5555",
-    "invoice_number": "INV-2026-0924",
-    "total_amount": 5000.00,
-    "payment_status": "PAID",
-    "items": [ ... ]
+    "invoice_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+    "invoice_number": "BILL-20260921-0001",
+    "status": "PARTIALLY_PAID",
+    "visit_type": "IPD",
+    "bill_date": "2026-09-21",
+    "patient": {
+      "id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
+      "mrn": "UHID-100234",
+      "full_name": "Ravi Kumar",
+      "phone": "+91 9876543210"
+    },
+    "by_source": {
+      "BED": {
+        "items": [
+          {
+            "description": "ICU Bed Charges (2 days)",
+            "quantity": 2.00,
+            "unit_price": 3500.00,
+            "amount": 7000.00,
+            "discount": 0.00,
+            "tax_amount": 0.00
+          }
+        ],
+        "subtotal": 7000.00
+      },
+      "LAB": {
+        "items": [
+          {
+            "description": "Complete Blood Count (CBC)",
+            "quantity": 1.00,
+            "unit_price": 500.00,
+            "amount": 500.00,
+            "discount": 0.00,
+            "tax_amount": 0.00
+          }
+        ],
+        "subtotal": 500.00
+      },
+      "PROCEDURE": {
+        "items": [
+          {
+            "description": "Procedure: Central Line Insertion",
+            "quantity": 1.00,
+            "unit_price": 2500.00,
+            "amount": 2500.00,
+            "discount": 0.00,
+            "tax_amount": 0.00
+          }
+        ],
+        "subtotal": 2500.00
+      }
+    },
+    "totals": {
+      "subtotal": 10000.00,
+      "subtotal_amount": 10000.00,
+      "discount": 0.00,
+      "discount_amount": 0.00,
+      "tax": 0.00,
+      "tax_amount": 0.00,
+      "total_amount": 10000.00,
+      "paid_amount": 4000.00,
+      "outstanding": 6000.00
+    }
   }
 }
 ```
+
+---
+
+### 4.3 Generate or Refresh Invoice
+Collects all unbilled line items across OPD/IPD clinical tables and creates or updates an invoice.
+
+* **Endpoint:** `POST /billing/invoices`
+* **Method:** `POST`
+* **Required Permission:** `billing:create`
+* **Request Body:**
+```json
+{
+  "patient_id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
+  "visit_type": "IPD",
+  "visit_id": "ipd-admission-uuid-1111"
+}
+```
+* **Success Response (201 Created):** Returns full `InvoiceOut` structure.
+

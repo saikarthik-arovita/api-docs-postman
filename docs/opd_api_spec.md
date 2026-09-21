@@ -140,21 +140,23 @@ Used to book a draft appointment for the patient. The appointment is created wit
 ---
 
 ### STAGE 3: Confirm Appointment & Check-In (Lobby/Billing)
-Confirm payment for the draft appointment, which automatically marks the patient as checked-in (`SCHEDULED` / arrived status) and generates a lobby queue token.
+Confirm payment (full, partial, or waived) for the draft appointment, which automatically marks the patient as checked-in (`SCHEDULED` / arrived status) and generates a lobby queue token. 
+
+When `PARTIALLY_PAID` is selected, the system records the initial amount paid, looks up the doctor's consultation fee from the Billing module (`revenue.rate_cards`), computes the `balance_amount` (`total_amount - amount_paid`), creates the bill in `revenue.bills` with status `PARTIALLY_PAID`, and logs the initial transaction. The remaining balance can later be collected at the Billing desk using the Billing Service endpoint (`POST /billing/collect`).
 
 * **Endpoint**: `POST /opd/appointments/{appointment_id}/confirm`
 * **Service**: OPD Service (`services/opd`)
-* **Required Permission**: `appointments:edit`
+* **Required Permission**: `appointments:edit` or `appointments:confirm`
 
 #### Request Body Schema
 | Field | Type | Required? | Constraints / Description |
 | :--- | :--- | :--- | :--- |
-| `payment_status`| String | **Mandatory** | Must be: `PAID` or `WAIVED`. |
-| `payment_mode` | String | Optional | One of: `CASH`, `UPI`, `CARD`, `WAIVED`. Mandatory if `payment_status` is `PAID`. |
-| `amount_paid` | Float | Optional | Must be `>= 0.0`. Mandatory if `payment_status` is `PAID`. |
+| `payment_status`| String | **Mandatory** | Must be one of: `PAID`, `PARTIALLY_PAID`, or `WAIVED`. |
+| `payment_mode` | String | Optional | One of: `CASH`, `UPI`, `CARD`, `WAIVED`. Mandatory if `payment_status` is `PAID` or `PARTIALLY_PAID`. |
+| `amount_paid` | Float | Optional | Must be `>= 0.0`. Mandatory if `payment_status` is `PAID` or `PARTIALLY_PAID`. |
 | `payment_ref` | String | Optional | Reference ID/Txn hash. Max length: 200 characters. |
 
-#### Example Request Body
+#### Example Request 1: Full Payment (`PAID`)
 ```json
 {
   "payment_status": "PAID",
@@ -164,19 +166,66 @@ Confirm payment for the draft appointment, which automatically marks the patient
 }
 ```
 
-#### Example Response Body
+#### Example Response 1: Full Payment
 ```json
 {
   "statusCode": 200,
+  "message": "Appointment confirmed",
   "data": {
     "id": "2babb5b6-1b1d-45fb-92f6-ef47508160f2",
     "status": "SCHEDULED",
     "payment_status": "PAID",
     "token_number": 6,
-    "opd_visit_id": "bfb74b69-3e09-449d-85b6-5e13c03cffb3"
+    "opd_visit_id": "bfb74b69-3e09-449d-85b6-5e13c03cffb3",
+    "amount_paid": 500.0,
+    "total_amount": 500.0,
+    "balance_amount": 0.0
   }
 }
 ```
+
+#### Example Request 2: Partial Payment (`PARTIALLY_PAID`)
+```json
+{
+  "payment_status": "PARTIALLY_PAID",
+  "payment_mode": "UPI",
+  "amount_paid": 200.0,
+  "payment_ref": "UPI-9281726"
+}
+```
+
+#### Example Response 2: Partial Payment
+```json
+{
+  "statusCode": 200,
+  "message": "Appointment confirmed",
+  "data": {
+    "id": "2babb5b6-1b1d-45fb-92f6-ef47508160f2",
+    "status": "SCHEDULED",
+    "payment_status": "PARTIALLY_PAID",
+    "token_number": 6,
+    "opd_visit_id": "bfb74b69-3e09-449d-85b6-5e13c03cffb3",
+    "amount_paid": 200.0,
+    "total_amount": 500.0,
+    "balance_amount": 300.0
+  }
+}
+```
+
+#### Settle Remaining Balance (Billing Service Follow-up)
+The remaining balance (`300.00`) can be settled anytime at the cashier/billing desk by invoking:
+* **Endpoint**: `POST /billing/collect`
+* **Service**: Billing Service (`services/billing`)
+* **Payload**:
+```json
+{
+  "invoice_id": "<invoice_uuid>",
+  "amount": 300.0,
+  "payment_mode": "CASH",
+  "reference_no": "CASH-BAL-38291"
+}
+```
+Collecting the remaining balance automatically transitions the bill status in `revenue.bills` from `PARTIALLY_PAID` to `PAID`.
 
 ---
 
