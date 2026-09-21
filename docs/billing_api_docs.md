@@ -480,83 +480,94 @@ Retrieves the patient's logical wallet and current available balance. Automatica
 
 ---
 
-### 5.3 Get Patient Wallet Ledger
-Retrieves the append-only, immutable transaction history for the patient's wallet.
+### 5.3 Get Patient Financial Statement & Wallet Ledger
+Retrieves a unified, comprehensive **Financial Statement & Payment Ledger** (reflecting as a bank statement) for the patient. It shows all payments done across bills (both **full** and **partial** payments), their payment modes, direct wallet transactions, and total balance summaries.
 
-* **Endpoint:** `GET /billing/wallet/{patient_id}/ledger?page=1&per_page=20`
+* **Endpoint:** `GET /billing/wallet/{patient_id}/ledger`
 * **Method:** `GET`
 * **Required Permission:** `wallet:ledger:view`, `wallet:view`, or `billing:view` (accessible by Admin, Billing Executive, and Receptionist)
+* **Query Parameters:**
+  | Parameter | Type | Required | Description | Example |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `payment_mode` | string | No | Filter by payment mode (case-insensitive). Matches single-mode or split component methods. | `CASH`, `UPI`, `WALLET`, `CARD`, `INSURANCE` |
+  | `visit_type` | string | No | Filter by visit type (`OPD` or `IPD`, case-insensitive). | `OPD`, `IPD` |
+  | `payment_type` | string | No | Filter by payment status category. | `FULL`, `PARTIAL`, `ADVANCE` |
+  | `from_date` | string | No | Filter transactions on or after this date (`YYYY-MM-DD`). | `2026-07-01` |
+  | `to_date` | string | No | Filter transactions on or before this date (`YYYY-MM-DD`). | `2026-08-31` |
+  | `page` | integer | No | Page number for pagination (default: `1`). | `1` |
+  | `per_page` | integer | No | Items per page (default: `20`, max: `100`). | `20` |
+
 * **Success Response (200 OK):**
 ```json
 {
   "success": true,
+  "code": 200,
   "data": {
     "wallet": {
-      "id": "37b3eaca-7fe9-45fa-b616-3ab226b84f5f",
-      "patient_id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
+      "id": "f20caf38-438f-4700-a0cd-68dd068b55f3",
+      "patient_id": "8b5d7493-e9e9-43e5-99a4-e0467993911d",
       "currency": "INR",
-      "available_balance": 25000.00,
+      "available_balance": 0.00,
       "status": "ACTIVE",
-      "created_at": "2026-09-21T13:39:06.921295+05:30",
-      "updated_at": "2026-09-21T13:41:24.710875+05:30"
+      "created_at": "2026-09-21T17:35:53.452400+05:30",
+      "updated_at": "2026-09-21T17:35:53.452400+05:30"
+    },
+    "summary": {
+      "total_billed": 94950.00,
+      "total_paid": 12450.00,
+      "total_outstanding": 82518.00,
+      "wallet_balance": 0.00
     },
     "transactions": [
       {
-        "id": "018e652a-912f-7c12-98ab-4d2a1e8c76ad",
-        "wallet_id": "37b3eaca-7fe9-45fa-b616-3ab226b84f5f",
-        "patient_id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
-        "transaction_type": "DEBIT",
-        "credit_source": null,
-        "amount": 2000.00,
-        "balance_before": 27000.00,
-        "balance_after": 25000.00,
-        "financial_account_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
-        "ipd_id": "ipd-admission-uuid-1111",
-        "opd_id": null,
-        "surgery_id": null,
-        "procedure_id": null,
-        "payment_id": null,
-        "reference_type": "BILL_PAYMENT",
-        "reference_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "id": "b1e454bc-21e0-4d7f-b3bb-90fd6b554166",
+        "wallet_id": "f20caf38-438f-4700-a0cd-68dd068b55f3",
+        "patient_id": "8b5d7493-e9e9-43e5-99a4-e0467993911d",
+        "transaction_type": "PAYMENT",
+        "payment_type": "FULL",
+        "payment_mode": "CASH",
+        "amount": 11200.00,
+        "narration": "IPD Payment - BILL-20260814-0001 (Full Payment)",
+        "invoice_number": "BILL-20260814-0001",
+        "bill_id": "95f27813-185e-4899-91c1-8b85f110a751",
+        "visit_type": "IPD",
+        "bill_total": 41600.00,
+        "bill_paid": 11200.00,
+        "bill_outstanding": 30400.00,
+        "bill_status": "PAID",
         "status": "SUCCESS",
-        "idempotency_key": null,
-        "created_by": "f8bb5a02-0eb1-4366-814c-0763ba4f2b74",
-        "created_at": "2026-09-21T13:41:24.710875+05:30",
-        "reversal_of": null,
-        "metadata": {
-          "invoice_number": "BILL-20260921-0001"
-        }
+        "reference_no": null,
+        "components": null,
+        "created_at": "2026-08-14T06:34:50.916507+05:30",
+        "collected_at": "2026-08-14T06:34:50.916507+05:30"
       },
       {
-        "id": "018e652a-89aa-7b01-81cb-2e1c9a7b65fa",
-        "wallet_id": "37b3eaca-7fe9-45fa-b616-3ab226b84f5f",
-        "patient_id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
-        "transaction_type": "CREDIT",
-        "credit_source": "INSURANCE",
-        "amount": 50000.00,
-        "balance_before": 0.00,
-        "balance_after": 50000.00,
-        "financial_account_id": null,
-        "ipd_id": "ipd-admission-uuid-1111",
-        "opd_id": null,
-        "surgery_id": null,
-        "procedure_id": null,
-        "payment_id": null,
-        "reference_type": "INSURANCE_CLAIM",
-        "reference_id": "CLAIM-776655",
+        "id": "2c369f2b-9a70-4bc9-838c-02c376786558",
+        "wallet_id": "f20caf38-438f-4700-a0cd-68dd068b55f3",
+        "patient_id": "8b5d7493-e9e9-43e5-99a4-e0467993911d",
+        "transaction_type": "PAYMENT",
+        "payment_type": "PARTIAL",
+        "payment_mode": "INSURANCE",
+        "amount": 250.00,
+        "narration": "OPD Payment - BILL-20260729-0021 (Partial Payment)",
+        "invoice_number": "BILL-20260729-0021",
+        "bill_id": "6362d743-a728-431f-9946-c813edc9fde7",
+        "visit_type": "OPD",
+        "bill_total": 500.00,
+        "bill_paid": 250.00,
+        "bill_outstanding": 250.00,
+        "bill_status": "PARTIALLY_PAID",
         "status": "SUCCESS",
-        "idempotency_key": "IDEMP-INS-776655",
-        "created_by": "f8bb5a02-0eb1-4366-814c-0763ba4f2b74",
-        "created_at": "2026-09-21T13:39:20.123456+05:30",
-        "reversal_of": null,
-        "metadata": {
-          "notes": "Cashless pre-auth settled"
-        }
+        "reference_no": null,
+        "components": null,
+        "created_at": "2026-07-30T06:58:16.392177+05:30",
+        "collected_at": "2026-07-30T06:58:16.392177+05:30"
       }
     ],
-    "total_count": 2,
+    "total_count": 4,
     "page": 1,
-    "per_page": 20
+    "per_page": 20,
+    "total_pages": 1
   }
 }
 ```
