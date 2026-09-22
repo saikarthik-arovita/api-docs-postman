@@ -15,7 +15,8 @@ This document covers all payment collection, invoice generation, billing package
 4. [Invoices & Billing Items](#4-invoices--billing-items)
    * 4.1 [Pending OPD & IPD Bills Query](#41-pending-opd--ipd-bills-query)
    * 4.2 [Get Invoice Details & Clinical Breakdown](#42-get-invoice-details--clinical-breakdown)
-   * 4.3 [Generate or Refresh Invoice](#43-generate-or-refresh-invoice)
+   * 4.3 [Generate or Refresh Invoice (AUTO & CUSTOM Modes)](#43-generate-or-refresh-invoice-auto--custom-modes)
+   * 4.4 [Search Billing Catalogue Items](#44-search-billing-catalogue-items)
 5. [Patient Wallet & Multi-Component Payments](#5-patient-wallet--multi-component-payments)
    * 5.1 [Collect Payment (Multi-Component Split Payments)](#51-collect-payment-single-mode--multi-component-split-payments)
    * 5.2 [Get Patient Wallet](#52-get-patient-wallet)
@@ -351,21 +352,210 @@ Retrieves full invoice details, line items grouped by clinical billing source, a
 
 ---
 
-### 4.3 Generate or Refresh Invoice
-Collects all unbilled line items across OPD/IPD clinical tables and creates or updates an invoice.
+### 4.3 Generate or Refresh Invoice (AUTO & CUSTOM Modes)
+Creates or updates an invoice. Supports both automated clinical item aggregation (`AUTO` mode) and explicit user-specified billing items (`CUSTOM` mode).
 
 * **Endpoint:** `POST /billing/invoices`
 * **Method:** `POST`
 * **Required Permission:** `billing:create`
-* **Request Body:**
+
+#### Modes Overview
+| Mode | `invoice_mode` | Description | Visit Requirement |
+| :--- | :--- | :--- | :--- |
+| **AUTO** (Default) | `"AUTO"` | Gathers unbilled line items across OPD/IPD clinical tables (beds, labs, surgeries, OT, pharmacy). | `visit_type` (`OPD` or `IPD`) and `visit_id` are required. |
+| **CUSTOM** | `"CUSTOM"` | Bills strictly the explicit line items provided in the request payload. No clinical table aggregation occurs. | `patient_id` is mandatory; `visit_type` and `visit_id` are optional. |
+
+---
+
+#### A. Custom Invoice Request Format (`invoice_mode: "CUSTOM"`)
+
+##### Request Attributes:
+- `patient_id` (*UUID*, Mandatory): The target patient UUID.
+- `invoice_mode` (*String*, Optional, default `"AUTO"`): Set to `"CUSTOM"` for custom invoices.
+- `visit_type` (*String*, Optional): `"OPD"` or `"IPD"`.
+- `visit_id` (*UUID*, Optional): Specific OPD visit or IPD admission UUID.
+- `discount` (*Object*, Optional): Overall invoice discount.
+  - `type`: `"PERCENTAGE"` or `"FIXED"`
+  - `value`: Number (> 0)
+  - `reason`: String (e.g. `"Senior Citizen Concession"`)
+- `items` (*Array of Objects*, Mandatory for CUSTOM):
+  1. **Catalogue Item (`type: "CATALOGUE"`):**
+     - `catalogue_item_id` (*UUID*, Mandatory): Valid active rate card UUID from `revenue.rate_cards`.
+     - `quantity` (*Decimal*, Mandatory): Quantity (> 0).
+     - `unit_price` (*Decimal*, Optional): Manual price override. **Permission Required:** Overriding standard catalogue price requires `is_sysadmin=true`, `SYSTEM_ADMINISTRATOR`, `HOSPITAL_ADMIN`, or `billing:edit` / `billing:price:override` permissions; otherwise rejected with 403 `PermissionDeniedError`.
+  2. **Miscellaneous Item (`type: "MISCELLANEOUS"`):**
+     - `description` (*String*, Mandatory): Non-empty textual description of service/item.
+     - `amount` (*Decimal*, Mandatory): Charge amount (> 0).
+     - *Note:* Miscellaneous items are NOT catalogue items and do not require `catalogue_item_id` or category lookup.
+
+##### Restricted Categories:
+Custom invoices strictly **reject** items under clinical consultation and registration categories:
+- `Registration`
+- `Consultation`
+- `Doctor Charges`
+
+Attempting to submit items from these categories raises `400 Bad Request (ValidationError)`.
+
+---
+
+#### B. Custom Invoice Request Example
+
 ```json
 {
   "patient_id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
+  "invoice_mode": "CUSTOM",
   "visit_type": "IPD",
-  "visit_id": "ipd-admission-uuid-1111"
+  "visit_id": "5a58fc86-4e36-4f6b-a69a-c06cedbe8f46",
+  "discount": {
+    "type": "PERCENTAGE",
+    "value": 10.0,
+    "reason": "Hospital Foundation Discount"
+  },
+  "items": [
+    {
+      "type": "CATALOGUE",
+      "catalogue_item_id": "00fd2c59-8e6a-4eb5-9eb4-1ca8d717a82b",
+      "quantity": 2
+    },
+    {
+      "type": "MISCELLANEOUS",
+      "description": "Special medical equipment sanitization & handling",
+      "amount": 1500.00
+    }
+  ]
 }
 ```
-* **Success Response (201 Created):** Returns full `InvoiceOut` structure.
+
+#### C. Custom Invoice Response Example (201 Created)
+
+```json
+{
+  "success": true,
+  "data": {
+    "invoice_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+    "invoice_number": "BILL-20260922-0042",
+    "status": "OPEN",
+    "invoice_mode": "CUSTOM",
+    "visit_type": "IPD",
+    "bill_date": "2026-09-22",
+    "patient": {
+      "id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
+      "mrn": "UHID-100234",
+      "full_name": "Ravi Kumar",
+      "phone": "+91 9876543210"
+    },
+    "items": [
+      {
+        "id": "713da38f-9a05-4f40-97b1-2ff0d48cb912",
+        "type": "CATALOGUE",
+        "catalogue_item_id": "00fd2c59-8e6a-4eb5-9eb4-1ca8d717a82b",
+        "category": "Laboratory",
+        "description": "Arterial Blood Gas (ABG)",
+        "quantity": 2.0,
+        "unit_price": 450.00,
+        "amount": 900.00,
+        "discount": 90.00,
+        "tax_amount": 0.00,
+        "total_amount": 810.00
+      },
+      {
+        "id": "842db19a-9b12-4f11-87b3-1ff0d48ca123",
+        "type": "MISCELLANEOUS",
+        "category": "OTHER",
+        "description": "Special medical equipment sanitization & handling",
+        "quantity": 1.0,
+        "unit_price": 1500.00,
+        "amount": 1500.00,
+        "discount": 150.00,
+        "tax_amount": 0.00,
+        "total_amount": 1350.00
+      }
+    ],
+    "totals": {
+      "subtotal": 2400.00,
+      "subtotal_amount": 2400.00,
+      "discount": 240.00,
+      "discount_amount": 240.00,
+      "tax": 0.00,
+      "tax_amount": 0.00,
+      "total_amount": 2160.00,
+      "paid_amount": 0.00,
+      "outstanding": 2160.00
+    }
+  }
+}
+```
+
+---
+
+#### D. Legacy AUTO Invoice Request Example (100% Backward Compatible)
+
+```json
+{
+  "patient_id": "0d2c0b64-c2c3-4d41-9457-4ea2e6d6eb10",
+  "visit_type": "OPD",
+  "visit_id": "opd-visit-uuid-1111"
+}
+```
+
+---
+
+### 4.4 Search Billing Catalogue Items
+Searches standard billable rate card items for the active tenant branch. Used by custom invoice UIs and rate lookups.
+
+* **Endpoint:** `GET /billing/catalogue/items`
+* **Method:** `GET`
+* **Required Permission:** `billing:view` or `billing:create`
+* **Query Parameters:**
+  | Parameter | Type | Required? | Description |
+  | :--- | :--- | :--- | :--- |
+  | `search` | String | Optional | Search substring across item name, description, and item code. |
+  | `category` | String | Optional | Filter by catalogue category (e.g. `Laboratory`, `Equipment`, `Room & Admission`, `Ambulance`, `Pharmacy`). |
+  | `is_active` | Boolean | Optional | Filter by active state (`true`/`false`, default `true`). |
+  | `page` | Integer | Optional | Page number (default: 1). |
+  | `limit` | Integer | Optional | Number of items per page (default: 50, max: 100). |
+
+* **Security & Exclusion Filtering:**
+  - Rate items are strictly scoped to the active tenant/branch (`branch_id = tenant_id` or `branch_id IS NULL`).
+  - Restricted clinical categories (`Registration`, `Consultation`, `Doctor Charges`) are automatically filtered out from search results.
+
+* **Example Request:**
+  ```http
+  GET /billing/catalogue/items?search=Blood&page=1&limit=10
+  ```
+
+* **Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "00fd2c59-8e6a-4eb5-9eb4-1ca8d717a82b",
+        "code": "BCH-039",
+        "name": "Arterial Blood Gas (ABG)",
+        "category": "Laboratory",
+        "unit": "unit",
+        "price": "450.00",
+        "is_active": true
+      },
+      {
+        "id": "e5e82d23-96f8-4981-b068-52a12dc10de4",
+        "code": "MIC-001",
+        "name": "Blood Culture & Sensitivity",
+        "category": "Laboratory",
+        "unit": "unit",
+        "price": "650.00",
+        "is_active": true
+      }
+    ],
+    "total": 12,
+    "page": 1,
+    "limit": 10
+  }
+}
+```
 
 ---
 
