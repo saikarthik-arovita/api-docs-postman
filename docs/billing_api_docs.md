@@ -27,6 +27,14 @@ This document covers all payment collection, invoice generation, billing package
    * 5.7 [Double-Counting Prevention & Concurrency Protection Rules](#57-double-counting-prevention--concurrency-protection-rules)
    * 5.8 [RBAC Permission Reference](#58-rbac-permission-reference)
    * 5.9 [Supported reference_type Taxonomy](#59-supported-reference_type-taxonomy)
+6. [Rate Cards & Master Catalogue Management](#6-rate-cards--master-catalogue-management)
+   * 6.1 [List & Search Rate Cards](#61-list--search-rate-cards)
+   * 6.2 [Create or Upsert Rate Card Item](#62-create-or-upsert-rate-card-item)
+   * 6.3 [Update Rate Card Item Price & Status](#63-update-rate-card-item-price--status)
+   * 6.4 [Synchronize Master Catalogues](#64-synchronize-master-catalogues)
+   * 6.5 [Duplicate Avoidance Architecture & Normalization Rules](#65-duplicate-avoidance-architecture--normalization-rules)
+   * 6.6 [Role-Based Access Control (DevOps / Support / SysAdmin Matrix)](#66-role-based-access-control-devops--support--sysadmin-matrix)
+   * 6.7 [CLI Inspection & Admin Tool](#67-cli-inspection--admin-tool)
 
 ---
 
@@ -887,6 +895,231 @@ When `reference_type` is associated with a specific visit context, the correspon
 * **OPD Visits:** `opd_id` pointing to `clinical.opd_visits(id)`
 * **Financial Accounts / Invoices:** `financial_account_id` pointing to `revenue.bills(id)`
 * **Clinical Events:** `surgery_id` or `procedure_id`
+
+---
+
+## 6. Rate Cards & Master Catalogue Management
+
+The Rate Card engine centralizes pricing masters for doctor consultations, laboratory tests, pharmacy medicines, room & bed occupancies, surgical procedures, and emergency charges across branches.
+
+### 6.1 List & Search Rate Cards
+Queries rate cards with advanced filters, pagination, and enriched doctor details (name, employee code, department).
+
+* **Endpoint:** `GET /billing/catalogue/rate-cards`
+* **Method:** `GET`
+* **Required Permission:** `billing:view` or `billing:create`
+* **Query Parameters:**
+  | Parameter | Type | Required? | Description | Example |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `category` | String | Optional | Filter by category: `CONSULTATION`, `PHARMACY`, `LABORATORY`, `ROOM`, `PROCEDURE`, `EMERGENCY`, `OTHER` | `CONSULTATION` |
+  | `sub_category` | String | Optional | Sub-classification (e.g. `OPD`, `IPD`, `GENERAL`, `ICU`) | `OPD` |
+  | `doctor_id` | UUID | Optional | Filter doctor consultation rate cards by staff UUID | `d049e6f2-bf83-4927-9ec9-974a6b251f28` |
+  | `active` | Boolean | Optional | Filter by active state (`true`/`false`) | `true` |
+  | `search` / `q` | String | Optional | Text search across `service_code`, `service_name`, doctor name, and department | `Cardiology` |
+  | `page` | Integer | Optional | Page number (default: `1`) | `1` |
+  | `limit` / `per_page` | Integer | Optional | Items per page (default: `50`, max: `100`) | `50` |
+
+* **Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "total": 42,
+    "page": 1,
+    "limit": 50,
+    "items": [
+      {
+        "id": "18f2d80d-8302-4ae6-b816-09252c80c213",
+        "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+        "service_code": "DOC-CON-DR-SAI-001",
+        "service_name": "General OPD Consultation - Dr. Sai Karthik",
+        "category": "CONSULTATION",
+        "sub_category": "OPD",
+        "rate": 500.00,
+        "cgst_rate": 0.00,
+        "sgst_rate": 0.00,
+        "igst_rate": 0.00,
+        "is_active": true,
+        "doctor_id": "d049e6f2-bf83-4927-9ec9-974a6b251f28",
+        "doctor_name": "Dr. Sai Karthik",
+        "doctor_employee_code": "DR-SAI-001",
+        "doctor_department": "General Medicine"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 6.2 Create or Upsert Rate Card Item
+Adds a new rate card or idempotently updates an existing item matching `(branch_id, service_code)` or `(branch_id, category, doctor_id)`.
+
+* **Endpoint:** `POST /billing/catalogue/rate-cards`
+* **Method:** `POST`
+* **Required Roles:** `DEVOPS_ENGINEER` (`ITC-002`), `SUPPORT_ENGINEER` (`ITC-003`), `SYSTEM_ADMINISTRATOR` (`ITC-001`)
+* **Request Body:**
+  | Field | Type | Required? | Description | Constraints |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `service_code` | String | **Mandatory** | Unique service identifier (normalized to uppercase) | Max 100 chars, e.g. `DOC-CON-DR-SAI` |
+  | `service_name` | String | **Mandatory** | Display name of the service | Max 255 chars |
+  | `category` | String | **Mandatory** | Service category | `CONSULTATION`, `PHARMACY`, `LABORATORY`, `ROOM`, `PROCEDURE`, `EMERGENCY`, `OTHER` |
+  | `sub_category` | String | Optional | Sub-tier classification | e.g. `OPD`, `IPD`, `GENERAL`, `ICU` |
+  | `rate` | Decimal | **Mandatory** | Base charge amount (INR) | `>= 0.00` |
+  | `cgst_rate` | Decimal | Optional | Central GST percentage | Default `0.00`, `>= 0.00` |
+  | `sgst_rate` | Decimal | Optional | State GST percentage | Default `0.00`, `>= 0.00` |
+  | `igst_rate` | Decimal | Optional | Integrated GST percentage | Default `0.00`, `>= 0.00` |
+  | `doctor_id` | UUID | Optional | Doctor staff user UUID (for consultation charges) | Valid `workforce.staff_profiles` UUID |
+  | `is_active` | Boolean | Optional | Active state flag | Default `true` |
+  | `metadata` | Object | Optional | Additional properties & tags | JSON object |
+
+* **Example Request:**
+```json
+{
+  "service_code": "DOC-CON-DR-SHARMA",
+  "service_name": "Senior Cardiology Consultation",
+  "category": "CONSULTATION",
+  "sub_category": "OPD",
+  "rate": 850.00,
+  "cgst_rate": 0.00,
+  "sgst_rate": 0.00,
+  "igst_rate": 0.00,
+  "doctor_id": "d049e6f2-bf83-4927-9ec9-974a6b251f28",
+  "is_active": true
+}
+```
+
+* **Example Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Rate card item created/upserted successfully",
+  "data": {
+    "id": "18f2d80d-8302-4ae6-b816-09252c80c213",
+    "branch_id": "46fc39d8-7c4e-4704-9430-f82d6dcfa34c",
+    "service_code": "DOC-CON-DR-SHARMA",
+    "service_name": "Senior Cardiology Consultation",
+    "category": "CONSULTATION",
+    "sub_category": "OPD",
+    "rate": 850.00,
+    "cgst_rate": 0.00,
+    "sgst_rate": 0.00,
+    "igst_rate": 0.00,
+    "doctor_id": "d049e6f2-bf83-4927-9ec9-974a6b251f28",
+    "is_active": true
+  }
+}
+```
+
+---
+
+### 6.3 Update Rate Card Item Price & Status
+Updates the price, GST rates, or active status of an existing rate card item.
+
+* **Endpoint:** `PUT /billing/catalogue/rate-cards/{rate_card_id}`
+* **Method:** `PUT` / `PATCH`
+* **Required Roles:** `DEVOPS_ENGINEER` (`ITC-002`), `SUPPORT_ENGINEER` (`ITC-003`), `SYSTEM_ADMINISTRATOR` (`ITC-001`)
+* **Request Body:**
+```json
+{
+  "rate": 900.00,
+  "is_active": true
+}
+```
+* **Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Rate card item updated successfully",
+  "data": {
+    "id": "18f2d80d-8302-4ae6-b816-09252c80c213",
+    "service_code": "DOC-CON-DR-SHARMA",
+    "rate": 900.00,
+    "is_active": true,
+    "updated_at": "2026-09-23T04:30:00Z"
+  }
+}
+```
+
+---
+
+### 6.4 Synchronize Master Catalogues
+Automatically reads all Doctors in `workforce.staff_profiles`, Master Lab tests in `laboratory.test_master`, Medicines in `pharmacy.medicines`, and Bed charges in `ipd.rooms` / `ipd.beds`, creating or updating their corresponding rate card items idempotently.
+
+* **Endpoint:** `POST /billing/catalogue/rate-cards/sync`
+* **Method:** `POST`
+* **Required Roles:** `DEVOPS_ENGINEER` (`ITC-002`), `SUPPORT_ENGINEER` (`ITC-003`), `SYSTEM_ADMINISTRATOR` (`ITC-001`)
+* **Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Rate cards synchronized successfully",
+  "data": {
+    "total_synced": 38,
+    "details": {
+      "doctors_synced": 4,
+      "lab_tests_synced": 18,
+      "medicines_synced": 12,
+      "rooms_synced": 4
+    }
+  }
+}
+```
+
+---
+
+### 6.5 Duplicate Avoidance Architecture & Normalization Rules
+
+1. **Normalized Service Codes:**
+   - Leading/trailing whitespace is trimmed.
+   - Letters are converted to uppercase.
+   - Spaces and special characters are replaced by dashes.
+2. **Deterministic Code Conventions:**
+   - Doctor Consultation: `DOC-CON-<EMPLOYEE_CODE>` (or `DOC-CON-<UUID_SHORT>`)
+   - Lab Tests: `LAB-<TEST_CODE>`
+   - Medicines: `MED-<SKU>`
+   - Rooms & Beds: `ROOM-<BED_TYPE>`
+3. **Natural Composite Keys:**
+   - Unique constraint on `(branch_id, service_code)`.
+   - Secondary deduplication on `(branch_id, category, doctor_id)` for doctor consultation charges.
+4. **Idempotent Upsert Logic:**
+   - When a match is found during insertion or synchronization, the SQL layer executes an `ON CONFLICT (branch_id, service_code) DO UPDATE SET rate = EXCLUDED.rate, ...` preventing duplicate entries.
+
+---
+
+### 6.6 Role-Based Access Control (DevOps / Support / SysAdmin Matrix)
+
+| Endpoint | Method | `ITC-001` (SysAdmin) | `ITC-002` (DevOps) | `ITC-003` (Support) | Cashier / Receptionist / Doctor |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| `GET /billing/catalogue/rate-cards` | GET | Allowed | Allowed | Allowed | Allowed (`billing:view`) |
+| `POST /billing/catalogue/rate-cards` | POST | Allowed | Allowed | Allowed | **403 Forbidden** |
+| `PUT /billing/catalogue/rate-cards/{id}` | PUT | Allowed | Allowed | Allowed | **403 Forbidden** |
+| `POST /billing/catalogue/rate-cards/sync` | POST | Allowed | Allowed | Allowed | **403 Forbidden** |
+
+---
+
+### 6.7 CLI Inspection & Admin Tool
+
+For backend developers, support engineers, and DevOps inspecting rate cards from EC2 bastion hosts or CloudShell:
+
+```bash
+cd uat-bootstrap
+source .venv/bin/activate
+
+# 1. Summary of rate cards across all categories
+python scripts/list_rate_cards_catalogue.py
+
+# 2. Filter by category
+python scripts/list_rate_cards_catalogue.py --category CONSULTATION
+python scripts/list_rate_cards_catalogue.py --category PHARMACY --limit 25
+
+# 3. Search by name or code
+python scripts/list_rate_cards_catalogue.py --search "Cardiology"
+
+# 4. JSON output
+python scripts/list_rate_cards_catalogue.py --json > rate_cards_catalogue.json
+```
+
 
 
 

@@ -435,6 +435,254 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "4. Rate Cards & Master Catalogue Management",
+			"description": "Endpoints to view, modify, add, and synchronize hospital rate cards. Restricted to DEVOPS_ENGINEER, SUPPORT_ENGINEER, and SYSTEM_ADMINISTRATOR.",
+			"item": [
+				{
+					"name": "4.1 List Rate Cards (Admin / Catalogue)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/catalogue/rate-cards?category=CONSULTATION&page=1&limit=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"catalogue",
+								"rate-cards"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "CONSULTATION"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Filter and list rate cards by category (CONSULTATION, PHARMACY, LABORATORY, ROOM, PROCEDURE, EMERGENCY) with doctor details."
+					},
+					"response": []
+				},
+				{
+					"name": "4.2 Create or Upsert Rate Card Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"service_code\": \"DOC-CON-DR-SAI-001\",\n  \"service_name\": \"General OPD Consultation - Dr. Sai Karthik\",\n  \"category\": \"CONSULTATION\",\n  \"sub_category\": \"OPD\",\n  \"rate\": 500.00,\n  \"cgst_rate\": 0.00,\n  \"sgst_rate\": 0.00,\n  \"igst_rate\": 0.00,\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/catalogue/rate-cards",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"catalogue",
+								"rate-cards"
+							]
+						},
+						"description": "Create a new rate card item or safely upsert an existing code without duplicates."
+					},
+					"response": []
+				},
+				{
+					"name": "4.3 Update Rate Card Item Price",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rate\": 600.00,\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/catalogue/rate-cards/{{rate_card_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"catalogue",
+								"rate-cards",
+								"{{rate_card_id}}"
+							]
+						},
+						"description": "Modify rates, taxes, and active state of an existing rate card item."
+					},
+					"response": []
+				},
+				{
+					"name": "4.4 Synchronize All Master Catalogues",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/catalogue/rate-cards/sync",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"catalogue",
+								"rate-cards",
+								"sync"
+							]
+						},
+						"description": "Auto-sync master catalog items from workforce doctors, laboratory tests, pharmacy medicines, and IPD beds into rate cards."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Patient Wallet & Ledger System",
+			"description": "Patient prepaid deposit management, top-ups, deductions, and audit ledgers.",
+			"item": [
+				{
+					"name": "5.1 Get Patient Wallet Balance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/wallet/{{patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"wallet",
+								"{{patient_id}}"
+							]
+						},
+						"description": "Check current available balance, total credited, and total debited for a patient."
+					},
+					"response": []
+				},
+				{
+					"name": "5.2 Get Patient Wallet Ledger",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/billing/wallet/{{patient_id}}/ledger?page=1&per_page=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"wallet",
+								"{{patient_id}}",
+								"ledger"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Retrieve full transaction history for the patient wallet."
+					},
+					"response": []
+				},
+				{
+					"name": "5.3 Credit Patient Wallet (Top-up)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"amount\": 5000.00,\n  \"payment_mode\": \"UPI\",\n  \"reference_no\": \"UPI_TOPUP_5544\",\n  \"description\": \"Advance deposit for surgery\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/billing/wallet/credit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"billing",
+								"wallet",
+								"credit"
+							]
+						},
+						"description": "Top-up patient wallet with advance payment."
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
